@@ -1,0 +1,24 @@
+Disclaimer:
+	This repo is generated on-demand from packages I use on my personal computer.
+	If you find any package license infrigment, please notify me at root[at]pedrohlc.com , so I can remove and blacklist it.
+
+About:
+	All packages available in this repo are automatically build from the AUR sources, except for wine-tkg which are from his github .
+	firefox-nightly, vlc-git, wireguard-dkms-git, llvm-svn and subpackages are build at morning (4am at America/Sao_Paulo).
+	wine-tkg-git variants are build at sunset (7pm at America/Sao_Paulo).
+	Others packages are build hourly.
+	Every package was rebuilt in 2018-Nov-02 from a clean chroot. (except quartus-free-130)
+	Bugs should be reported to source packages' maintaners.
+
+How to use? Add to /etc/pacman.conf:
+	[chaotic-aur]
+	#SigLevel = Optional TrustAll
+	Server = http://lonewolf-builder.duckdns.org/$repo/x86_64
+
+For signature check, add my key:
+	sudo pacman-key --keyserver hkps://hkps.pool.sks-keyservers.net -r 3056513887B78AEB
+	sudo pacman-key --lsign-key 3056513887B78AEB
+
+By:
+	Pedro H. L. C. <github.com/PedroHLC>
+	2018-11-01
