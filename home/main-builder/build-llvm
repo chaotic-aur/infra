@@ -17,10 +17,14 @@ then
 		sudo cp "$CHSRC/llvm-makepkg.conf" ./low/etc/makepkg.conf
 		sudo cp "$CHSRC/pacman.conf" ./low/etc/pacman.conf
 		sudo cp "$CHSRC/local-makepkg" ./low/usr/local/bin/
+		#sudo cp /etc/pacman.d/mirrorlist ./low/etc/pacman.d/mirrorlist
+		sudo cp /etc/locale.{gen,conf} ./low/etc/
+		sudo cp /etc/pacman.d/mirrorlist ./low/etc/pacman.d/mirrorlist
+		sudo ln -rsf ./low/usr/share/zoneinfo/America/Sao_Paulo ./low/etc/localtime
 		echo "build ALL=(ALL) NOPASSWD: ALL" | sudo tee -a ./low/etc/sudoers
 		$L_RUN useradd -u $(id -u) -m -G users -s /bin/bash build
+		$L_RUN locale-gen
 		$L_RUN pacman -Sy
-		#sudo cp /etc/pacman.d/mirrorlist ./low/etc/pacman.d/mirrorlist
 	fi
         
         echo "[!] Mounting"
