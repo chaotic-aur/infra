@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
+export HOME=/home/$(whoami)
 cd ~/pkgwork || exit
 exec makepkg $@

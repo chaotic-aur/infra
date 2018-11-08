@@ -1,5 +1,6 @@
 #!/bin/bash
 yaourt -S vlc-git
 yaourt -S firefox-nightly
+yaourt -S rpcs3-git
 
 ~/build-llvm

@@ -4,7 +4,7 @@ cd /tmp
 yaourt -G llvm-svn
 cd llvm-svn
 export TARGET_EXTRAPKGS='multilib-devel zapcc'
-~/chaotic-makepkg --sign
+~/chaotic-makepkg --sign -sfc
 
 echo '[!] Nuking'
 cd /tmp

@@ -27,7 +27,8 @@ yaourt -Syua \
 	--ignore libc++abi \
 	--ignore libc++experimental \
 	--ignore dxvk-win32-git \
-	--ignore dxvk-win64-git
+	--ignore dxvk-win64-git \
+	--ignore rpcs3-git
 
 ~/chaotic-add
 ~/chaotic-status > /srv/http/chaotic-aur/analytics.txt

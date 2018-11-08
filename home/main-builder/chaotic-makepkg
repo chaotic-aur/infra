@@ -1,6 +1,5 @@
 #!/usr/bin/env sh
-if [[ -z "$(echo "$@" | grep ' \-p ')" ]] # TODO: Adjust to ignore non-build enviroments
-then	
+if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Defaults
 	BUILD_USER='main-builder'
 	CHROOT='/tmp/chaotic-chroot2'
@@ -11,7 +10,7 @@ then
 	TARGET_UPPER="${TARGET_UPPER:-tmp.$(uuidgen)}"
 	TARGET_NUKE=${TARGET_NUKE:-1}
 
-	BASE_RUN="sudo arch-chroot $CHROOT/$BASE su root --command"
+	BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
 	if [[ ! -d "$CHROOT/$BASE/usr" ]]; then
 		# Create infra
 		echo '[chaotic-makepkg] Bulding lowerdir...'
@@ -24,32 +23,34 @@ then
 		# Build settings
 		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
 		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
-		sudo cp "$CHSRC/local-makepkg" "./$BASE/usr/local/bin"
+		sudo cp "$CHSRC/local-makepkg" "./$BASE/usr/local/bin/"
+		sudo cp "$CHSRC/dest-makepkg" "./$BASE/usr/local/bin/"
 
 		# Minimum locale
 		echo "en_US.UTF-8 UTF-8" | sudo tee "./$BASE/etc/locale.gen"
 		echo "LANG=en_US.UTF-8" | sudo tee "./$BASE/etc/locale.conf"
 		sudo ln -rsf "./$BASE/usr/share/zoneinfo/America/Sao_Paulo" "./$BASE/etc/localtime"
-		$BASE_RUN 'locale-gen'
+		$BASE_RUN locale-gen
 
 		# Build User
 		$BASE_RUN "useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER"
 		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
 
 		# Finish
-		$BASE_RUN 'pacman -Sy'
-		$BASE_RUN 'pacman -Scc --noconfirm'
-		$BASE_RUN 'mkdir -p /srv'
+		$BASE_RUN pacman -Sy
+		$BASE_RUN pacman -Scc --noconfirm
+		$BASE_RUN mkdir -p /srv
 		popd
 	else
-		$BASE_RUN 'pacman -Syu --noconfirm'
-		$BASE_RUN 'pacman -Scc --noconfirm'
+		echo '[chaotic-chroot] Updating lowerdir...'
+		$BASE_RUN pacman -Syu --noconfirm
+		$BASE_RUN pacman -Scc --noconfirm
 	fi
 
 	echo '[chaptic-makepkg] Grabbing pkgname(s*)'
 	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
 
-	TARGET_RUN="sudo arch-chroot $CHROOT/$TARGET_UPPER/root su $BUILD_USER --command"
+	TARGET_RUN="sudo arch-chroot -u $BUILD_USER $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo '[chaotic-makepkg] Building chroot'
 		mkdir -p "$CHROOT/$TARGET_UPPER/"{up,work,root}
@@ -63,7 +64,7 @@ then
 		sudo mount --bind /srv ./root/srv
 
 		# Other mounts
-		$TARGET_RUN "mkdir -p /home/$BUILD_USER/pkgwork /home/$BUILD_USER/.gnupg /home/$BUILD_USER/.ccache"
+		$TARGET_RUN mkdir -p /home/$BUILD_USER/{pkgwork,.gnupg,.ccache,pkgdest}
 		sudo mount --bind "$TARGET" "./root/home/$BUILD_USER/pkgwork"
 		sudo mount --bind "/home/$BUILD_USER/.gnupg" "./root/home/$BUILD_USER/.gnupg"
 		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
@@ -71,33 +72,39 @@ then
 		# Finish
 		popd
 	else
-		$TARGET_RUN 'sudo pacman -Syu --noconfirm'
-		$TARGET_RUN 'sudo pacman -Scc --noconfirm'
+		echo '[chaotic-chroot] Updating chroot'
+		$TARGET_RUN sudo pacman -Syu --noconfirm
+		$TARGET_RUN sudo pacman -Scc --noconfirm
 	fi
-	
+
 	# Threats VCs
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]; then
-		$TARGET_RUN 'sudo pacman -S --needed --noconfirm git'
+		$TARGET_RUN sudo pacman -S --needed --noconfirm git
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-svn$')" ]]; then
-		$TARGET_RUN 'sudo pacman -S --needed --noconfirm subversion'
+		$TARGET_RUN sudo pacman -S --needed --noconfirm subversion
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-bzr$')" ]]; then
-		$TARGET_RUN 'sudo pacman -S --needed --noconfirm bzr'
+		$TARGET_RUN sudo pacman -S --needed --noconfirm bzr
 	fi
 
 	# Threats multilib
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]; then
-		$TARGET_RUN 'sudo pacman -S --needed --noconfirm multilib-devel'
+		$TARGET_RUN sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
 	# User cases
 	if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
-		$TARGET_RUN "sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS"
+		$TARGET_RUN sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
 	fi
 
 	echo '[chaotic-makepkg] Finally build it:'
-	$TARGET_RUN "/usr/local/bin/local-makepkg $@"
+	if [[ ! -z "$PKGDEST" ]]; then
+		sudo mount --bind "$PKGDEST" "./root/home/$BUILD_USER/pkgdest"
+		$TARGET_RUN /usr/local/bin/dest-makepkg -s $@
+	else
+		$TARGET_RUN /usr/local/bin/local-makepkg -s $@
+	fi
 	RESULT="$?"
 
 	if [[ "$TARGET_NUKE" == '1' ]]; then
