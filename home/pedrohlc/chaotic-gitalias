@@ -1,0 +1,2 @@
+#!/bin/sh
+alias chaotic-git='/usr/bin/git --git-dir=/home/pedrohlc/backup_git/ --work-tree=/'
