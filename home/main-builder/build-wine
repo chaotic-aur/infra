@@ -22,22 +22,12 @@ setup_wine() {
 }
 
 # we need the base chroot
-if [ ! -d /tmp/chaotic-chroot/wine ]; then ~/chaotic-makepkg --version &> /dev/null; fi
-arch-nspawn /tmp/chaotic-chroot/wine pacman -Syu zapcc --noconfirm
 almostisolated_makepkg() {
-	mkdir -p ./iso-me
-        makechrootpkg \
-                -D "$HOME/.gnupg:/build/.gnupg" \
-                -d "$HOME/.ccache:/build/.ccache" \
-                -d "${PKGDEST:-/srv/http/chaotic-aur/x86_64}:/pkgdest" \
-		-d "${PWD}/iso-me:/build/$_PKGNAME" \
-		-d "${PWD}/iso-me:/build/${_PKGNAME/%-git/-opt-git}" \
-		-l wine \
-                -r /tmp/chaotic-chroot \
-                -- \
-		--key 3056513887B78AEB \
-		--noconfirm --log \
-                PKGDEST="/pkgdest" \
+	export TARGET_UPPER='wine'
+	export TARGET_NUKE=0
+	export TARGET_EXTRAPKGS='zapcc'
+        ~/chaotic-makepkg \
+		--noconfirm --log --sign \
                 $@
 }
 
@@ -59,20 +49,16 @@ do
         then
         	echo "[!] Building"
 		
-	        almostisolated_makepkg -sfc --sign --log || continue
+	        almostisolated_makepkg -sfc || continue
 		
 	        sed -i'' 's/_INSTALL_TO_OPT="false"/_INSTALL_TO_OPT="true"/g' customization.cfg
 		
-		cd iso-me/src
-	        ln -s "${_PKGNAME}-32-build" "${_PKGNAME/%-git/-opt-git}-32-build"
-	        ln -s "${_PKGNAME}-64-build" "${_PKGNAME/%-git/-opt-git}-64-build"
-		cd ../..
+	        ln -srf "src/${_PKGNAME}-32-build" "src/${_PKGNAME/%-git/-opt-git}-32-build"
+	        ln -srf "src/${_PKGNAME}-64-build" "src/${_PKGNAME/%-git/-opt-git}-64-build"
 		
-	        almostisolated_makepkg -Rf --sign --log
+	        almostisolated_makepkg -Rf
 		
 		echo "$_PKGVER" > "$_LASTVER_FILE"
-
-		rm -rf ./iso-me/*
 	fi
 done
 

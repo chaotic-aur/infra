@@ -1,78 +1,113 @@
-#!/bin/sh
-CHROOT=/tmp/chaotic-chroot
-CHSRC=$HOME/chaotic-chroot
-
-if [[ -z "$(echo "$@" | grep -- '-p ./tmp')" ]]
+#!/usr/bin/env sh
+if [[ -z "$(echo "$@" | grep ' \-p ')" ]] # TODO: Adjust to ignore non-build enviroments
 then	
 	# * Defaults
-	TARGET='root'
-	TARGET_BASE='base-devel openssl'
-	TARGET_PKG=''
-	
+	BUILD_USER='main-builder'
+	CHROOT='/tmp/chaotic-chroot2'
+	CHSRC="$HOME/chaotic-chroot"
+	BASE='base-root'
+	BASE_PKGS='base-devel'
+	TARGET="$PWD"
+	TARGET_UPPER="${TARGET_UPPER:-tmp.$(uuidgen)}"
+	TARGET_NUKE=${TARGET_NUKE:-1}
+
+	BASE_RUN="sudo arch-chroot $CHROOT/$BASE su root --command"
+	if [[ ! -d "$CHROOT/$BASE/usr" ]]; then
+		# Create infra
+		echo '[chaotic-makepkg] Bulding lowerdir...'
+		mkdir -p "$CHROOT/$BASE"
+		pushd "$CHROOT"
+
+		# Basic packages
+		sudo pacstrap "./$BASE" $BASE_PKGS
+
+		# Build settings
+		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
+		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
+		sudo cp "$CHSRC/local-makepkg" "./$BASE/usr/local/bin"
+
+		# Minimum locale
+		echo "en_US.UTF-8 UTF-8" | sudo tee "./$BASE/etc/locale.gen"
+		echo "LANG=en_US.UTF-8" | sudo tee "./$BASE/etc/locale.conf"
+		sudo ln -rsf "./$BASE/usr/share/zoneinfo/America/Sao_Paulo" "./$BASE/etc/localtime"
+		$BASE_RUN 'locale-gen'
+
+		# Build User
+		$BASE_RUN "useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER"
+		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
+
+		# Finish
+		$BASE_RUN 'pacman -Sy'
+		$BASE_RUN 'pacman -Scc --noconfirm'
+		$BASE_RUN 'mkdir -p /srv'
+		popd
+	else
+		$BASE_RUN 'pacman -Syu --noconfirm'
+		$BASE_RUN 'pacman -Scc --noconfirm'
+	fi
+
+	echo '[chaptic-makepkg] Grabbing pkgname(s*)'
 	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
 
-	# * LLVM
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^llvm\-svn$')" ]]
-	then
-		export CHROOT='/tmp/llvm-chroot'
-		export TARGET_BASE='base base-devel multilib-devel openssl zapcc'
-		export TARGET_PKG='CC=zapcc CXX=zapcc++'
-	# * Multilib
-	elif [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]
-	then
-		export CHROOT='/tmp/chaotic32-chroot'
-		export TARGET_BASE='base-devel multilib-devel openssl'
-	fi
-	
-	# * Defaults
-	TARGET_MAKE="-Tcr $CHROOT"
+	TARGET_RUN="sudo arch-chroot $CHROOT/$TARGET_UPPER/root su $BUILD_USER --command"
+	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
+		echo '[chaotic-makepkg] Building chroot'
+		mkdir -p "$CHROOT/$TARGET_UPPER/"{up,work,root}
+		pushd "$CHROOT/$TARGET_UPPER"
+		
+		# TODO: Adjust to add multi-lib and/or zapcc
+		LOWER="$CHROOT/$BASE"
 
-	# + Git
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]
-	then
-		export TARGET_MAKE="$TARGET_MAKE -I $CHSRC/git.pkg.tar.xz"
-	fi
+		# Minimal mount
+		sudo mount overlay -t overlay -olowerdir=$LOWER,upperdir=./up,workdir=./work ./root
+		sudo mount --bind /srv ./root/srv
 
-	# + Subversion
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-svn$')" ]]
-	then
-		export TARGET_MAKE="$TARGET_MAKE -I $CHSRC/subversion.pkg.tar.xz"
-	fi
-	
-	# + BZR
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-bzr$')" ]]
-	then
-		export TARGET_MAKE="$TARGET_MAKE -I $CHSRC/bzr.pkg.tar.xz"
-	fi
+		# Other mounts
+		$TARGET_RUN "mkdir -p /home/$BUILD_USER/pkgwork /home/$BUILD_USER/.gnupg /home/$BUILD_USER/.ccache"
+		sudo mount --bind "$TARGET" "./root/home/$BUILD_USER/pkgwork"
+		sudo mount --bind "/home/$BUILD_USER/.gnupg" "./root/home/$BUILD_USER/.gnupg"
+		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
 
-	# * Creates base chroot
-	if [[ ! -d "$CHROOT/$TARGET" ]]
-	then
-		mkdir -p $CHROOT
-		mkarchroot \
-			-C $CHSRC/pacman.conf -M $CHSRC/makepkg.conf \
-			$CHROOT/$TARGET \
-			$TARGET_BASE \
-			|| exit $?
-	# * Updates base chroot
+		# Finish
+		popd
 	else
-		sudo -u main-builder /home/main-builder/chaotic-add
-		arch-nspawn "$CHROOT/$TARGET" pacman -Syu --noconfirm
+		$TARGET_RUN 'sudo pacman -Syu --noconfirm'
+		$TARGET_RUN 'sudo pacman -Scc --noconfirm'
+	fi
+	
+	# Threats VCs
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]; then
+		$TARGET_RUN 'sudo pacman -S --needed --noconfirm git'
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-svn$')" ]]; then
+		$TARGET_RUN 'sudo pacman -S --needed --noconfirm subversion'
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-bzr$')" ]]; then
+		$TARGET_RUN 'sudo pacman -S --needed --noconfirm bzr'
 	fi
 
-	# * DOIT
-	exec makechrootpkg \
-		-D "$HOME/.gnupg:/build/.gnupg" \
-		-D "$HOME/.gnupg:/home/build/.gnupg" \
-		-d "$HOME/.ccache:/build/.ccache" \
-		-d "$HOME/.ccache:/home/build/.ccache" \
-		-d "${PKGDEST:-/srv/http/chaotic-aur/x86_64}:/build/pkgdest" \
-		$TARGET_MAKE \
-		-- \
-		PKGDEST="/build/pkgdest" \
-		$TARGET_PKG \
-		--key 3056513887B78AEB \
-		$@
+	# Threats multilib
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]; then
+		$TARGET_RUN 'sudo pacman -S --needed --noconfirm multilib-devel'
+	fi
+
+	# User cases
+	if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
+		$TARGET_RUN "sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS"
+	fi
+
+	echo '[chaotic-makepkg] Finally build it:'
+	$TARGET_RUN "/usr/local/bin/local-makepkg $@"
+	RESULT="$?"
+
+	if [[ "$TARGET_NUKE" == '1' ]]; then
+		sudo umount -Rv "$CHROOT/$TARGET_UPPER/root" && \
+		sudo rm -rf "$CHROOT/$TARGET_UPPER"
+	else
+		sudo umount -R "$CHROOT/$TARGET_UPPER/root"
+	fi
+
+	exit $RESULT
 else
 	exec makepkg $@
 fi
