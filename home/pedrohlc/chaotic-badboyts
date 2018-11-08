@@ -1,0 +1,32 @@
+#!/bin/bash
+cd /var/log/httpd
+
+INV_ENT=$(
+cat ./access* | awk '!/chaotic-aur/ {print $1" "$7}' | grep -Pi 'php|cgi|https?:'
+)
+
+{
+
+echo '[*] These are a few requests this server receives that have nothing to do with it. Probably automated attacks from botnet zombies...'
+echo ''
+echo -n '[!] From: '
+find . -type f -name "access*" -printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
+        sort | head -n 1 | awk '{print $2}' |\
+        xargs head -n 1 | grep -Po '(?<=\[)([^\]])*'
+
+echo -n '[!] Until: '
+tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
+
+echo ''
+echo '[!] Bots (per requests):'
+echo "$INV_ENT" |\
+	awk '{print $1}' |\
+	sort | uniq -c | sort -nr
+
+echo ''
+echo '[!] URLs: (per requests)'
+echo "$INV_ENT" |\
+	awk '{print $2}' |\
+	sort | uniq -c | sort -nr
+
+} > /srv/http/badboyts.txt

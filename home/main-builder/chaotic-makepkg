@@ -1,0 +1,78 @@
+#!/bin/sh
+CHROOT=/tmp/chaotic-chroot
+CHSRC=$HOME/chaotic-chroot
+
+if [[ -z "$(echo "$@" | grep -- '-p ./tmp')" ]]
+then	
+	# * Defaults
+	TARGET='root'
+	TARGET_BASE='base-devel openssl'
+	TARGET_PKG=''
+	
+	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
+
+	# * LLVM
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^llvm\-svn$')" ]]
+	then
+		export CHROOT='/tmp/llvm-chroot'
+		export TARGET_BASE='base base-devel multilib-devel openssl zapcc'
+		export TARGET_PKG='CC=zapcc CXX=zapcc++'
+	# * Multilib
+	elif [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]
+	then
+		export CHROOT='/tmp/chaotic32-chroot'
+		export TARGET_BASE='base-devel multilib-devel openssl'
+	fi
+	
+	# * Defaults
+	TARGET_MAKE="-Tcr $CHROOT"
+
+	# + Git
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]
+	then
+		export TARGET_MAKE="$TARGET_MAKE -I $CHSRC/git.pkg.tar.xz"
+	fi
+
+	# + Subversion
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-svn$')" ]]
+	then
+		export TARGET_MAKE="$TARGET_MAKE -I $CHSRC/subversion.pkg.tar.xz"
+	fi
+	
+	# + BZR
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-bzr$')" ]]
+	then
+		export TARGET_MAKE="$TARGET_MAKE -I $CHSRC/bzr.pkg.tar.xz"
+	fi
+
+	# * Creates base chroot
+	if [[ ! -d "$CHROOT/$TARGET" ]]
+	then
+		mkdir -p $CHROOT
+		mkarchroot \
+			-C $CHSRC/pacman.conf -M $CHSRC/makepkg.conf \
+			$CHROOT/$TARGET \
+			$TARGET_BASE \
+			|| exit $?
+	# * Updates base chroot
+	else
+		sudo -u main-builder /home/main-builder/chaotic-add
+		arch-nspawn "$CHROOT/$TARGET" pacman -Syu --noconfirm
+	fi
+
+	# * DOIT
+	exec makechrootpkg \
+		-D "$HOME/.gnupg:/build/.gnupg" \
+		-D "$HOME/.gnupg:/home/build/.gnupg" \
+		-d "$HOME/.ccache:/build/.ccache" \
+		-d "$HOME/.ccache:/home/build/.ccache" \
+		-d "${PKGDEST:-/srv/http/chaotic-aur/x86_64}:/build/pkgdest" \
+		$TARGET_MAKE \
+		-- \
+		PKGDEST="/build/pkgdest" \
+		$TARGET_PKG \
+		--key 3056513887B78AEB \
+		$@
+else
+	exec makepkg $@
+fi

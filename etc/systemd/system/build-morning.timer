@@ -1,0 +1,9 @@
+[Unit]
+Description=IT'S LLVM BUILD TIME
+
+[Timer]
+OnCalendar=*-*-* 4:10:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

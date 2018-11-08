@@ -1,0 +1,11 @@
+[Unit]
+Description=LLVM BUILDING
+
+[Service]
+User=main-builder
+Group=sudo
+WorkingDirectory=/home/main-builder
+ExecStart=/home/main-builder/build-morning
+
+[Install]
+WantedBy=multi-user.target

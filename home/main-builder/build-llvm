@@ -1,0 +1,44 @@
+#!/bin/bash
+CHROOT="/tmp/llvm-chroot"
+CHSRC="$HOME/chaotic-chroot"
+L_RUN="sudo arch-chroot $CHROOT/low"
+B_RUN="sudo arch-chroot $CHROOT/root su build --command"
+
+if [[ ! -d "$CHROOT/root/usr" ]]
+then
+        echo "[!] Creating folder structure"
+        mkdir -p "$CHROOT/"{low,up,work,root,pkgwork}
+	cd "$CHROOT"
+
+	if [[ ! -d "$CHROOT/low/usr" ]]
+	then
+        	echo "[!] Installing lowerdir"
+		sudo pacstrap ./low base-devel multilib-devel gnupg zapcc sudo
+		sudo cp "$CHSRC/llvm-makepkg.conf" ./low/etc/makepkg.conf
+		sudo cp "$CHSRC/pacman.conf" ./low/etc/pacman.conf
+		sudo cp "$CHSRC/local-makepkg" ./low/usr/local/bin/
+		echo "build ALL=(ALL) NOPASSWD: ALL" | sudo tee -a ./low/etc/sudoers
+		$L_RUN useradd -u $(id -u) -m -G users -s /bin/bash build
+		$L_RUN pacman -Sy
+		#sudo cp /etc/pacman.d/mirrorlist ./low/etc/pacman.d/mirrorlist
+	fi
+        
+        echo "[!] Mounting"
+	sudo mount overlay -t overlay -olowerdir=./low,upperdir=./up,workdir=./work ./root
+        sudo mount --bind /srv ./root/srv
+	$B_RUN 'mkdir -p /home/build/pkgwork /home/build/.gnupg /home/build/.ccache'
+        sudo mount --bind ./pkgwork ./root/home/build/pkgwork
+        sudo mount --bind ~/.gnupg ./root/home/build/.gnupg
+        sudo mount --bind ~/.ccache ./root/home/build/.ccache
+fi
+
+echo "[!] Building"
+
+cd "$CHROOT/pkgwork"
+yaourt -G ${ARCHP}llvm-svn
+$B_RUN "/usr/local/bin/local-makepkg ${ARCHP}llvm-svn"
+
+echo "[!] Nuking"
+sudo umount -Rv "$CHROOT/root" && \
+sudo rm -rf "$CHROOT"
+

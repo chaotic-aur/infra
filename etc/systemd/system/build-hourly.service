@@ -1,0 +1,11 @@
+[Unit]
+Description=DO THE BUILDING
+
+[Service]
+User=main-builder
+Group=sudo
+WorkingDirectory=/home/main-builder
+ExecStart=/home/main-builder/build-hourly
+
+[Install]
+WantedBy=multi-user.target

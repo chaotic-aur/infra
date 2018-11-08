@@ -1,0 +1,9 @@
+[Unit]
+Description=IT'S FIREFOX BUILD TIME
+
+[Timer]
+OnCalendar=*-*-* 3:45:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,52 @@
+#!/bin/bash
+cd /var/log/httpd
+
+UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort | uniq | awk '!/::1/')
+
+echo -n "[!] From: "
+find . -type f -name "access*" -printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
+	sort | head -n 1 | awk '{print $2}' |\
+	xargs head -n 1 | grep -Po '(?<=\[)([^\]])*'
+
+echo -n "[!] Until: "
+tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
+
+echo "--"
+echo "[!] Top 20 most downloaded (per unique users):"
+echo "$UNIQ_ACCESS" |\
+	awk '{print $2}' |\
+	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	sort | uniq -c | sort -nr |\
+	head -n 20
+
+echo "--"
+echo "[!] Top 10 users (per unique packages):"
+echo "$UNIQ_ACCESS" |\
+	grep '\.pkg\.tar' |\
+	awk '{print $1}' |\
+	sort | uniq -c | sort -nr |\
+	head -n 10 |\
+	awk '{print "echo -n \""$0" \"; geoiplookup "$2"; "}' |\
+	bash |\
+	sed -r 's/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/\1.XXX.YYY.\4/g' |\
+	sed 's/GeoIP[^:]*: .., //g'
+
+echo "--"
+echo -n "[!] Total users: "
+echo "$UNIQ_ACCESS" |\
+	grep 'chaotic-aur\.db' |\
+	awk '{print $1}' |\
+	sort | uniq | wc -l
+
+echo "--"
+echo "[!] Last 15 updates:"
+cd /srv/http/chaotic-aur/x86_64
+find . -type f -name "*.pkg.tar.xz" \
+	-printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
+	sort | tail -n 15 | awk '{print $2}' |\
+	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	awk '{print "\t"$0}' | tac
+
+echo "--"
+echo -n "[!] Total packages: "
+wc -l ../pkgs.txt

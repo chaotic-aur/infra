@@ -1,0 +1,11 @@
+[Unit]
+Description=DUMP BADREQS
+
+[Service]
+User=pedrohlc
+Group=wheel
+WorkingDirectory=/home/pedrohlc
+ExecStart=/home/pedrohlc/chaotic-badboyts
+
+[Install]
+WantedBy=multi-user.target

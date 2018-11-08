@@ -1,0 +1,11 @@
+#!/bin/bash
+
+cd /srv/http/chaotic-aur/x86_64
+TOADD="$(find *.tar.xz -newer ~/last-add)"
+if [ "$TOADD" != "" ]
+then
+  repo-add chaotic-aur.db.tar.gz $TOADD && \
+  echo "" > ~/last-add
+fi
+
+cat chaotic-aur.db.tar.gz | tar -tvz | grep -e "^d" | awk '{print $6}' > ../pkgs.txt

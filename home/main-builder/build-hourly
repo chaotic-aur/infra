@@ -1,0 +1,33 @@
+#!/bin/bash
+
+arch-nspawn /tmp/chaotic-chroot/root pacman -Syu
+
+yaourt -Syua \
+	--ignore llvm-svn \
+	--ignore llvm-libs-svn \
+	--ignore llvm-ocaml-svn \
+	--ignore lld-svn \
+	--ignore lldb-svn \
+	--ignore clang-svn \
+	--ignore clang-analyzer-svn \
+	--ignore clang-compiler-rt-svn \
+	--ignore clang-tools-extra-svn \
+	--ignore lib32-llvm-svn \
+	--ignore lib32-llvm-libs-svn \
+	--ignore lib32-clang-svn \
+	--ignore vlc-git \
+	--ignore wireguard-tools-git \
+	--ignore wireguard-dkms-git \
+	--ignore eiskaltdcpp-core-git \
+	--ignore eiskaltdcpp-qt-git \
+	--ignore eiskaltdcpp-gtk-git \
+	--ignore eiskaltdcpp-daemon-git \
+	--ignore eiskaltdcpp-cli-git \
+	--ignore eiskaltdcpp-data-git \
+	--ignore libc++abi \
+	--ignore libc++experimental \
+	--ignore dxvk-win32-git \
+	--ignore dxvk-win64-git
+
+~/chaotic-add
+~/chaotic-status > /srv/http/chaotic-aur/analytics.txt

@@ -1,0 +1,4 @@
+#!/bin/sh
+makepkg -o --noprepare
+source ./PKGBUILD
+srcdir="src" pkgver || echo -n "$pkgver"

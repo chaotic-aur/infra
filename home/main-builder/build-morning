@@ -1,0 +1,15 @@
+#!/bin/bash
+yaourt -S vlc-git
+yaourt -S firefox-nightly
+
+exit
+
+cd /tmp
+yaourt -G llvm-svn mesa-git && \
+cd llvm-svn && \
+~/chaotic-makepkg && \
+cd ../mesa-git && \
+~/chaotic-makepkg
+
+cd /tmp
+rm -rf llvm-svn mesa-transform-feedback-git
