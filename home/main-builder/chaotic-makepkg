@@ -33,7 +33,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$BASE_RUN locale-gen
 
 		# Build User
-		$BASE_RUN "useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER"
+		$BASE_RUN useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER
 		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
 
 		# Finish

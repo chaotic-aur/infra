@@ -1,10 +1,10 @@
 #!/bin/bash
 echo '[!] Building'
 cd /tmp
-yaourt -G llvm-svn
+repoctl down llvm-svn
 cd llvm-svn
 export TARGET_EXTRAPKGS='multilib-devel zapcc'
-~/chaotic-makepkg --sign -sfc
+~/chaotic-makepkg --sign -sfc --noconfirm
 
 echo '[!] Nuking'
 cd /tmp
