@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+limit_build() {
+	while [ `jobs | wc -l` -ge 4 ]; do
+		sleep 3
+	done
+}
+
+one_build() {
+	cd "$1";
+	~/chaotic-makepkg -cfs --sign --noconfirm && cd ..  && rm -rf "$1" || cd ..
+}
+
+for dir in *; do
+	limit_build
+	one_build "$dir" &> $dir.log &
+done

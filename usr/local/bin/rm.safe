@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# THIS IS NEEDED CAUSE I KEEP DOING SHIT WHILE MANAGING OVERLAYED CHROOTS
+
+if [[ ! -z "$(echo "$@" | grep -P '(?<=[\W]|^)((?:(?<=(?<!\-)\-\-)recursive)|(?:(?<=(?<!\-)\-)[^r\W]*r[^r\W]*))(?=\s+)')" ]]; then
+	for arg in "$@"; do
+		if [[ -d "$arg" ]]; then
+			expanded="$(realpath "$arg")"
+			if [[ ! -z "mount | grep '$expanded'" ]]; then
+				echo "You're doing unsafe shit! STOPING!!"
+				exit
+			fi
+		fi
+	done
+	exec /usr/bin/rm $@
+else
+	exec /usr/bin/rm $@
+fi
