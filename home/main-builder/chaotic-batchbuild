@@ -7,10 +7,18 @@ limit_build() {
 
 one_build() {
 	cd "$1";
-	~/chaotic-makepkg -cfs --sign --noconfirm && cd ..  && rm -rf "$1" || cd ..
+	~/chaotic-makepkg -cfs --sign --noconfirm  &> ../$1.log && cd ..  && rm -rf "$1" || cd ..
+	echo "[@] Leaving: $1"
+	~/chaotic-add &> add.log
 }
 
-for dir in *; do
-	limit_build
-	one_build "$dir" &> $dir.log &
+for dir in ${@:-*}; do
+	if [[ -d "$dir" ]]; then
+		limit_build
+		echo "[!] Building: $dir"
+		one_build "$dir" &
+	fi
 done
+
+echo '[!] Waiting all jobs to finish...'
+wait

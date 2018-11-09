@@ -2,9 +2,13 @@ Disclaimer:
 	This repo is generated on-demand from packages I use on my personal computer.
 	If you find any package license infrigment, please notify me at root[at]pedrohlc.com , so I can remove and blacklist it.
 
+News:
+	2018-11-09: REINVENTED THE WHEEL AGAIN!
+		I'm now using repoctl for managing updates, do expect strange things...
+
 About:
 	All packages available in this repo are automatically build from the AUR sources, except for wine-tkg which are from his github .
-	firefox-nightly, vlc-git, wireguard-dkms-git, llvm-svn and subpackages are build at morning (4am at America/Sao_Paulo).
+	firefox-nightly, vlc-git, wireguard-dkms-git, rpcs3-git, llvm-svn and subpackages are build at morning (4am at America/Sao_Paulo).
 	wine-tkg-git variants are build at sunset (7pm at America/Sao_Paulo).
 	Others packages are build hourly.
 	Every package was rebuilt in 2018-Nov-02 from a clean chroot. (except quartus-free-130)
@@ -21,4 +25,4 @@ For signature check, add my key:
 
 By:
 	Pedro H. L. C. <github.com/PedroHLC>
-	2018-11-01
+	2018-11-09
