@@ -37,7 +37,15 @@ ignore_aur = [
 	"libc++experimental",
 	"dxvk-win32-git",
 	"dxvk-win64-git",
-	"xen-docs"
+	"xen-docs",
+	"qemu-haxm-arch-extra-git",
+	"qemu-haxm-block-gluster-git",
+	"qemu-haxm-block-iscsi-git",
+	"qemu-haxm-block-rbd-git",
+	"qemu-haxm-git",
+	"qemu-haxm-guest-agent-git",
+	"qemu-haxm-headless-arch-extra-git",
+	"qemu-haxm-headless-git"
 ]
 
 # backup specifies whether package files should be backed up or deleted.
