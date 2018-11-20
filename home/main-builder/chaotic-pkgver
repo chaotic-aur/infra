@@ -1,4 +1,2 @@
 #!/bin/sh
-makepkg -o --noprepare
-source ./PKGBUILD
-srcdir="src" pkgver || echo -n "$pkgver"
+makepkg -o --noprepare &> 1 | grep pkgver | tail -n 1

@@ -1,4 +1,11 @@
 #!/usr/bin/env sh
-export HOME=/home/$(whoami)
+export HOME="/home/$(whoami)"
+export LANG='en_US.UTF-8'
+export USER="$(whoami)"
+export XDG_RUNTIME_DIR="/tmp"
+
+if [[ -f "$HOME/pkgenv.sh" ]]; then
+	source "$HOME/pkgenv.sh"
+fi
 cd ~/pkgwork || exit
 exec makepkg $@

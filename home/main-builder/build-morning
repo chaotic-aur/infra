@@ -1,6 +1,14 @@
 #!/bin/bash
-yaourt -S vlc-git
-yaourt -S firefox-nightly
-yaourt -S rpcs3-git
+cd /tmp
+
+BUILDDIR="morning.$(date '+%Y%m%d%H%M%S')"
+mkdir -p "$BUILDDIR" || exit
+cd "$BUILDDIR" || exit
+
+repoctl down vlc-git rpcs3-git wireguard-dkms-git mir-git
+~/chaotic-batchbuild
+
+cd ..
+rm -rf "$BUILDDIR"
 
 ~/build-llvm

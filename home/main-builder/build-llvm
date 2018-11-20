@@ -4,9 +4,19 @@ cd /tmp
 repoctl down llvm-svn
 cd llvm-svn
 export TARGET_EXTRAPKGS='multilib-devel zapcc'
-~/chaotic-makepkg --sign -sfc --noconfirm
+~/chaotic-makepkg --sign -sc --noconfirm
 
 echo '[!] Nuking'
 cd /tmp
 sudo rm -rf /tmp/llvm-svn
 
+
+echo '[!] 32 Building'
+repoctl down lib32-llvm-svn
+cd lib32-llvm-svn
+export TARGET_EXTRAPKGS=''
+~/chaotic-makepkg --sign -sc --noconfirm
+
+echo '[!] 32 Nuking'
+cd /tmp
+sudo rm -rf /tmp/lib32-llvm-svn

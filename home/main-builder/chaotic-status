@@ -3,6 +3,8 @@ cd /var/log/httpd
 
 UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort | uniq | awk '!/::1/')
 
+#ALL_ACCESS=$(cat /var/log/httpd/access* | awk '!/::1/ {print $7}' | grep 'chaotic\-aur' | sort)
+
 echo -n "[!] From: "
 find . -type f -name "access*" -printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
 	sort | head -n 1 | awk '{print $2}' |\
@@ -18,6 +20,13 @@ echo "$UNIQ_ACCESS" |\
 	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	sort | uniq -c | sort -nr |\
 	head -n 20
+
+#echo "--"
+#echo "[!] Top 20 most downloaded (all connections):"
+#echo "$ALL_ACCESS" |\
+	#grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	#sort | uniq -c | sort -nr |\
+	#head -n 20
 
 echo "--"
 echo "[!] Top 10 users (per unique packages):"

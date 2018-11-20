@@ -1,19 +1,21 @@
 #!/bin/bash
 cd /tmp
-mkdir chaotic-build || exit
-cd chaotic-build
+
+BUILDDIR="hourly.$(date '+%Y%m%d%H%M%S')"
+mkdir -p "$BUILDDIR" || exit
+cd "$BUILDDIR" || exit
 
 repoctl down -u
-for dir in *; do
-	cd $dir
-	~/chaotic-makepkg -scf --sign
-	
-	cd ..
-	rm -rf $dir
-done
+rm -rf llvm-svn
+repoctl list |\
+       	grep '\-\(git\|svn\|bzr\|nightly\)$' |\
+       	sort | comm -13 ~/ignore-hourly.txt - |\
+	xargs repoctl down
+ls | xargs echo '[build-hourly] Building: '
+~/chaotic-batchbuild
 
 cd ..
-rmdir chaotic-build
+rm -rf "$BUILDDIR"
 
 ~/chaotic-add
 ~/chaotic-status > /srv/http/chaotic-aur/analytics.txt

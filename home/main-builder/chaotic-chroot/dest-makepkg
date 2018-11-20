@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-export HOME="/home/$(whoami)"
-export PKGDEST="$HOME/pkgdest"
-cd ~/pkgwork || exit
-exec makepkg $@

@@ -16,10 +16,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	TARGET_NUKE=${TARGET_NUKE:-1}
 
 	BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
-	if [[ ! -d "$CHROOT/$BASE/usr" ]]; then
+	if [[ ! -d "$CHROOT/$BASE" ]]; then
 		# Create infra
 		echo '[chaotic-makepkg] Bulding lowerdir...'
 		mkdir -p "$CHROOT/$BASE"
+		echo $$ > "$CHROOT/$BASE.lock"
 		pushd "$CHROOT"
 
 		# Basic packages
@@ -29,7 +30,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
 		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
 		sudo cp "$CHSRC/local-makepkg" "./$BASE/usr/local/bin/"
-		sudo cp "$CHSRC/dest-makepkg" "./$BASE/usr/local/bin/"
 
 		# Minimum locale
 		echo "en_US.UTF-8 UTF-8" | sudo tee "./$BASE/etc/locale.gen"
@@ -48,6 +48,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$BASE_RUN mkdir -p /srv
 		sudo umount "./$BASE/srv"
 		popd
+		rm "$CHROOT/$BASE.lock"
 	else
 		while [[ -f "$CHROOT/$BASE.lock" ]]; do
 			sleep 1
@@ -65,7 +66,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	echo '[chaptic-makepkg] Grabbing pkgname(s*)'
 	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
 
-	TARGET_RUN="sudo arch-chroot -u $BUILD_USER $CHROOT/$TARGET_UPPER/root"
+	TARGET_RUN="sudo systemd-nspawn -u $BUILD_USER -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo '[chaotic-makepkg] Building chroot'
 		mkdir -p "$CHROOT/$TARGET_UPPER/"{up,work,root}
@@ -112,6 +113,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
 	fi
+	if [[ ! -z "$TARGET_ENV" ]]; then
+		TARGET_ENVFILE="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgenv.sh"
+		echo '#!/usr/bin/env sh' | sudo tee "$TARGET_ENVFILE" && \
+		echo "$TARGET_ENV" | sudo tee -a "$TARGET_ENVFILE"
+	fi
 
 	echo '[chaotic-makepkg] Finally build it:'
 	if [[ ! -z "$PKGDEST" ]]; then
@@ -123,8 +129,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	RESULT="$?"
 
 	if [[ "$TARGET_NUKE" == '1' ]]; then
+		echo '[chaotic-makepkg] Nuking...'
 		sudo umount -Rv "$CHROOT/$TARGET_UPPER/root" && \
-		sudo rm -rf "$CHROOT/$TARGET_UPPER"
+		sudo rm -rf "$CHROOT/$TARGET_UPPER" || \
+		echo '[chaotic-makepkg] Unable to nuke!'
 	else
 		sudo umount -R "$CHROOT/$TARGET_UPPER/root"
 	fi
