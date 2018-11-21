@@ -9,7 +9,7 @@ one_build() {
 	cd "$1";
 	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  &> ../$1.log && cd ..  && rm -rf "$1" || cd ..
 	echo "[@] Leaving: $1"
-	~/chaotic-add &> add.log
+	~/chaotic-add &>> add.log
 }
 
 for dir in ${@:-*}; do
@@ -17,6 +17,9 @@ for dir in ${@:-*}; do
 		limit_build
 		echo "[!] Building: $dir"
 		one_build "$dir" &
+	elif [[ "$dir" = "--" ]]; then
+		echo '[@] Trapped in a wait'
+		wait
 	fi
 done
 

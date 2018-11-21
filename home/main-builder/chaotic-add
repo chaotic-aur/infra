@@ -8,9 +8,11 @@ fi
 _NEW_SIGS="$(find *.sig -newer ~/last-add)"
 if [[ "$_NEW_SIGS" != "" ]]
 then
-	echo "" > ~/last-add
 	echo "$_NEW_SIGS" |\
 		grep -Po '(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz)?\.sig)' |\
-		xargs 'repoctl update'
+		xargs repoctl update \
+		&& echo "" > ~/last-add
 fi
 cat chaotic-aur.db.tar.gz | tar -tvz | grep -e "^d" | awk '{print $6}' > ../pkgs.txt
+
+~/chaotic-clean2 --quiet

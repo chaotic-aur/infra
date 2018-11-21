@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 cd /srv/http/chaotic-aur/x86_64 || exit
 mkdir -p ../archive
 
@@ -9,12 +9,17 @@ do
 done
 )
 
-echo "[!] Moving:"
-echo "${TO_MV[*]}"
-echo "[!] Total: $(echo -n "${TO_MV[*]}" | wc -l)"
+if [[ "$1" != "--quiet" ]]
+then
+	echo "[!] Moving:"
+	echo "${TO_MV[*]}"
+	echo "[!] Total: $(echo -n "${TO_MV[*]}" | wc -l)"
 
-read -r -p "[?] Are you sure? [y/N] " U_SURE
-case "$U_SURE" in
-	[yY])
-		mv -v -t ../archive ${TO_MV[*]}
-esac
+	read -r -p "[?] Are you sure? [y/N] " U_SURE
+	case "$U_SURE" in
+		[yY])
+			mv -v -t ../archive ${TO_MV[*]}
+	esac
+else
+	mv -t ../archive ${TO_MV[*]}
+fi

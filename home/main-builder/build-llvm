@@ -9,7 +9,7 @@ export TARGET_EXTRAPKGS='multilib-devel zapcc'
 echo '[!] Nuking'
 cd /tmp
 sudo rm -rf /tmp/llvm-svn
-
+~/chaotic-add
 
 echo '[!] 32 Building'
 repoctl down lib32-llvm-svn
@@ -20,3 +20,4 @@ export TARGET_EXTRAPKGS=''
 echo '[!] 32 Nuking'
 cd /tmp
 sudo rm -rf /tmp/lib32-llvm-svn
+~/chaotic-add
