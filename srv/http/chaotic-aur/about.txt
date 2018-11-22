@@ -12,6 +12,7 @@ About:
 	[!] Bugs should be reported to source packages' maintaners.
 	You can check this server's infra at: https://github.com/PedroHLC/chaotic-aur
 	Feel free to use github issues for suggestions, flagging database corruptions and everything else. 
+	This repo is also available as HTTPS (and HTTP/2) at: https://lonewolf.pedrohlc.com
 
 How to use? Add to /etc/pacman.conf:
 	[chaotic-aur]

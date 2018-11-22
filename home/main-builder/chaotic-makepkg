@@ -66,7 +66,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	echo '[chaptic-makepkg] Grabbing pkgname(s*)'
 	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
 
-	TARGET_RUN="sudo systemd-nspawn -M $(echo "$_PKGNAME" | head -n 1) -u $BUILD_USER -D $CHROOT/$TARGET_UPPER/root"
+	TARGET_RUN="sudo systemd-nspawn -M $(echo "$_PKGNAME" | head -n 1) -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo '[chaotic-makepkg] Building chroot'
 		mkdir -p "$CHROOT/$TARGET_UPPER/"{up,work,root}
