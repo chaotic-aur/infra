@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Wine helpers
 setup_wine() {
 	git checkout customization.cfg PKGBUILD
 
@@ -21,7 +22,6 @@ setup_wine() {
 	export _PKGVER=$(~/chaotic-pkgver | tail -n 1)
 }
 
-# we need the base chroot
 almostisolated_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
@@ -32,11 +32,13 @@ almostisolated_makepkg() {
 	~/chaotic-add
 }
 
+# Clone TKG
 cd /tmp
 rm -rf TkG
 git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG
-cd TkG/wine-tkg-git
 
+# Build Wine
+cd TkG/wine-tkg-git
 for VARIATION in 'false false false' 'false false true' 'false true false' 'true true false' 'true false true' 'true false false'
 do
         setup_wine $VARIATION
@@ -63,5 +65,18 @@ do
 	#fi
 done
 
+cd ..
+sudo rm -rf wine-tkg-git
+
+# Build Linux
+#cd linux419-tkg
+#echo "TkGExt=\"-tkg-muqss\"" > cpuschedset
+#~/chaotic-makepkg --sign --noconfirm -c -C
+#echo "TkGExt=\"-tkg-cfs\"" > cpuschedset
+#~/chaotic-makepkg --sign --noconfirm -c -C
+#echo "TkGExt=\"-tkg-pds\"" > cpuschedset
+#~/chaotic-makepkg --sign --noconfirm -c -C
+
+# Clean anything else
 cd /tmp
 sudo rm -rf TkG

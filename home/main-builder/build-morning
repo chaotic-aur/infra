@@ -5,7 +5,7 @@ BUILDDIR="morning.$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$BUILDDIR" || exit
 cd "$BUILDDIR" || exit
 
-repoctl down vlc-git rpcs3-git wireguard-dkms-git mir-git
+repoctl down vlc-git rpcs3-git wireguard-dkms-git mir-git ffmpeg-full
 ~/chaotic-batchbuild
 
 cd ..

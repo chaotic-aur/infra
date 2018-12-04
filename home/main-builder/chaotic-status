@@ -1,7 +1,7 @@
 #!/bin/bash
 cd /var/log/httpd
 
-UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort | uniq | awk '!/::1/')
+UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort -u | awk '!/::1/')
 
 #ALL_ACCESS=$(cat /var/log/httpd/access* | awk '!/::1/ {print $7}' | grep 'chaotic\-aur' | sort)
 
@@ -45,7 +45,7 @@ echo -n "[!] Total users: "
 echo "$UNIQ_ACCESS" |\
 	grep 'chaotic-aur\.db' |\
 	awk '{print $1}' |\
-	sort | uniq | wc -l
+	sort -u | wc -l
 
 echo "--"
 echo "[!] Last 15 updates:"

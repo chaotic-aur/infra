@@ -6,8 +6,8 @@ limit_build() {
 }
 
 one_build() {
-	cd "$1";
-	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  &> ../$1.log && cd ..  && rm -rf "$1" || cd ..
+	cd "./$1";
+	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  &> ../$1.log && cd ..  && rm -rf "./$1" || cd ..
 	echo "[@] Leaving: $1"
 	~/chaotic-add &>> add.log
 }
