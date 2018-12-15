@@ -6,7 +6,7 @@ mkdir -p "$BUILDDIR" || exit
 cd "$BUILDDIR" || exit
 
 repoctl down -u
-rm -rf llvm-svn ffmpeg-full
+cat ~/ignore-hourly.txt | xargs rm -rf
 repoctl list |\
        	grep '\-\(git\|svn\|bzr\|nightly\)$' |\
        	sort | comm -13 ~/ignore-hourly.txt - |\

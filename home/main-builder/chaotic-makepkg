@@ -21,7 +21,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
 
 	# * Threats those who use sqlite-replication
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(lxd|dqlite)$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(lxd|dqlite)(-git)?$')" ]]; then
 		export BASE='lxd-root'
 		export BASE_PKGS="sqlite-replication ${BASE_PKGS}"
 		export BASE_NUKE=1
@@ -29,6 +29,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * CHROOT Lowdir
 	BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
+	#BASE_RUN="sudo systemd-nspawn -M $BASE -u root -D $CHROOT/$BASE"
 	if [[ ! -d "$CHROOT/$BASE" ]]; then
 		# Create infra
 		echo '[chaotic-makepkg] Bulding lowerdir...'
@@ -63,7 +64,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		popd
 		rm "$CHROOT/$BASE.lock"
 	else
-		while [[ -f "$CHROOT/$BASE.lock" ]]; do
+		while [[ -f "$CHROOT/$BASE.lock" ]] || [[ -f "$CHROOT/$BASE/var/lib/pacman/db.lck" ]]; do
 			sleep 1
 			#wait $(cat "$CHROOT/$BASE.lock")
 		done

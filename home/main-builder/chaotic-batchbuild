@@ -17,9 +17,12 @@ for dir in ${@:-*}; do
 		limit_build
 		echo "[!] Building: $dir"
 		one_build "$dir" &
+		sleep 0.5
 	elif [[ "$dir" = "--" ]]; then
 		echo '[@] Trapped in a wait'
 		wait
+	else
+		echo "Unknow option: \"$dir\""
 	fi
 done
 
