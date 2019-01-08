@@ -27,7 +27,7 @@ almostisolated_makepkg() {
 	export TARGET_NUKE=0
 	export TARGET_EXTRAPKGS='zapcc'
         ~/chaotic-makepkg \
-		--noconfirm --log --sign \
+		--noconfirm --sign \
                 $@
 	~/chaotic-add
 }

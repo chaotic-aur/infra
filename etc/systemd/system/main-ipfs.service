@@ -1,0 +1,13 @@
+[Unit]
+Description=DO THE BUILDING
+After=network.target
+
+[Service]
+User=main-builder
+Group=sudo
+WorkingDirectory=/home/main-builder
+ExecStart=/usr/bin/ipfs daemon
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

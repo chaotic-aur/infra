@@ -121,6 +121,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
+	# Pantheon GIT
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(pantheon|wingpanel|switchboard|gala)\-.*git$')" ]]; then
+		$TARGET_RUN sudo pacman -S --needed --noconfirm granite-git cmake
+	fi
+
 	# User cases
 	if [[ ! -z "$TARGET_REMPKGS" ]]; then
 		$TARGET_RUN sudo pacman -Rdd --noconfirm $TARGET_REMPKGS

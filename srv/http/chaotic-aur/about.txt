@@ -2,6 +2,10 @@ Disclaimer:
 	This repo is generated on-demand from packages I use on my personal computer.
 	If you find any package license infrigment, please notify me at root[at]pedrohlc.com , so I can remove and blacklist it.
 
+News:
+	[2018-12-23 12pm] You can stay updated about stability and packages added/removed/updated at: http://t.me/lonewolf_builder
+	[2018-12-17 5pm] There has been some power supply adjusts made to our host datacenter this weekend, so we were off since yesterday 7am but it should be stable now.
+
 About:
 	All packages available in this repo are automatically build from the AUR sources, except for wine-tkg which are from his github .
 	* vlc-git, wireguard-dkms-git, rpcs3-git, llvm-svn and subpackages are build at morning (4am at America/Sao_Paulo).

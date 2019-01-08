@@ -8,10 +8,16 @@ fi
 _NEW_SIGS="$(find *.sig -newer ~/last-add)"
 if [[ "$_NEW_SIGS" != "" ]]
 then
-	echo "$_NEW_SIGS" |\
-		grep -Po '(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz)?\.sig)' |\
+	export _PKGS=$(echo "$_NEW_SIGS" |\
+		grep -Po '(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz)?\.sig)')
+	echo "$_PKGS" |\
 		xargs repoctl update \
-		&& echo "" > ~/last-add
+		\
+		&& echo "" > ~/last-add \
+		\
+		#&& echo "Builded pkgs: $_PKGS" |\
+		#tr '\n' ' ' |\
+		#telegram-send --stdin
 fi
 cat chaotic-aur.db.tar.gz | tar -tvz | grep -e "^d" | awk '{print $6}' > ../pkgs.txt
 

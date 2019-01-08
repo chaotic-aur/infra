@@ -16,8 +16,10 @@ tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
 echo "--"
 echo "[!] Top 20 most downloaded (per unique users):"
 echo "$UNIQ_ACCESS" |\
+	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	sort -u |\
 	awk '{print $2}' |\
-	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)' |\
 	sort | uniq -c | sort -nr |\
 	head -n 20
 
@@ -31,7 +33,8 @@ echo "$UNIQ_ACCESS" |\
 echo "--"
 echo "[!] Top 10 users (per unique packages):"
 echo "$UNIQ_ACCESS" |\
-	grep '\.pkg\.tar' |\
+	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	sort -u |\
 	awk '{print $1}' |\
 	sort | uniq -c | sort -nr |\
 	head -n 10 |\
@@ -43,7 +46,7 @@ echo "$UNIQ_ACCESS" |\
 echo "--"
 echo -n "[!] Total users: "
 echo "$UNIQ_ACCESS" |\
-	grep 'chaotic-aur\.db' |\
+	grep 'chaotic-aur\.db\.sig' |\
 	awk '{print $1}' |\
 	sort -u | wc -l
 
