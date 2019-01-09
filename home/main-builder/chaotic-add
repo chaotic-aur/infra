@@ -1,5 +1,22 @@
 #!/usr/bin/env bash
 
+sync_ipfs(){
+	echo "Syncing IPFS:"
+	for sig in $_NEW_SIGS; do
+		orig="${sig%.sig}"
+		ohash="$(ipfs add -Q --nocopy "$orig")"
+		ipfs files cp "/ipfs/$ohash" "/http/chaotic-aur/x86_64/$orig"
+		shash="$(ipfs add -Q --nocopy "$sig")"
+		ipfs files cp "/ipfs/$shash" "/http/chaotic-aur/x86_64/$sig"
+	done
+	for dbf in chaotic-aur.{db,files}.tar.gz{,.old}; do
+		ohash="$(ipfs add -Q --nocopy "$dbf")"
+		ipfs files rm "/http/chaotic-aur/x86_64/$dbf"
+		ipfs files cp "/ipfs/$ohash" "/http/chaotic-aur/x86_64/$dbf"
+	done
+	ipfs name publish "$(ipfs files stat --hash /http)" &
+}
+
 cd /srv/http/chaotic-aur/x86_64
 if [[ ! -f "$HOME/last-add" ]]
 then
@@ -15,9 +32,12 @@ then
 		\
 		&& echo "" > ~/last-add \
 		\
+		&& sync_ipfs \
+		\
 		#&& echo "Builded pkgs: $_PKGS" |\
 		#tr '\n' ' ' |\
 		#telegram-send --stdin
+	
 fi
 cat chaotic-aur.db.tar.gz | tar -tvz | grep -e "^d" | awk '{print $6}' > ../pkgs.txt
 

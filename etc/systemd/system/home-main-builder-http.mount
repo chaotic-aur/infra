@@ -1,0 +1,11 @@
+[Unit]
+Description=HTTP inside our home
+
+[Mount]
+What=/srv/http
+Where=/home/main-builder/http
+Type=none
+Options=bind
+
+[Install]
+WantedBy=multi-user.target

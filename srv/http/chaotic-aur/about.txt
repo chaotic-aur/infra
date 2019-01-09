@@ -3,6 +3,7 @@ Disclaimer:
 	If you find any package license infrigment, please notify me at root[at]pedrohlc.com , so I can remove and blacklist it.
 
 News:
+	[2019-01-09 2am] This repo is now available through ipfs through peer id: QmYeyXJNBGJtAsyb62pVXGyYAGUUUfyHEr9qB8e73FLHSr
 	[2018-12-23 12pm] You can stay updated about stability and packages added/removed/updated at: http://t.me/lonewolf_builder
 	[2018-12-17 5pm] There has been some power supply adjusts made to our host datacenter this weekend, so we were off since yesterday 7am but it should be stable now.
 
@@ -22,6 +23,7 @@ How to use? Add to /etc/pacman.conf:
 	[chaotic-aur]
 	#SigLevel = Optional TrustAll
 	Server = http://lonewolf-builder.duckdns.org/$repo/x86_64
+	Server = http://lonewolf-ipfs.pedrohlc.com/$repo/x86_64
 
 For signature check, add my key:
 	sudo pacman-key --keyserver hkps://hkps.pool.sks-keyservers.net -r 3056513887B78AEB
@@ -29,4 +31,4 @@ For signature check, add my key:
 
 By:
 	Pedro H. L. C. <github.com/PedroHLC>
-	2018-11-21
+	2019-01-09

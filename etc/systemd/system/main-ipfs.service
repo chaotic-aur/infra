@@ -1,10 +1,10 @@
 [Unit]
-Description=DO THE BUILDING
-After=network.target
+Description=IPFS Daemon
+After=network.target home-main\x2dbuilder-http.mount 
 
 [Service]
 User=main-builder
-Group=sudo
+Group=web
 WorkingDirectory=/home/main-builder
 ExecStart=/usr/bin/ipfs daemon
 Restart=on-failure
