@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+LOGDIR='/srv/http/chaotic-aur/makepkglogs/_daily'
 cd /tmp
 
 BUILDDIR="morning.$(date '+%Y%m%d%H%M%S')"
@@ -7,6 +8,8 @@ cd "$BUILDDIR" || exit
 
 repoctl down vlc-git rpcs3-git wireguard-dkms-git mir-git ffmpeg-full
 ~/chaotic-batchbuild
+rm add.log
+mv ./*.log "$LOGDIR/"
 
 cd ..
 rm -rf "$BUILDDIR"

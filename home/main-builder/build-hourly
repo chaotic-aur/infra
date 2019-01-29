@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+~/chaotic-base-update
+
 cd /tmp
 
 BUILDDIR="hourly.$(date '+%Y%m%d%H%M%S')"
@@ -14,11 +16,16 @@ repoctl list |\
 ls | xargs echo '[build-hourly] Building: '
 ~/chaotic-batchbuild
 
-mkdir -p /tmp/hourly-log
-mv ./*.log /tmp/hourly-log/
+LOGDIR=/srv/http/chaotic-aur/makepkglogs
+mkdir -p "$LOGDIR"
+mv ./*.log "$LOGDIR/"
 
 cd ..
 rm -rf "$BUILDDIR"
 
 ~/chaotic-add
 ~/chaotic-status > /srv/http/chaotic-aur/analytics.txt
+
+cd "$LOGDIR"
+grep -l -P 'ERROR: (A|The) package( group)? has already been built' *.log | xargs rm
+grep -l 'Created signature file' *.log | xargs rm

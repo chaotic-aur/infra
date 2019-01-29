@@ -56,29 +56,18 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
 
 		# Finish
-		sudo mount --bind /srv "./$BASE/srv"
-		$BASE_RUN pacman -Sy
 		$BASE_RUN pacman -Scc --noconfirm
 		$BASE_RUN mkdir -p /srv
-		sudo umount "./$BASE/srv"
 		popd
 		rm "$CHROOT/$BASE.lock"
 	else
 		while [[ -f "$CHROOT/$BASE.lock" ]] || [[ -f "$CHROOT/$BASE/var/lib/pacman/db.lck" ]]; do
 			sleep 1
-			#wait $(cat "$CHROOT/$BASE.lock")
 		done
-		echo $$ > "$CHROOT/$BASE.lock"
-		echo '[chaotic-chroot] Updating lowerdir...'
-		sudo mount --bind /srv "$CHROOT/$BASE/srv"
-		$BASE_RUN pacman -Syu --noconfirm
-		$BASE_RUN pacman -Scc --noconfirm
-		sudo umount "$CHROOT/$BASE/srv"
-		rm "$CHROOT/$BASE.lock"
 	fi
 
 	# * CHROOT Upperdir
-	MECHA_NAME="$(echo "$_PKGNAME" | head -n 1 | sed 's/[-_]//g')"
+	MECHA_NAME="$(echo "$_PKGNAME" | head -n 1 | sed 's/[+-_]/w/g')"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo '[chaotic-makepkg] Building chroot'
@@ -99,11 +88,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
 
 		# Finish
+		$TARGET_RUN sudo pacman -Syu --noconfirm
 		popd
 	else
 		echo '[chaotic-chroot] Updating chroot'
 		$TARGET_RUN sudo pacman -Syu --noconfirm
-		$TARGET_RUN sudo pacman -Scc --noconfirm
 	fi
 
 	# Threats VCs

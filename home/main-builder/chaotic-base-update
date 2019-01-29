@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+
+# * Defaults
+CHROOT='/tmp/chaotic-chroot'
+BASE='base-root'
+
+# * CHROOT Lowdir
+BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
+if [[ -d "$CHROOT/$BASE" ]]; then
+	while [[ -f "$CHROOT/$BASE.lock" ]] || [[ -f "$CHROOT/$BASE/var/lib/pacman/db.lck" ]]; do
+		sleep 1
+	done
+	echo $$ > "$CHROOT/$BASE.lock"
+	echo '[chaotic-chroot] Updating lowerdir...'
+	sudo mount --bind /srv "$CHROOT/$BASE/srv"
+	$BASE_RUN pacman -Syu --noconfirm
+	$BASE_RUN pacman -Scc --noconfirm
+	sudo umount "$CHROOT/$BASE/srv"
+	rm "$CHROOT/$BASE.lock"
+fi
