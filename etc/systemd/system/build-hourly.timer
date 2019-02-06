@@ -3,7 +3,7 @@ Description=IT'S BUILD TIME
 
 [Timer]
 OnCalendar=*-*-* *:00:00
-Persistent=false
+Persistent=true
 
 [Install]
 WantedBy=timers.target

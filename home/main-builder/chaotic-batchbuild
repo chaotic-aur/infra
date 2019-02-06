@@ -7,9 +7,9 @@ limit_build() {
 
 one_build() {
 	cd "./$1";
-	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  &> ../$1.log && cd ..  && rm -rf "./$1" || cd ..
+	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  2>&1 | tee ../$1.log && cd ..  && rm -rf "./$1" || cd ..
 	echo "[@] Leaving: $1"
-	~/chaotic-add &>> add.log
+	~/chaotic-add 2>&1 | tee -a add.log
 }
 
 for dir in ${@:-*}; do

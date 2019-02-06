@@ -1,0 +1,13 @@
+[Unit]
+Description=Mirror build journal live across the internet
+After=network.target
+
+[Service]
+User=main-builder
+Group=web
+WorkingDirectory=/home/main-builder
+ExecStart=/usr/bin/gotty --port 23001 journalctl -f -o cat _SYSTEMD_UNIT=build-hourly.service + _SYSTEMD_UNIT=build-morning.service + _SYSTEMD_UNIT=build-sunset.service
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
