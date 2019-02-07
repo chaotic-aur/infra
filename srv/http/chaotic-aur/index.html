@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Chaotic-AUR automated building repo for AUR packages</title>
+	</head>
+
+	<body>
+		<h1>Chaotic-AUR</h1>
+		<p>Automated building repo for <a target="_blank" href="https://aur.archlinux.org">AUR</a> packages</p>
+
+		<h2>Disclaimer:</h2>
+		<p>This repo is generated on-demand from packages I use on my personal computer.<br/>
+		If you find any package license infrigment, please notify me at <code>root[at]pedrohlc.com</code>, so I can remove and blacklist it.</p>
+
+		<h2>About:</h2>
+		<p>All packages available in this repo are automatically build from the <a target="_blank" href="https://aur.archlinux.org">AUR sources</a>, except for <code>wine-tkg</code> which are from <a target="_blank" href="https://github.com/Tk-Glitch/PKGBUILDS">TK-Glitch's GitHub</a>.</p>
+		<ul>
+			<li><code>vlc-git</code>, <code>wireguard-dkms-git</code>, <code>rpcs3-git</code>, <code>llvm-svn</code> are build at morning (4am at America/Sao_Paulo).</li>
+			<li><code>wine-tkg-git</code> variants are build at sunset (7pm at America/Sao_Paulo).</li>
+			<li>Others packages are build hourly.</li>
+			<li>Every package are build in clean chroots.</li>
+			<li>This server is hosted at <a target="_blank" href="https://www2.ufscar.br/">UFSCar</a>'s datacenter</li>
+			<li>Also available in IPFS as peer with id: <code>QmYeyXJNBGJtAsyb62pVXGyYAGUUUfyHEr9qB8e73FLHSr</code></li>
+		</ul>
+		<p>Feel free to create an issue for suggestions, flagging database corruptions and everything else:
+		<a target="_blank" href="https://github.com/PedroHLC/chaotic-aur/issues">Issues</a><br/>
+		Build bugs should be reported to source package's maintaners.</p>
+
+		<h2>Links:</h2>
+		<ul>
+			<li>Telgram channel with news and updates: <a target="_blank" href="https://t.me/lonewolf_builder">@lonewolf_builder</a></li>
+			<li>Server's infra source code: <a target="_blank" href="https://github.com/PedroHLC/chaotic-aur">GitHub</a></li>
+			<li>Failing pkg logs: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/makepkglogs">Directory entries</a></li>
+			<li>Monthly statistics: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/analytics.txt">TXT</a></li>
+			<li>Monthly bot requests received logs: <a href="https://lonewolf.pedrohlc.com/badboyts.txt">TXT</a></li>
+			<li>List with all available packages: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/pkgs.txt">TXT</a></li>
+			<li>Online live console with builds: <a href="http://lonewolf-builder.duckdns.org:23001">GOTTY</a></li>
+			<li>Cloudflare IPFS gateway: <a target="_blank" href="https://lonewolf-ipfs.pedrohlc.com">lonewolf-ipfs.pedrohlc.com</a></li>
+		</ul>
+
+		<h2>How to use?</h2>
+		<p>Add to <code>/etc/pacman.conf</code>:</p>
+		<code>[chaotic-aur]
+			Server = http://lonewolf-builder.duckdns.org/$repo/x86_64<br/>
+			Server = http://lonewolf-ipfs.pedrohlc.com/$repo/x86_64
+		</code>
+
+		<p>For signature check, add my key:</p>
+		<code>
+			sudo pacman-key --keyserver hkps://hkps.pool.sks-keyservers.net -r 3056513887B78AEB<br/>
+			sudo pacman-key --lsign-key 3056513887B78AEB
+		</code>
+
+		<p>In case this keyserver fails, try this one: <code>hkp://p80.pool.sks-keyservers.net:80</code></p>
+
+		<h2>Mantainer:</h2>
+		<code>
+			Pedro H. Lara Campos <a target="_blank" href="https://github.com/PedroHLC">&lt;github.com/PedroHLC&gt;</a><br/>
+			2019-02-07
+		</code>
+	</body>
+</html>
