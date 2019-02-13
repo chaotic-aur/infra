@@ -21,8 +21,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
 
 	# * Threats those who use sqlite-replication
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(lxd|dqlite)(-git)?$')" ]]; then
-		export BASE='lxd-root'
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^dqlite(-git)?$')" ]]; then
+		export BASE='dqlite-root'
 		export BASE_PKGS="sqlite-replication ${BASE_PKGS}"
 		export BASE_NUKE=1
 	fi

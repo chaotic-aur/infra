@@ -5,7 +5,7 @@ setup_wine() {
 
 	sed -i'' "
 	s/_COMPILEWITH=\"[^\"]*\"/_COMPILEWITH=\"zapcc\"/g
-	s/_OPTIMIZED=\"[^\"]*\"/_OPTIMIZED=\"false\"/g
+	s/_LOCAL_OPTIMIZED=\"[^\"]*\"/_LOCAL_OPTIMIZED=\"false\"/g
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
 	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
@@ -78,7 +78,11 @@ do
 		
 	        almostisolated_makepkg -sc || continue
 		
-	        sed -i'' 's/_INSTALL_TO_OPT="false"/_INSTALL_TO_OPT="true"/g' customization.cfg
+	        sed -i'' "
+		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
+		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
+		s/_PKGNAME_OVERRIDE=\"\"/_PKGNAME_OVERRIDE=\"${_PKGNAME/%-git/-opt-git}\"/g
+		" customization.cfg
 		
 	        ln -srf "src/${_PKGNAME}-32-build" "src/${_PKGNAME/%-git/-opt-git}-32-build"
 	        ln -srf "src/${_PKGNAME}-64-build" "src/${_PKGNAME/%-git/-opt-git}-64-build"
