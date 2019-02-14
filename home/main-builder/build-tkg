@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Wine helpers
-setup_wine() {
+wine_setup() {
 	git checkout customization.cfg PKGBUILD
 
 	sed -i'' "
@@ -15,14 +15,11 @@ setup_wine() {
 
 	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
 	export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
-	export _PKGREL=$(echo "$_SRCINFO" | grep -Po '(?<=pkgrel = )(.*)$')
-	#export _PKGVER=$(echo "$_SRCINFO" | grep -Po '(?<=pkgver = )(.*)$')
 
-	echo "[!] Consulting version..."
-	export _PKGVER=$(~/chaotic-pkgver | tail -n 1)
+	echo "[build-tkg] customization setted to: ${_PKGNAME}"
 }
 
-setup_kernel() {
+kernel_setup() {
 	git checkout customization.cfg PKGBUILD
 
 	sed --debug -i'' "
@@ -46,7 +43,7 @@ setup_kernel() {
 	echo '[build-tkg] applied kernel customization'
 }
 
-almostisolated_makepkg() {
+wine_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
 	export TARGET_EXTRAPKGS='zapcc'
@@ -65,32 +62,21 @@ git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG
 cd TkG/wine-tkg-git
 for VARIATION in 'false false false' 'false false true' 'false true false' 'true true false' 'true false true' 'true false false'
 do
-        setup_wine $VARIATION
+        wine_setup $VARIATION
 	
-       	#_LASTVER_DIR="${HOME}/last-wine/${_PKGREL}"
-        #_LASTVER_FILE="${_LASTVER_DIR}/${_PKGNAME}"
-        #mkdir -p "$_LASTVER_DIR"
+	wine_makepkg -sc || continue
 	
-        #echo "[!] Package: ${_PKGNAME}-${_PKGVER}-${_PKGREL}"
-        #if [[ ! -f "$_LASTVER_FILE" || "$(cat $_LASTVER_FILE)" != "$_PKGVER" ]]
-        #then
-        	echo "[!] Building"
-		
-	        almostisolated_makepkg -sc || continue
-		
-	        sed -i'' "
-		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
-		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
-		s/_PKGNAME_OVERRIDE=\"\"/_PKGNAME_OVERRIDE=\"${_PKGNAME/%-git/-opt-git}\"/g
-		" customization.cfg
-		
-	        ln -srf "src/${_PKGNAME}-32-build" "src/${_PKGNAME/%-git/-opt-git}-32-build"
-	        ln -srf "src/${_PKGNAME}-64-build" "src/${_PKGNAME/%-git/-opt-git}-64-build"
-		
-	        almostisolated_makepkg -R
-		
-		#echo "$_PKGVER" > "$_LASTVER_FILE"
-	#fi
+	sed -i'' "
+	s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
+	s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
+	" customization.cfg
+	
+	echo "[build-tkg] customization setted to: ${_PKGNAME/%-git/-opt-git}"
+
+	ln -srf "src/${_PKGNAME}-32-build" "src/${_PKGNAME/%-git/-opt-git}-32-build"
+	ln -srf "src/${_PKGNAME}-64-build" "src/${_PKGNAME/%-git/-opt-git}-64-build"
+	
+	wine_makepkg -R
 done
 
 cd ..
@@ -99,10 +85,11 @@ unset TARGET_UPPER TARGET_NUKE
 
 # Build Linux
 #cd linux420-tkg
-#setup_kernel
+#kernel_setup
 #~/chaotic-makepkg --sign --noconfirm -C
 #~/chaotic-add
 
 # Clean anything else
+echo '[build-tkg] Nuking everything'
 cd /tmp
 sudo rm -rf TkG

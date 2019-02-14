@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
+WTMK='[chaotic-batchbuild]'
 limit_build() {
-	while [ `jobs | wc -l` -ge 4 ]; do
+	while [ `jobs | wc -l` -ge $(nproc) ]; do
 		sleep 3
 	done
 }
@@ -8,23 +9,23 @@ limit_build() {
 one_build() {
 	cd "./$1";
 	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  2>&1 | tee ../$1.log && cd ..  && rm -rf "./$1" || cd ..
-	echo "[@] Leaving: $1"
+	echo "$WTMK Leaving: $1"
 	~/chaotic-add 2>&1 | tee -a add.log
 }
 
 for dir in ${@:-*}; do
 	if [[ -d "$dir" ]]; then
 		limit_build
-		echo "[!] Building: $dir"
+		echo "$WTMK Building: $dir"
 		one_build "$dir" &
 		sleep 1
 	elif [[ "$dir" = "--" ]]; then
-		echo '[@] Trapped in a wait'
+		echo "$WTMK Trapped in a wait"
 		wait
 	else
-		echo "Unknow option: \"$dir\""
+		echo "$WTMK Unknow option: \"$dir\""
 	fi
 done
 
-echo '[!] Waiting all jobs to finish...'
+echo "$WTMK Waiting all jobs to finish..."
 wait
