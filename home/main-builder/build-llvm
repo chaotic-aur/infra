@@ -4,7 +4,7 @@ VCS='svn'
 cd /tmp
 
 echo '[!] Building'
-export TARGET_EXTRAPKGS='zapcc'
+export TARGET_EXTRAPKGS=''
 repoctl down llvm-$VCS
 cd llvm-$VCS
 ~/chaotic-makepkg --sign -sc --noconfirm 2>&1 | tee "$LOGDIR/llvm-svn"
@@ -15,7 +15,7 @@ sudo rm -rf /tmp/llvm-$VCS
 ~/chaotic-add
 
 echo '[!] 32 Building'
-export TARGET_EXTRAPKGS='multilib-devel zapcc'
+export TARGET_EXTRAPKGS='multilib-devel'
 repoctl down lib32-llvm-$VCS
 cd lib32-llvm-$VCS
 ~/chaotic-makepkg --sign -sc --noconfirm 2>&1 | tee "$LOGDIR/lib32-llvm-svn"

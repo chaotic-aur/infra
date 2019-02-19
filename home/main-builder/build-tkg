@@ -10,7 +10,7 @@ wine_setup() {
 	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
 	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
 	s/_use_pba=\"[^\"]*\"/_use_pba=\"$2\"/g
-	s/_use_gallium_nine=\"[^\"]*\"/_use_gallium_nine=\"$3\"/g
+	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$3\"/g
 	" customization.cfg
 
 	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
@@ -46,7 +46,7 @@ kernel_setup() {
 wine_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
-	export TARGET_EXTRAPKGS='zapcc'
+	export TARGET_EXTRAPKGS='zapcc ccache'
         ~/chaotic-makepkg \
 		--noconfirm --sign \
                 $@

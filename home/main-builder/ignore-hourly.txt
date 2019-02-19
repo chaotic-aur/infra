@@ -44,12 +44,16 @@ qemu-haxm-headless-arch-extra-git
 qemu-haxm-headless-git
 rpcs3-git
 vlc-git
+wine-tkg-esync-faudio-git
+wine-tkg-esync-faudio-opt-git
 wine-tkg-esync-git
 wine-tkg-esync-nine-git
 wine-tkg-esync-nine-opt-git
 wine-tkg-esync-opt-git
 wine-tkg-esync-pba-git
 wine-tkg-esync-pba-opt-git
+wine-tkg-staging-esync-faudio-git
+wine-tkg-staging-esync-faudio-opt-git
 wine-tkg-staging-esync-git
 wine-tkg-staging-esync-nine-git
 wine-tkg-staging-esync-nine-opt-git

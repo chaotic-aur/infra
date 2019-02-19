@@ -27,5 +27,7 @@ rm -rf "$BUILDDIR"
 ~/chaotic-status > /srv/http/chaotic-aur/analytics.txt
 
 cd "$LOGDIR"
-grep -l -P 'ERROR: (A|The) package( group)? has already been built' *.log | xargs rm
-grep -l 'Created signature file' *.log | xargs rm
+TOREM=$(grep -l -P 'ERROR: (A|The) package( group)? has already been built' *.log)
+[[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
+TOREM=$(grep -l 'Created signature file' *.log)
+[[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
