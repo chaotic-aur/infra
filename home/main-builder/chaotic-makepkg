@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+WTMK='[chaotic-makepkg]'
 if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ -z "$(echo "$@" | grep '\-\-sign')" ]]; then
 		echo 'This is used in a repo, where is --sign ??'
@@ -18,7 +19,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 
 	# * PKG data
-	echo '[chaotic-makepkg] Grabbing pkgname(s*)'
+	echo "$WTMK Grabbing pkgname(s*)"
 	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
 
 	# * Threats those who use sqlite-replication
@@ -33,7 +34,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	#BASE_RUN="sudo systemd-nspawn -M $BASE -u root -D $CHROOT/$BASE"
 	if [[ ! -d "$CHROOT/$BASE" ]]; then
 		# Create infra
-		echo '[chaotic-makepkg] Bulding lowerdir...'
+		echo "$WTMK Bulding lowerdir..."
 		mkdir -p "$CHROOT/$BASE"
 		echo $$ > "$CHROOT/$BASE.lock"
 		pushd "$CHROOT"
@@ -47,8 +48,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo cp "$CHSRC/local-makepkg" "./$BASE/usr/local/bin/"
 
 		# Minimum locale
-		echo "en_US.UTF-8 UTF-8" | sudo tee "./$BASE/etc/locale.gen"
-		echo "LANG=en_US.UTF-8" | sudo tee "./$BASE/etc/locale.conf"
+		echo 'en_US.UTF-8 UTF-8' | sudo tee "./$BASE/etc/locale.gen"
+		echo 'LANG=en_US.UTF-8' | sudo tee "./$BASE/etc/locale.conf"
 		sudo ln -rsf "./$BASE/usr/share/zoneinfo/America/Sao_Paulo" "./$BASE/etc/localtime"
 		$BASE_RUN locale-gen
 
@@ -71,7 +72,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	MECHA_NAME="$(echo "$_PKGNAME" | head -n 1 | sed 's/[+-_]/w/g')"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
-		echo '[chaotic-makepkg] Building chroot'
+		echo "$WTMK Building chroot"
 		mkdir -p "$PKGCACHE_DIR"
 		mkdir -p "$CHROOT/$TARGET_UPPER/"{up,work,root}
 		pushd "$CHROOT/$TARGET_UPPER"
@@ -94,11 +95,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$TARGET_RUN sudo pacman -Syu --noconfirm
 		popd
 	else
-		echo '[chaotic-chroot] Updating chroot'
+		echo "$WTMK Updating chroot"
 		$TARGET_RUN sudo pacman -Syu --noconfirm
 	fi
 
-	# Threats VCs
+	# Treats VCs
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm git
 	fi
@@ -109,14 +110,20 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm bzr
 	fi
 
-	# Threats multilib
+	# Treats multilib
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]; then
+		echo "$WTMK lib32-* detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
 	# Pantheon GIT
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(pantheon|wingpanel|switchboard|gala)\-.*git$')" ]]; then
+		echo "$WTMK pantheon-*-git detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm granite-git cmake
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^switchboard\-.+\-git$')" ]]; then
+		echo "$WTMK switchboad-*-git detected, treating..."
+		$TARGET_RUN sudo pacman -S --needed --noconfirm switchboard-git
 	fi
 
 	# User cases
@@ -133,7 +140,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# * Makepkg
-	echo '[chaotic-makepkg] Finally build it:'
+	echo "$WTMK Finally build it:"
 	if [[ ! -z "$PKGDEST" ]]; then
 		sudo mount --bind "$PKGDEST" "./root/home/$BUILD_USER/pkgdest"
 		$TARGET_RUN /usr/local/bin/dest-makepkg -s $@
@@ -144,17 +151,17 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * Nuke
 	if [[ "$TARGET_NUKE" == '1' ]]; then
-		echo '[chaotic-makepkg] Nuking...'
+		echo "$WTMK Nuking..."
 		sudo umount -Rv "$CHROOT/$TARGET_UPPER/root" && \
 		sudo rm -rf "$CHROOT/$TARGET_UPPER" || \
-		echo '[chaotic-makepkg] Unable to nuke!'
+		echo "$WTMK Unable to nuke!"
 	else
 		sudo umount -R "$CHROOT/$TARGET_UPPER/root"
 	fi
 	if [[ "$BASE_NUKE" == '1' ]]; then
-		echo '[chaotic-makepkg] Nuking BASE...'
+		echo "$WTMK Nuking BASE..."
 		sudo rm -rf "$CHROOT/$BASE" || \
-		echo '[chaotic-makepkg] Unable to nuke!'
+		echo "$WTMK Unable to nuke!"
 	fi
 
 	# Don't even know if this works...

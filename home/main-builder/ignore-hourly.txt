@@ -42,6 +42,7 @@ qemu-haxm-git
 qemu-haxm-guest-agent-git
 qemu-haxm-headless-arch-extra-git
 qemu-haxm-headless-git
+retdec-git
 rpcs3-git
 vlc-git
 wine-tkg-esync-faudio-git

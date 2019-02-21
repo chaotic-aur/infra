@@ -11,12 +11,15 @@ wine_setup() {
 	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
 	s/_use_pba=\"[^\"]*\"/_use_pba=\"$2\"/g
 	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$3\"/g
+	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$4\"/g
 	" customization.cfg
 
 	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
 	export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
 
 	echo "[build-tkg] customization setted to: ${_PKGNAME}"
+	
+	export TARGET_EXTRAPKGS='ccache'
 }
 
 kernel_setup() {
@@ -37,10 +40,10 @@ kernel_setup() {
 	s/_runqueue_sharing=\"[^\"]*\"/_runqueue_sharing=\"mc\"/g
 	s/_timer_freq=\"[^\"]*\"/_timer_freq=\"750\"/g
 	" customization.cfg
-	
-	export TARGET_EXTRAPKGS='ccache'
 
 	echo '[build-tkg] applied kernel customization'
+	
+	export TARGET_EXTRAPKGS=''
 }
 
 wine_makepkg() {
@@ -60,7 +63,7 @@ git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG
 
 # Build Wine
 cd TkG/wine-tkg-git
-for VARIATION in 'false false false' 'false false true' 'false true false' 'true true false' 'true false true' 'true false false'
+for VARIATION in 'false false false false' 'false false true false' 'false true false false' 'true true false false' 'true false true false' 'true false false false' 'false false true true' 'true false true true'
 do
         wine_setup $VARIATION
 	

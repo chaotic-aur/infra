@@ -1,14 +1,16 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 WTMK='[chaotic-batchbuild]'
 limit_build() {
-	while [ `jobs | wc -l` -ge $(nproc) ]; do
+	while [ `jobs | wc -l` -ge $(expr $(nproc) / 2) ]; do
 		sleep 3
 	done
 }
 
 one_build() {
 	cd "./$1";
+	set -o pipefail
 	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  2>&1 | tee ../$1.log && cd ..  && rm -rf "./$1" || cd ..
+	set +o pipefail
 	echo "$WTMK Leaving: $1"
 	~/chaotic-add 2>&1 | tee -a add.log
 }
@@ -29,3 +31,4 @@ done
 
 echo "$WTMK Waiting all jobs to finish..."
 wait
+
