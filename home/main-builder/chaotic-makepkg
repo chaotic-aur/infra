@@ -121,7 +121,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK pantheon-*-git detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm granite-git cmake
 	fi
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^switchboard\-.+\-git$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm switchboard-git
 	fi

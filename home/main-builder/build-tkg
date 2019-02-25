@@ -3,15 +3,20 @@
 wine_setup() {
 	git checkout customization.cfg PKGBUILD
 
+	export _USE_DXVKGI='true'
+	if [ "$3" = 'true' ]; then
+		export _USE_DXVKGI='false'
+	fi
+
 	sed -i'' "
 	s/_COMPILEWITH=\"[^\"]*\"/_COMPILEWITH=\"zapcc\"/g
-	s/_LOCAL_OPTIMIZED=\"[^\"]*\"/_LOCAL_OPTIMIZED=\"false\"/g
+	s/_OPTIONAL_MARCHFLAG=\"[^\"]*\"/_OPTIONAL_MARCHFLAG=\"\"/g
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
 	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
 	s/_use_pba=\"[^\"]*\"/_use_pba=\"$2\"/g
-	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$3\"/g
-	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$4\"/g
+	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$3\"/g
+	s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
 	" customization.cfg
 
 	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
@@ -63,7 +68,7 @@ git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG
 
 # Build Wine
 cd TkG/wine-tkg-git
-for VARIATION in 'false false false false' 'false false true false' 'false true false false' 'true true false false' 'true false true false' 'true false false false' 'false false true true' 'true false true true'
+for VARIATION in 'false false false' 'false true false' 'true true false' 'true false false' 'false false true' 'true false true'
 do
         wine_setup $VARIATION
 	
