@@ -117,6 +117,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# Pantheon GIT
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^pantheon-(core|desktop)-git')$" ]]; then
+		echo "$WTMK pantheon-core-git detected, treating..."
+		$TARGET_RUN sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
+	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(pantheon|wingpanel|switchboard|gala)\-.*git$')" ]]; then
 		echo "$WTMK pantheon-*-git detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm granite-git cmake

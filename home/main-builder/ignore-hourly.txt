@@ -53,6 +53,10 @@ wine-tkg-esync-nine-opt-git
 wine-tkg-esync-opt-git
 wine-tkg-esync-pba-git
 wine-tkg-esync-pba-opt-git
+wine-tkg-esync-vkd3d-faudio-git
+wine-tkg-esync-vkd3d-faudio-opt-git
+wine-tkg-esync-vkd3d-git
+wine-tkg-esync-vkd3d-opt-git
 wine-tkg-staging-esync-faudio-git
 wine-tkg-staging-esync-faudio-opt-git
 wine-tkg-staging-esync-git
@@ -61,5 +65,7 @@ wine-tkg-staging-esync-nine-opt-git
 wine-tkg-staging-esync-opt-git
 wine-tkg-staging-esync-pba-git
 wine-tkg-staging-esync-pba-opt-git
+wine-tkg-staging-esync-vkd3d-git
+wine-tkg-staging-esync-vkd3d-opt-git
 wireguard-dkms-git
 wireguard-tools-git

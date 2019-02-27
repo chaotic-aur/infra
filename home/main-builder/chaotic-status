@@ -1,37 +1,35 @@
-#!/bin/bash
-cd /var/log/httpd
+#!/usr/bin/env bash
 
+cd /var/log/httpd
 UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort -u | awk '!/::1/')
 
-#ALL_ACCESS=$(cat /var/log/httpd/access* | awk '!/::1/ {print $7}' | grep 'chaotic\-aur' | sort)
+echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Rank and Numbers</title></head><body>'
+echo '<h1>Chaotic-AUR</h1><h2>Rank and Numbers (per Month)</h2>'
 
-echo -n "[!] From: "
+echo '<h3>Time range</h3><ul>'
+echo '<li>From: <code>'
 find . -type f -name "access*" -printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
 	sort | head -n 1 | awk '{print $2}' |\
 	xargs head -n 1 | grep -Po '(?<=\[)([^\]])*'
-
-echo -n "[!] Until: "
+echo '</code></li>'
+echo '<li>Until: <code>'
 tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
+echo '</code></li></ul>'
 
-echo "--"
-echo "[!] Top 20 most downloaded (per unique users):"
+echo '<h3>Top 25 most downloaded (per unique users):</h3>'
+echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
 echo "$UNIQ_ACCESS" |\
 	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	sort -u |\
 	awk '{print $2}' |\
 	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)' |\
 	sort | uniq -c | sort -nr |\
-	head -n 20
+	head -n 25 |\
+	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
+echo '</table><br/>'
 
-#echo "--"
-#echo "[!] Top 20 most downloaded (all connections):"
-#echo "$ALL_ACCESS" |\
-	#grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
-	#sort | uniq -c | sort -nr |\
-	#head -n 20
-
-echo "--"
-echo "[!] Top 10 users (per unique packages):"
+echo '<h3>Top 10 users (per unique downloaded packages):</h3>'
+echo '<table border="1"><tr><td>Packages</td><td>IP</td><td>Country</td></tr>'
 echo "$UNIQ_ACCESS" |\
 	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	sort -u |\
@@ -41,24 +39,41 @@ echo "$UNIQ_ACCESS" |\
 	awk '{print "echo -n \""$0" \"; geoiplookup "$2"; "}' |\
 	bash |\
 	sed -r 's/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/\1.XXX.YYY.\4/g' |\
-	sed 's/GeoIP[^:]*: .., //g'
-
-echo "--"
-echo -n "[!] Total users: "
+	sed 's/GeoIP[^:]*: .., //g' |\
+	sed -r 's/^\ *([^\ ]*)\ ([^\ ]*)\ (.*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><td>\3<\/td><\/tr>/g'
+echo '</table><br/>'
+echo '<code>Total users: '
 echo "$UNIQ_ACCESS" |\
 	grep 'chaotic-aur\.db\.sig' |\
 	awk '{print $1}' |\
-	sort -u | wc -l
+	sort -u | wc -l |\
+	sed 's/$/<br>/' 
+echo '</code><br/>'
 
-echo "--"
-echo "[!] Last 15 updates:"
+echo '<h3>Last 15 updates:</h3>'
+echo '<ul>'
 cd /srv/http/chaotic-aur/x86_64
 find . -type f -name "*.pkg.tar.xz" \
 	-printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
 	sort | tail -n 15 | awk '{print $2}' |\
 	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
-	awk '{print "\t"$0}' | tac
+	awk '{print "\t"$0}' | tac |\
+	sed 's/$/<\/code><\/li>/;s/^/<li><code>/' 
+echo '</ul><br/>'
 
-echo "--"
-echo -n "[!] Total packages: "
-wc -l ../pkgs.txt
+echo '<h3>Packages:</h3>'
+echo '<code>Total: '
+wc -l < ../pkgs.txt
+echo '</code><br/><code>GIT/SVN/HG/BZR: '
+grep -Pe '-(git|svn|hg|bzr)-' ../pkgs.txt | wc -l
+echo '</code><br/><code>Failing: '
+echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 1)
+echo '</code><br/>'
+
+echo '<h4>Versions:</h4>'
+echo '<table border="1"><tr><td>pkgname</td><td>pkgver</td><td>pkgrel</td></tr>'
+cat ../pkgs.txt |\
+	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<tr><td><code>\1<\/code><\/td><td><code>\2<\/code><\/td><td><code>\3<\/code><\/td><\/tr>/'
+echo '</table>'
+
+echo '</body></html>'
