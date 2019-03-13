@@ -1,3 +1,3 @@
 #!/usr/bin/sh
 cd /srv/http/chaotic-aur/archive || exit
-find . -type f -mtime +7 -name '*' -execdir rm -- '{}' \;
+find . -type f -mtime +3 -name '*' -execdir rm -- '{}' \;

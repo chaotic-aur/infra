@@ -17,6 +17,7 @@ wine_setup() {
 	s/_use_pba=\"[^\"]*\"/_use_pba=\"$2\"/g
 	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$3\"/g
 	s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
+	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$4\"/g
 	" customization.cfg
 
 	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
@@ -32,6 +33,7 @@ kernel_setup() {
 
 	sed --debug -i'' "
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
+	s/_modprobeddb=\"[^\"]*\"/_modprobeddb=\"false\"/g
 	s/_cpusched=\"[^\"]*\"/_cpusched=\"pds\"/g
 	s/_ftracedisable=\"[^\"]*\"/_ftracedisable=\"true\"/g
 	s/_numadisable=\"[^\"]*\"/_numadisable=\"true\"/g
@@ -39,16 +41,18 @@ kernel_setup() {
 	s/_acs_override=\"[^\"]*\"/_acs_override=\"true\"/g
 	s/_ksm_uksm=\"[^\"]*\"/_ksm_uksm=\"true\"/g
 	s/_bcachefs=\"[^\"]*\"/_bcachefs=\"true\"/g
+	s/_bfqmq=\"[^\"]*\"/_bfqmq=\"true\"/g
 	s/_processor_opt=\"[^\"]*\"/_processor_opt=\"generic\"/g
 	s/_smt_nice=\"[^\"]*\"/_smt_nice=\"true\"/g
 	s/_random_trust_cpu=\"[^\"]*\"/_random_trust_cpu=\"true\"/g
 	s/_runqueue_sharing=\"[^\"]*\"/_runqueue_sharing=\"mc\"/g
 	s/_timer_freq=\"[^\"]*\"/_timer_freq=\"750\"/g
+	s/_user_patches=\"[^\"]*\"/_user_patches=\"false\"/g
 	" customization.cfg
 
 	echo '[build-tkg] applied kernel customization'
 	
-	export TARGET_EXTRAPKGS=''
+	export TARGET_EXTRAPKGS='ccache'
 }
 
 wine_makepkg() {
@@ -65,10 +69,12 @@ wine_makepkg() {
 cd /tmp
 rm -rf TkG
 git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG
+cd TkG
 
 # Build Wine
-cd TkG/wine-tkg-git
-for VARIATION in 'false false false' 'false true false' 'true true false' 'true false false' 'false false true' 'true false true'
+if [ -z "$TKG_NOWINE" ]; then
+cd wine-tkg-git
+for VARIATION in 'false false false false' 'false true false false' 'true true false false' 'true false false false' 'false false true false' 'true false true false' 'false false false true' 'false true false true' 'true true false true' 'true false false true' 'false false true true' 'true false true true'
 do
         wine_setup $VARIATION
 	
@@ -90,12 +96,22 @@ done
 cd ..
 sudo rm -rf wine-tkg-git
 unset TARGET_UPPER TARGET_NUKE
+fi
 
 # Build Linux
-#cd linux420-tkg
-#kernel_setup
-#~/chaotic-makepkg --sign --noconfirm -C
-#~/chaotic-add
+if [ -z "$TKG_NO420" ]; then
+cd linux420-tkg
+kernel_setup
+~/chaotic-makepkg --sign --noconfirm -C
+~/chaotic-add
+cd ..
+fi
+if [ -z "$TKG_NO420" ]; then
+cd linux50-tkg
+kernel_setup
+~/chaotic-makepkg --sign --noconfirm -C
+~/chaotic-add
+fi
 
 # Clean anything else
 echo '[build-tkg] Nuking everything'

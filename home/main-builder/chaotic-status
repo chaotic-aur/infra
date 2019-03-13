@@ -3,8 +3,8 @@
 cd /var/log/httpd
 UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort -u | awk '!/::1/')
 
-echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Rank and Numbers</title></head><body>'
-echo '<h1>Chaotic-AUR</h1><h2>Rank and Numbers (per Month)</h2>'
+echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title></head><body>'
+echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintainer&#x27;s notes.</p><h2>Ranks, Numbers and Packages</h2>'
 
 echo '<h3>Time range</h3><ul>'
 echo '<li>From: <code>'
@@ -59,7 +59,7 @@ find . -type f -name "*.pkg.tar.xz" \
 	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	awk '{print "\t"$0}' | tac |\
 	sed 's/$/<\/code><\/li>/;s/^/<li><code>/' 
-echo '</ul><br/>'
+echo '</ul>'
 
 echo '<h3>Packages:</h3>'
 echo '<code>Total: '
@@ -76,4 +76,6 @@ cat ../pkgs.txt |\
 	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<tr><td><code>\1<\/code><\/td><td><code>\2<\/code><\/td><td><code>\3<\/code><\/td><\/tr>/'
 echo '</table>'
 
-echo '</body></html>'
+echo '<!--'
+df -h
+echo '--></body></html>'

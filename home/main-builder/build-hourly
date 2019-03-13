@@ -15,7 +15,7 @@ cat ~/ignore-hourly.txt | xargs rm -rf
 
 echo '[build-hourly] Download CVS except ignored packages'
 repoctl list |\
-       	grep '\-\(git\|svn\|bzr\|nightly\)$' |\
+       	grep '\-\(git\|svn\|bzr\|hg\|nightly\)$' |\
        	sort | comm -13 ~/ignore-hourly.txt - |\
 	xargs repoctl down
 
@@ -42,3 +42,4 @@ echo '[build-hourly] Updating database and analytics'
 ~/chaotic-add
 ~/chaotic-status > /srv/http/chaotic-aur/analytics.html
 
+~/chaotic-clean3
