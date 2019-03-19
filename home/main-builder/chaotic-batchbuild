@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 WTMK='[chaotic-batchbuild]'
+CNUM="$(expr $(nproc) / 2)"
 limit_build() {
-	while [ `jobs | wc -l` -ge $(expr $(nproc) / 2) ]; do
+	while [ `jobs | wc -l` -ge $CNUM ]; do
 		sleep 3
 	done
 }

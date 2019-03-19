@@ -106,7 +106,7 @@ kernel_setup
 ~/chaotic-add
 cd ..
 fi
-if [ -z "$TKG_NO420" ]; then
+if [ -z "$TKG_NO50" ]; then
 cd linux50-tkg
 kernel_setup
 ~/chaotic-makepkg --sign --noconfirm -C

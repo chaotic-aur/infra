@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/cubocore
+cd /tmp
+
+git clone https://gitlab.com/cubocore/wiki.git
+cd ./wiki/PKGBUILD || exit
+~/chaotic-batchbuild
+
+mkdir -p "$LDIR"
+mv *.log "$LDIR/"
+
+cd /tmp && rm -rf ./wiki

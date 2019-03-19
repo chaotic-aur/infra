@@ -89,7 +89,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo mount --bind "$TARGET" "./root/home/$BUILD_USER/pkgwork"
 		sudo mount --bind "/home/$BUILD_USER/.gnupg" "./root/home/$BUILD_USER/.gnupg"
 		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
-		sudo mount --bind "$SRCCACHE_DIR" "./root/home/$BUILD_USER/pkgsrc"
+		#sudo mount --bind "$SRCCACHE_DIR" "./root/home/$BUILD_USER/pkgsrc"
 		sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
 
 		# Finish
