@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 WTMK='[chaotic-batchbuild]'
-CNUM="$(expr $(nproc) / 2)"
+CNUM="${CHAOTIC_CNUM:-$(expr $(nproc) / 2)}"
+
+echo "$WTMK Limited at $CNUM jobs."
+
 limit_build() {
 	while [ `jobs | wc -l` -ge $CNUM ]; do
 		sleep 3

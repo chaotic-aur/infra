@@ -48,6 +48,7 @@ kernel_setup() {
 	s/_runqueue_sharing=\"[^\"]*\"/_runqueue_sharing=\"mc\"/g
 	s/_timer_freq=\"[^\"]*\"/_timer_freq=\"750\"/g
 	s/_user_patches=\"[^\"]*\"/_user_patches=\"false\"/g
+	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"0\"/g
 	" customization.cfg
 
 	echo '[build-tkg] applied kernel customization'

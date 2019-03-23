@@ -7,17 +7,20 @@ BUILDDIR="hourly.$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$BUILDDIR" || exit
 cd "$BUILDDIR" || exit
 
-echo '[build-hourly] Downloading updates'
+echo '[build-hourly] Downloading found updates'
 repoctl down -u
 
 echo '[build-houry] Remove ignored packages'
 cat ~/ignore-hourly.txt | xargs rm -rf
 
 echo '[build-hourly] Download CVS except ignored packages'
-repoctl list |\
+PCVS=$(repoctl list |\
        	grep '\-\(git\|svn\|bzr\|hg\|nightly\)$' |\
-       	sort | comm -13 ~/ignore-hourly.txt - |\
-	xargs repoctl down
+	sort | comm -13 ~/ignore-hourly.txt -)
+
+for v in $PCVS; do
+	repoctl down $v
+done
 
 ls | xargs echo '[build-hourly] Building: '
 ~/chaotic-batchbuild
