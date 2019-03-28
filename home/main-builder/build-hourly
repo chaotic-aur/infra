@@ -8,7 +8,7 @@ mkdir -p "$BUILDDIR" || exit
 cd "$BUILDDIR" || exit
 
 echo '[build-hourly] Downloading found updates'
-repoctl down -u
+repoctl down -u 2>&1 | tee _repoctl_down.log
 
 echo '[build-houry] Remove ignored packages'
 cat ~/ignore-hourly.txt | xargs rm -rf
@@ -19,7 +19,7 @@ PCVS=$(repoctl list |\
 	sort | comm -13 ~/ignore-hourly.txt -)
 
 for v in $PCVS; do
-	repoctl down $v
+	repoctl down $v 2>&1 | tee -a _repoctl_down.log
 done
 
 ls | xargs echo '[build-hourly] Building: '

@@ -15,38 +15,7 @@ repo = "/srv/http/chaotic-aur/x86_64/chaotic-aur.db.tar.gz"
 
 # ignore_aur is a set of package names that are ignored in conjunction
 # with AUR related tasks, such as determining if there is an update or not.
-ignore_aur = [
-	"llvm-libs-svn",
-	"llvm-ocaml-svn",
-	"lld-svn",
-	"lldb-svn",
-	"clang-svn",
-	"clang-analyzer-svn",
-	"clang-compiler-rt-svn",
-	"clang-tools-extra-svn",
-	"lib32-llvm-libs-svn",
-	"lib32-clang-svn",
-	"vlc-git",
-	"wireguard-tools-git",
-	"eiskaltdcpp-core-git",
-	"eiskaltdcpp-gtk-git",
-	"eiskaltdcpp-daemon-git",
-	"eiskaltdcpp-cli-git",
-	"eiskaltdcpp-data-git",
-	"libc++abi",
-	"libc++experimental",
-	"dxvk-win32-git",
-	"dxvk-win64-git",
-	"xen-docs",
-	"qemu-haxm-arch-extra-git",
-	"qemu-haxm-block-gluster-git",
-	"qemu-haxm-block-iscsi-git",
-	"qemu-haxm-block-rbd-git",
-	"qemu-haxm-git",
-	"qemu-haxm-guest-agent-git",
-	"qemu-haxm-headless-arch-extra-git",
-	"qemu-haxm-headless-git"
-]
+ignore_aur = []
 
 # backup specifies whether package files should be backed up or deleted.
 # If it is set to false, then obsolete package files are deleted.

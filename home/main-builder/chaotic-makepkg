@@ -21,7 +21,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * PKG data
 	echo "$WTMK Grabbing pkgname(s*)"
-	_PKGNAME="$(makepkg --printsrcinfo | grep -Po '(?<=pkgname = )(.*)$')"
+	_PKGINFO="$(makepkg --printsrcinfo)"
+	_PKGNAME="$(echo "$_PKGINFO" | grep -Po '(?<=pkgname = )(.*)$')"
+	_PKGNAME_HEAD="$(echo "$_PKGNAME" | head -n 1)"
+	SRCCACHE_DIR="$SRCCACHE_DIR/$_PKGNAME_HEAD"
 
 	# * Threats those who use sqlite-replication
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^dqlite(-git)?$')" ]]; then
@@ -70,7 +73,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# * CHROOT Upperdir
-	MECHA_NAME="$(echo "$_PKGNAME" | head -n 1 | sed 's/[+-_]/w/g')"
+	MECHA_NAME="$(echo "$_PKGNAME_HEAD" | sed 's/[+-_]/w/g')"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"

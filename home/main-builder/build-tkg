@@ -24,8 +24,6 @@ wine_setup() {
 	export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
 
 	echo "[build-tkg] customization setted to: ${_PKGNAME}"
-	
-	export TARGET_EXTRAPKGS='ccache'
 }
 
 kernel_setup() {
@@ -59,7 +57,7 @@ kernel_setup() {
 wine_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
-	export TARGET_EXTRAPKGS='zapcc ccache'
+	export TARGET_EXTRAPKGS='ccache'
         ~/chaotic-makepkg \
 		--noconfirm --sign \
                 $@
@@ -94,9 +92,19 @@ do
 	wine_makepkg -R
 done
 
+git checkout customization.cfg PKGBUILD
+unset TARGET_UPPER TARGET_NUKE TARGET_EXTRAPKGS
 cd ..
-sudo rm -rf wine-tkg-git
-unset TARGET_UPPER TARGET_NUKE
+fi
+
+# Build Proton
+if [ -z "$TKG_NOPROTON" ]; then
+#cd proton-tkg
+#export MAKEPKG=$HOME/chaotic-makepkg --sign --noconfirm -C
+#./proton-tkg.sh
+#~/chaotic-addi
+#unset MAKEPKG
+#cd ..
 fi
 
 # Build Linux
@@ -105,13 +113,16 @@ cd linux420-tkg
 kernel_setup
 ~/chaotic-makepkg --sign --noconfirm -C
 ~/chaotic-add
+unset TARGET_EXTRAPKGS
 cd ..
 fi
+
 if [ -z "$TKG_NO50" ]; then
 cd linux50-tkg
 kernel_setup
 ~/chaotic-makepkg --sign --noconfirm -C
 ~/chaotic-add
+unset TARGET_EXTRAPKGS
 fi
 
 # Clean anything else

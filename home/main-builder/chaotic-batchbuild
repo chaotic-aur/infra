@@ -16,7 +16,7 @@ one_build() {
 	~/chaotic-makepkg -cs --sign --noconfirm $MAKEPKG_ARGS  2>&1 | tee ../$1.log && cd ..  && rm -rf "./$1" || cd ..
 	set +o pipefail
 	echo "$WTMK Leaving: $1"
-	~/chaotic-add 2>&1 | tee -a add.log
+	~/chaotic-add 2>&1 | tee -a _add.log
 }
 
 for dir in ${@:-*}; do
