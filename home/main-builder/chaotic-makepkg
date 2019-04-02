@@ -73,7 +73,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# * CHROOT Upperdir
-	MECHA_NAME="$(echo "$_PKGNAME_HEAD" | sed 's/[+-_]/w/g')"
+	MECHA_NAME="m$(date +%Y%m%d%H%M)$(echo "$_PKGNAME_HEAD" | sed 's/[+-_]/w/g')"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"

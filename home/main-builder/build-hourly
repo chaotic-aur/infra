@@ -19,7 +19,8 @@ PCVS=$(repoctl list |\
 	sort | comm -13 ~/ignore-hourly.txt -)
 
 for v in $PCVS; do
-	repoctl down $v 2>&1 | tee -a _repoctl_down.log
+	#repoctl down $v 2>&1 | tee -a _repoctl_down.log
+	git clone https://aur.archlinux.org/${v}.git 2>&1 | tee -a _repoctl_down.log
 done
 
 ls | xargs echo '[build-hourly] Building: '
@@ -39,6 +40,8 @@ cd "$LOGDIR"
 TOREM=$(grep -l -P 'ERROR: (A|The) package( group)? has already been built' *.log)
 [[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
 TOREM=$(grep -l 'Created signature file' *.log)
+[[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
+TOREM=$(grep -l 'PKGBUILD does not exist.' *.log)
 [[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
 
 echo '[build-hourly] Updating database and analytics'

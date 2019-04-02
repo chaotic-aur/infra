@@ -57,7 +57,7 @@ kernel_setup() {
 wine_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
-	export TARGET_EXTRAPKGS='ccache'
+	export TARGET_EXTRAPKGS='ccache zapcc'
         ~/chaotic-makepkg \
 		--noconfirm --sign \
                 $@
@@ -98,14 +98,14 @@ cd ..
 fi
 
 # Build Proton
-if [ -z "$TKG_NOPROTON" ]; then
+#if [ -z "$TKG_NOPROTON" ]; then
 #cd proton-tkg
 #export MAKEPKG=$HOME/chaotic-makepkg --sign --noconfirm -C
 #./proton-tkg.sh
 #~/chaotic-addi
 #unset MAKEPKG
 #cd ..
-fi
+#fi
 
 # Build Linux
 if [ -z "$TKG_NO420" ]; then
