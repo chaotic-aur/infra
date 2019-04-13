@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/cubocore
+LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/cubocore_
 cd /tmp
 
 git clone https://gitlab.com/cubocore/wiki.git

@@ -77,7 +77,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"
-		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR"  "$CHROOT/$TARGET_UPPER/"{up,work,root}
+		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CHROOT/$TARGET_UPPER/"{up,work,root}
 		pushd "$CHROOT/$TARGET_UPPER"
 		
 		# TODO: Adjust to add multi-lib and/or zapcc
@@ -88,8 +88,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo mount --bind /srv ./root/srv
 
 		# Other mounts
-		$TARGET_RUN mkdir -p /home/$BUILD_USER/{pkgwork,.gnupg,.ccache,pkgdest,pkgsrc}
+		$TARGET_RUN mkdir -p /home/$BUILD_USER/{pkgwork,.gnupg,.ccache,.ssh,pkgdest,pkgsrc}
 		sudo mount --bind "$TARGET" "./root/home/$BUILD_USER/pkgwork"
+		sudo mount --bind "/home/$BUILD_USER/.ssh" "./root/home/$BUILD_USER/.ssh"
 		sudo mount --bind "/home/$BUILD_USER/.gnupg" "./root/home/$BUILD_USER/.gnupg"
 		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
 		sudo mount --bind "$SRCCACHE_DIR" "./root/home/$BUILD_USER/pkgsrc"

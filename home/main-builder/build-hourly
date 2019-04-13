@@ -22,6 +22,7 @@ for v in $PCVS; do
 	#repoctl down $v 2>&1 | tee -a _repoctl_down.log
 	git clone https://aur.archlinux.org/${v}.git 2>&1 | tee -a _repoctl_down.log
 done
+#curl 'https://aur.archlinux.org/rpc.php?v=5&type=multiinfo&arg[]=firefox-nightly' >> _repoctl_down.log
 
 ls | xargs echo '[build-hourly] Building: '
 ~/chaotic-batchbuild
@@ -37,15 +38,8 @@ rm -rf "$BUILDDIR"
 
 echo '[build-hourly] Removing logs from compiled packages'
 cd "$LOGDIR"
-TOREM=$(grep -l -P 'ERROR: (A|The) package( group)? has already been built' *.log)
-[[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
-TOREM=$(grep -l 'Created signature file' *.log)
-[[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
-TOREM=$(grep -l 'PKGBUILD does not exist.' *.log)
-[[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
+~/chaotic-clean-logs
 
 echo '[build-hourly] Updating database and analytics'
 ~/chaotic-add
 ~/chaotic-status > /srv/http/chaotic-aur/analytics.html
-
-~/chaotic-clean3

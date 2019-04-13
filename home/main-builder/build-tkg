@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+export TKGLOGS='/srv/http/chaotic-aur/makepkglogs/tkg'
+mkdir -p "$TKGLOGS"
+
 # Wine helpers
 wine_setup() {
 	git checkout customization.cfg PKGBUILD
@@ -77,7 +80,7 @@ for VARIATION in 'false false false false' 'false true false false' 'true true f
 do
         wine_setup $VARIATION
 	
-	wine_makepkg -sc || continue
+	wine_makepkg -sc 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
 	
 	sed -i'' "
 	s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
@@ -86,10 +89,11 @@ do
 	
 	echo "[build-tkg] customization setted to: ${_PKGNAME/%-git/-opt-git}"
 
-	ln -srf "src/${_PKGNAME}-32-build" "src/${_PKGNAME/%-git/-opt-git}-32-build"
-	ln -srf "src/${_PKGNAME}-64-build" "src/${_PKGNAME/%-git/-opt-git}-64-build"
+	export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
+	ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
+	ln -srf "src/${_PKGNAME}-64-build" "src/${_OPT_PKGNAME}-64-build"
 	
-	wine_makepkg -R
+	wine_makepkg -R 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
 done
 
 git checkout customization.cfg PKGBUILD
@@ -102,7 +106,7 @@ fi
 #cd proton-tkg
 #export MAKEPKG=$HOME/chaotic-makepkg --sign --noconfirm -C
 #./proton-tkg.sh
-#~/chaotic-addi
+#~/chaotic-add
 #unset MAKEPKG
 #cd ..
 #fi
@@ -111,7 +115,7 @@ fi
 if [ -z "$TKG_NO420" ]; then
 cd linux420-tkg
 kernel_setup
-~/chaotic-makepkg --sign --noconfirm -C
+~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux42.log"
 ~/chaotic-add
 unset TARGET_EXTRAPKGS
 cd ..
@@ -120,7 +124,7 @@ fi
 if [ -z "$TKG_NO50" ]; then
 cd linux50-tkg
 kernel_setup
-~/chaotic-makepkg --sign --noconfirm -C
+~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux50.log"
 ~/chaotic-add
 unset TARGET_EXTRAPKGS
 fi

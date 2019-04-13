@@ -1,4 +1,2 @@
 #!/bin/bash
-LOGDIR='/srv/http/chaotic-aur/makepkglogs/_daily'
-
-~/build-tkg 2>&1 | tee "$LOGDIR/TkG.log"
+~/build-tkg
