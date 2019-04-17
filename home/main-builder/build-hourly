@@ -18,11 +18,10 @@ PCVS=$(repoctl list |\
        	grep '\-\(git\|svn\|bzr\|hg\|nightly\)$' |\
 	sort | comm -13 ~/ignore-hourly.txt -)
 
-for v in $PCVS; do
-	#repoctl down $v 2>&1 | tee -a _repoctl_down.log
-	git clone https://aur.archlinux.org/${v}.git 2>&1 | tee -a _repoctl_down.log
-done
-#curl 'https://aur.archlinux.org/rpc.php?v=5&type=multiinfo&arg[]=firefox-nightly' >> _repoctl_down.log
+echo "$PCVS" |\
+	xargs -L 200 repoctl down 2>&1 |\
+	tee -a _repoctl_down.log
+curl 'https://aur.archlinux.org/rpc.php?v=5&type=multiinfo&arg[]=firefox-nightly' >> _repoctl_down.log
 
 ls | xargs echo '[build-hourly] Building: '
 ~/chaotic-batchbuild

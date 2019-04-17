@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export TKGLOGS='/srv/http/chaotic-aur/makepkglogs/tkg'
+export TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
 mkdir -p "$TKGLOGS"
 
 # Wine helpers
@@ -35,9 +35,12 @@ kernel_setup() {
 	sed --debug -i'' "
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_modprobeddb=\"[^\"]*\"/_modprobeddb=\"false\"/g
+	s/_menuconfig=\"[^\"]*\"/_menuconfig=\"false\"/g
 	s/_cpusched=\"[^\"]*\"/_cpusched=\"pds\"/g
+	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"0\"/g
 	s/_ftracedisable=\"[^\"]*\"/_ftracedisable=\"true\"/g
 	s/_numadisable=\"[^\"]*\"/_numadisable=\"true\"/g
+	s/_full_tickless=\"[^\"]*\"/_full_tickless=\"true\"/g
 	s/_voluntary_preempt=\"[^\"]*\"/_voluntary_preempt=\"true\"/g
 	s/_acs_override=\"[^\"]*\"/_acs_override=\"true\"/g
 	s/_ksm_uksm=\"[^\"]*\"/_ksm_uksm=\"true\"/g
@@ -49,7 +52,6 @@ kernel_setup() {
 	s/_runqueue_sharing=\"[^\"]*\"/_runqueue_sharing=\"mc\"/g
 	s/_timer_freq=\"[^\"]*\"/_timer_freq=\"750\"/g
 	s/_user_patches=\"[^\"]*\"/_user_patches=\"false\"/g
-	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"0\"/g
 	" customization.cfg
 
 	echo '[build-tkg] applied kernel customization'
@@ -78,9 +80,13 @@ if [ -z "$TKG_NOWINE" ]; then
 cd wine-tkg-git
 for VARIATION in 'false false false false' 'false true false false' 'true true false false' 'true false false false' 'false false true false' 'true false true false' 'false false false true' 'false true false true' 'true true false true' 'true false false true' 'false false true true' 'true false true true'
 do
-        wine_setup $VARIATION
+	git reset --hard HEAD
+	git clean -dfx
 	
-	wine_makepkg -sc 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
+	wine_setup $VARIATION
+	rm -rf ./src
+	
+	wine_makepkg -sC 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
 	
 	sed -i'' "
 	s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
@@ -93,7 +99,7 @@ do
 	ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
 	ln -srf "src/${_PKGNAME}-64-build" "src/${_OPT_PKGNAME}-64-build"
 	
-	wine_makepkg -R 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
+	wine_makepkg -Rc 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
 done
 
 git checkout customization.cfg PKGBUILD

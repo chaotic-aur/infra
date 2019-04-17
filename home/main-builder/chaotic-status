@@ -3,7 +3,7 @@
 cd /var/log/httpd
 UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort -u | awk '!/::1/')
 
-echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title></head><body>'
+echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>'
 echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintainer&#x27;s notes.</p><h2>Ranks, Numbers and Packages</h2>'
 
 echo '<h3>Time range</h3><ul>'
