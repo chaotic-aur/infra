@@ -50,6 +50,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
 		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
 		sudo cp "$CHSRC/local-makepkg" "./$BASE/usr/local/bin/"
+		sudo cp "$CHSRC/x11-wrapper" "./$BASE/usr/local/bin/"
 
 		# Minimum locale
 		echo 'en_US.UTF-8 UTF-8' | sudo tee "./$BASE/etc/locale.gen"
@@ -153,7 +154,12 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * Makepkg
 	echo "$WTMK Finally build it:"
-	if [[ ! -z "$PKGDEST" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^firefox(-wayland)-hg')$" ]]; then
+		echo "$WTMK firefox-hg detected, treating..."
+		$TARGET_RUN \
+			/usr/local/bin/x11-wrapper \
+			/usr/local/bin/local-makepkg -s $@
+	elif [[ ! -z "$PKGDEST" ]]; then
 		sudo mount --bind "$PKGDEST" "./root/home/$BUILD_USER/pkgdest"
 		$TARGET_RUN /usr/local/bin/dest-makepkg -s $@
 	else

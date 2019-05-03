@@ -67,7 +67,7 @@ wc -l < ../pkgs.txt
 echo '</code><br/><code>GIT/SVN/HG/BZR: '
 grep -Pe '-(git|svn|hg|bzr)-' ../pkgs.txt | wc -l
 echo '</code><br/><code>Failing: '
-echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 1)
+echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 2)
 echo '</code><br/><code>systemd-nspawn fu**ing us: '
 grep -l 'scope already exists' ../makepkglogs/*.log | wc -l
 echo '</code><br/>'

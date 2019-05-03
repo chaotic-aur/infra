@@ -23,6 +23,8 @@ corestuff
 coreterminal
 coreuniverse
 ffmpeg-full
+firefox-hg
+firefox-wayland-hg
 lib32-clang-git
 lib32-clang-svn
 lib32-llvm-git
@@ -47,6 +49,7 @@ llvm-ocaml-git
 llvm-ocaml-svn
 llvm-svn
 mir-git
+nss-hg
 retdec-git
 rpcs3-git
 vlc-git

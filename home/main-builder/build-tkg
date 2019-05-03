@@ -82,6 +82,7 @@ for VARIATION in 'false false false false' 'false true false false' 'true true f
 do
 	git reset --hard HEAD
 	git clean -dfx
+	rm wine-tkg-userpatches/*.mypatch
 	
 	wine_setup $VARIATION
 	rm -rf ./src

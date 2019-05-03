@@ -5,7 +5,7 @@ CHROOT='/tmp/chaotic-chroot'
 BASE='base-root'
 
 # * CHROOT Lowdir
-BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
+BASE_RUN="sudo systemd-nspawn -M update-base -u root -D $CHROOT/$BASE"
 if [[ -d "$CHROOT/$BASE" ]]; then
 	while [[ -f "$CHROOT/$BASE.lock" ]] || [[ -f "$CHROOT/$BASE/var/lib/pacman/db.lck" ]]; do
 		sleep 1
