@@ -18,6 +18,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	TARGET_NUKE=${TARGET_NUKE:-1}
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 	SRCCACHE_DIR="$CHROOT/source-cache"
+	REPO_PKGDEST='/srv/http/chaotic-aur/x86_64/'
 
 	# * PKG data
 	echo "$WTMK Grabbing pkgname(s*)"
@@ -35,6 +36,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * CHROOT Lowdir
 	BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
+	BASE_USR_RUN="sudo arch-chroot -u $BUILD_USER $CHROOT/$BASE"
 	#BASE_RUN="sudo systemd-nspawn -M $BASE -u root -D $CHROOT/$BASE"
 	if [[ ! -d "$CHROOT/$BASE" ]]; then
 		# Create infra
@@ -49,7 +51,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		# Build settings
 		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
 		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
-		sudo cp "$CHSRC/local-makepkg" "./$BASE/usr/local/bin/"
+		sudo mkdir -p "./$BASE/usr/local/bin/"
+		sudo cp "$CHSRC/internal-makepkg" "./$BASE/usr/local/bin/"
 		sudo cp "$CHSRC/x11-wrapper" "./$BASE/usr/local/bin/"
 
 		# Minimum locale
@@ -61,10 +64,13 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		# Build User
 		$BASE_RUN useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER
 		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
+		
+		$BASE_USR_RUN mkdir -p /home/$BUILD_USER/{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs}
+		cp -ar "/home/$BUILD_USER/.ssh" "./$BASE/home/$BUILD_USER/"
+		cp -ar "/home/$BUILD_USER/.gnupg" "./$BASE/home/$BUILD_USER/"
 
 		# Finish
 		$BASE_RUN pacman -Scc --noconfirm
-		$BASE_RUN mkdir -p /srv
 		popd
 		rm "$CHROOT/$BASE.lock"
 	else
@@ -74,7 +80,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# * CHROOT Upperdir
-	MECHA_NAME="m$(date +%Y%m%d%H%M)$(echo "$_PKGNAME_HEAD" | sed 's/[+-_]/w/g')"
+	MECHA_NAME="m$(date +%d%H%M)$(echo "$_PKGNAME_HEAD" | md5sum | cut -c1-8)"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"
@@ -86,13 +92,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 		# Minimal mount
 		sudo mount overlay -t overlay -olowerdir=$LOWER,upperdir=./up,workdir=./work ./root
-		sudo mount --bind /srv ./root/srv
 
 		# Other mounts
-		$TARGET_RUN mkdir -p /home/$BUILD_USER/{pkgwork,.gnupg,.ccache,.ssh,pkgdest,pkgsrc}
 		sudo mount --bind "$TARGET" "./root/home/$BUILD_USER/pkgwork"
-		sudo mount --bind "/home/$BUILD_USER/.ssh" "./root/home/$BUILD_USER/.ssh"
-		sudo mount --bind "/home/$BUILD_USER/.gnupg" "./root/home/$BUILD_USER/.gnupg"
 		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
 		sudo mount --bind "$SRCCACHE_DIR" "./root/home/$BUILD_USER/pkgsrc"
 		sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
@@ -125,8 +127,14 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
+	# Unreal Engine
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^unreal-engine$')" ]]; then
+		echo "$WTMK pantheon-core-git detected, treating..."
+		$TARGET_RUN sudo pacman -S --needed --noconfirm openssh
+	fi
+	
 	# Pantheon GIT
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^pantheon-(core|desktop)-git')$" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^pantheon-(core|desktop)-git$')" ]]; then
 		echo "$WTMK pantheon-core-git detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
 	fi
@@ -154,18 +162,24 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * Makepkg
 	echo "$WTMK Finally build it:"
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^firefox(-wayland)-hg')$" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^firefox(-wayland)?-hg$')" ]]; then
 		echo "$WTMK firefox-hg detected, treating..."
+		$TARGET_RUN sudo pacman -S --needed --noconfirm xorg-server-xvfb
 		$TARGET_RUN \
 			/usr/local/bin/x11-wrapper \
-			/usr/local/bin/local-makepkg -s $@
-	elif [[ ! -z "$PKGDEST" ]]; then
-		sudo mount --bind "$PKGDEST" "./root/home/$BUILD_USER/pkgdest"
-		$TARGET_RUN /usr/local/bin/dest-makepkg -s $@
+			/usr/local/bin/internal-makepkg -s $@
 	else
-		$TARGET_RUN /usr/local/bin/local-makepkg -s $@
+		$TARGET_RUN /usr/local/bin/internal-makepkg -s $@
 	fi
 	RESULT="$?"
+	
+	# * Deploy
+	# Push artifacts to dest
+	if [[ -z "$PKGDEST" ]]; then
+		cp "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"/* "$REPO_PKGDEST"
+	else
+		cp "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"/* "$PKGDEST"
+	fi
 
 	# * Nuke
 	if [[ "$TARGET_NUKE" == '1' ]]; then

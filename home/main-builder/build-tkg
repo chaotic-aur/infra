@@ -34,9 +34,10 @@ kernel_setup() {
 
 	sed --debug -i'' "
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
+	s/_OPTIPROFILE=\"[^\"]*\"/_OPTIPROFILE=\"1\"/g
 	s/_modprobeddb=\"[^\"]*\"/_modprobeddb=\"false\"/g
 	s/_menuconfig=\"[^\"]*\"/_menuconfig=\"false\"/g
-	s/_cpusched=\"[^\"]*\"/_cpusched=\"pds\"/g
+	s/_cpusched=\"[^\"]*\"/_cpusched=\"$1\"/g
 	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"0\"/g
 	s/_ftracedisable=\"[^\"]*\"/_ftracedisable=\"true\"/g
 	s/_numadisable=\"[^\"]*\"/_numadisable=\"true\"/g
@@ -119,19 +120,18 @@ fi
 #fi
 
 # Build Linux
-if [ -z "$TKG_NO420" ]; then
-cd linux420-tkg
-kernel_setup
-~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux42.log"
-~/chaotic-add
-unset TARGET_EXTRAPKGS
-cd ..
-fi
-
 if [ -z "$TKG_NO50" ]; then
 cd linux50-tkg
-kernel_setup
+kernel_setup 'pds'
 ~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux50.log"
+~/chaotic-add
+unset TARGET_EXTRAPKGS
+fi
+
+if [ -z "$TKG_NO51" ]; then
+cd linux51-tkg
+kernel_setup 'bmq'
+~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51.log"
 ~/chaotic-add
 unset TARGET_EXTRAPKGS
 fi
