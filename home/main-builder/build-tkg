@@ -120,20 +120,13 @@ fi
 #fi
 
 # Build Linux
-if [ -z "$TKG_NO50" ]; then
-cd linux50-tkg
-kernel_setup 'pds'
-~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux50.log"
-~/chaotic-add
-unset TARGET_EXTRAPKGS
-fi
-
 if [ -z "$TKG_NO51" ]; then
 cd linux51-tkg
 kernel_setup 'bmq'
 ~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51.log"
 ~/chaotic-add
 unset TARGET_EXTRAPKGS
+cd ..
 fi
 
 # Clean anything else

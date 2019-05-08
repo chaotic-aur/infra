@@ -36,6 +36,8 @@ libcprime
 libcsys
 linux420-tkg-pds
 linux420-tkg-pds-headers
+linux50-tkg-bmq
+linux50-tkg-bmq-headers
 linux50-tkg-pds
 linux50-tkg-pds-headers
 linux51-tkg-bmq
@@ -50,6 +52,11 @@ llvm-libs-svn
 llvm-ocaml-git
 llvm-ocaml-svn
 llvm-svn
+lone_wolf-clang-git
+lone_wolf-lib32-llvm-git
+lone_wolf-lib32-llvm-libs-git
+lone_wolf-llvm-git
+lone_wolf-llvm-libs-git
 mir-git
 nss-hg
 retdec-git
