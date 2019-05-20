@@ -1,5 +1,2 @@
 #!/usr/bin/env sh
-export SHELL='/bin/bash'
-export DISPLAY=':99'
-
-xvfb-run -a -s "-extension GLX -screen 0 1280x1024x24" $@
+bash -c "xvfb-run -a -n 97 -s '-extension GLX -screen 0 1280x1024x24' $@"

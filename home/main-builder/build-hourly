@@ -21,7 +21,7 @@ PCVS=$(repoctl list |\
 echo "$PCVS" |\
 	xargs -L 200 repoctl down 2>&1 |\
 	tee -a _repoctl_down.log
-curl 'https://aur.archlinux.org/rpc.php?v=5&type=multiinfo&arg[]=firefox-nightly' >> _repoctl_down.log
+#curl 'https://aur.archlinux.org/rpc.php?v=5&type=multiinfo&arg[]=firefox-nightly' >> _repoctl_down.log
 
 ls | xargs echo '[build-hourly] Building: '
 ~/chaotic-batchbuild

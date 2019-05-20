@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 WTMK='[chaotic-makepkg]'
+NEWLINE=$'\n'
 if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ -z "$(echo "$@" | grep '\-\-sign')" ]]; then
 		echo 'This is used in a repo, where is --sign ??'
@@ -18,15 +19,16 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	TARGET_NUKE=${TARGET_NUKE:-1}
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 	SRCCACHE_DIR="$CHROOT/source-cache"
-	REPO_PKGDEST='/srv/http/chaotic-aur/x86_64/'
+	REPO_PKGDEST='/srv/http/chaotic-aur/x86_64'
 
 	# * PKG data
 	echo "$WTMK Grabbing pkgname(s*)"
 	_PKGINFO="$(makepkg --printsrcinfo)"
+	if [[ -z "$_PKGINFO" ]]; then exit '-1'; fi
 	_PKGNAME="$(echo "$_PKGINFO" | grep -Po '(?<=pkgname = )(.*)$')"
 	_PKGNAME_HEAD="$(echo "$_PKGNAME" | head -n 1)"
 	SRCCACHE_DIR="$SRCCACHE_DIR/$_PKGNAME_HEAD"
-
+	
 	# * Threats those who use sqlite-replication
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^dqlite(-git)?$')" ]]; then
 		export BASE='dqlite-root'
@@ -84,7 +86,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"
-		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CHROOT/$TARGET_UPPER/"{up,work,root}
+		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CHROOT/$TARGET_UPPER/"{up,work,root,dest.{up,work}}
 		pushd "$CHROOT/$TARGET_UPPER"
 		
 		# TODO: Adjust to add multi-lib and/or zapcc
@@ -98,6 +100,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
 		sudo mount --bind "$SRCCACHE_DIR" "./root/home/$BUILD_USER/pkgsrc"
 		sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
+		sudo mount overlay -t overlay -olowerdir=$REPO_PKGDEST,upperdir=./dest.up,workdir=./dest.work "./root/home/$BUILD_USER/pkgdest"
 
 		# Finish
 		$TARGET_RUN sudo pacman -Syu --noconfirm
@@ -107,7 +110,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$TARGET_RUN sudo pacman -Syu --noconfirm
 	fi
 
-	# Treats VCs
+	# * Treats VCs
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm git
 	fi
@@ -121,19 +124,19 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm mercurial
 	fi
 
-	# Treats multilib
+	# * Treats multilib
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]; then
 		echo "$WTMK lib32-* detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
-	# Unreal Engine
+	# * Unreal Engine
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^unreal-engine$')" ]]; then
 		echo "$WTMK pantheon-core-git detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm openssh
 	fi
 	
-	# Pantheon GIT
+	# * Pantheon GIT
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^pantheon-(core|desktop)-git$')" ]]; then
 		echo "$WTMK pantheon-core-git detected, treating..."
 		$TARGET_RUN sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
@@ -147,7 +150,13 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$TARGET_RUN sudo pacman -S --needed --noconfirm switchboard-git
 	fi
 
-	# User cases
+	# * @Lone_Wolf's Mesa
+	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(lib32-)?mesa-git$')" ]]; then
+		echo "$WTMK E ai meu chapa!"
+		export TARGET_ENV="export MESA_WHICH_LLVM=1${NEWLINE}${TARGET_ENV}"
+	fi
+
+	# * User cases
 	if [[ ! -z "$TARGET_REMPKGS" ]]; then
 		$TARGET_RUN sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
 	fi
@@ -175,11 +184,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	
 	# * Deploy
 	# Push artifacts to dest
-	if [[ -z "$PKGDEST" ]]; then
-		cp "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"/* "$REPO_PKGDEST"
-	else
-		cp "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"/* "$PKGDEST"
-	fi
+	mv "$CHROOT/$TARGET_UPPER/dest.up"/* "$REPO_PKGDEST/"
 
 	# * Nuke
 	if [[ "$TARGET_NUKE" == '1' ]]; then

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 LOGDIR='/srv/http/chaotic-aur/makepkglogs/_daily'
-cd /tmp
+mkdir -p '/tmp/daily.llvm'
 
 single_build() {
+	cd '/tmp/daily.llvm'
 	echo "[build-llvm] Target: $1"
 
 	echo '[build-llvm] Downloading'
@@ -11,19 +12,19 @@ single_build() {
 	echo '[build-llvm] Building'
 	cd "$1"
 	~/chaotic-makepkg --sign -sc --nocheck --noconfirm \
-		2>&1 | tee "$LOGDIR/$1" && \
+		2>&1 | tee "$LOGDIR/${1}.log" && \
 		~/chaotic-add
-	cd ..
 	
 	echo '[build-llvm] Nuking'
-	sudo rm -rf "/tmp/$1"
+	cd '/tmp/daily.llvm'
+	rm -rf "$1"
 }
 
 
-for _PKG_PRE in {'','lone_wolf-'}{'','lib32-'}; do
-	for _PKG_POS in {'','-libs'}'-git'; do
+for _PKG_PRE in '' 'lib32-'; do
+	for _PKG_POS in {,'-libs'}{,'-minimal'}'-git'; do
 		single_build "${_PKG_PRE}llvm${_PKG_POS}"
 	done
 done
-single_build 'lone_wolf-compiler-rt-git'
-single_build 'lone_wolf-clang-git'
+single_build 'compiler-rt-minimal-git'
+single_build 'clang-minimal-git'
