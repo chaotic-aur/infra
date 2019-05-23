@@ -1,18 +1,38 @@
 #!/usr/bin/env bash
+
+# We need to know when things are stuck
+function freeze-notify() {
+	sleep 7200
+	telegram-send '[BOT ALERT] Last hourly build started 2h ago'
+}
+freeze-notify &
+export FREEZE_NOTIFIER=$!
+
+# Keep it the right way
+function kill-me-properly() {
+	kill $FREEZE_NOTIFIER
+	exit $@
+}
+
+# Update BASE before building
 ~/chaotic-base-update
 
+#  Do our directory
 cd /tmp
 
 BUILDDIR="hourly.$(date '+%Y%m%d%H%M%S')"
-mkdir -p "$BUILDDIR" || exit
-cd "$BUILDDIR" || exit
+mkdir -p "$BUILDDIR" || kill-me-properly
+cd "$BUILDDIR" || kill-me-properly
 
+# Download the ones which detects version(*1)
 echo '[build-hourly] Downloading found updates'
 repoctl down -u 2>&1 | tee _repoctl_down.log
 
+# Some of them are not to be built hourly(*2)
 echo '[build-houry] Remove ignored packages'
 cat ~/ignore-hourly.txt | xargs rm -rf
 
+# Download these cause they don't *1 considering *2
 echo '[build-hourly] Download CVS except ignored packages'
 PCVS=$(repoctl list |\
        	grep '\-\(git\|svn\|bzr\|hg\|nightly\)$' |\
@@ -23,14 +43,17 @@ echo "$PCVS" |\
 	tee -a _repoctl_down.log
 #curl 'https://aur.archlinux.org/rpc.php?v=5&type=multiinfo&arg[]=firefox-nightly' >> _repoctl_down.log
 
+# YAY!
 ls | xargs echo '[build-hourly] Building: '
 ~/chaotic-batchbuild
 
+# Logging cause things get crazy
 echo '[build-hourly] Submiting logs:'
 LOGDIR=/srv/http/chaotic-aur/makepkglogs
 mkdir -p "$LOGDIR"
 mv ./*.log "$LOGDIR/"
 
+# Cleaning hour
 echo '[build-hourly] Nuking temp directories'
 cd ..
 rm -rf "$BUILDDIR"
@@ -39,6 +62,10 @@ echo '[build-hourly] Removing logs from compiled packages'
 cd "$LOGDIR"
 ~/chaotic-clean-logs
 
+# I Like numbers
 echo '[build-hourly] Updating database and analytics'
 ~/chaotic-add
 ~/chaotic-status > /srv/http/chaotic-aur/analytics.html
+
+# Finish
+kill-me-properly

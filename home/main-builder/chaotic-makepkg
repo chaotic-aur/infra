@@ -81,73 +81,83 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		done
 	fi
 
-	# * CHROOT Upperdir
+	# * CHROOT
 	MECHA_NAME="m$(date +%d%H%M)$(echo "$_PKGNAME_HEAD" | md5sum | cut -c1-8)"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
+	TARGET_WIZARD="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/wizard.sh"
+	function target_run() {
+		echo "$@" | tee -a "$TARGET_WIZARD"
+	}
+
+	# * CHROOT Upperdir
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"
 		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CHROOT/$TARGET_UPPER/"{up,work,root,dest.{up,work}}
 		pushd "$CHROOT/$TARGET_UPPER"
 		
-		# TODO: Adjust to add multi-lib and/or zapcc
 		LOWER="$CHROOT/$BASE"
+		_HOME="./root/home/$BUILD_USER"
 
 		# Minimal mount
 		sudo mount overlay -t overlay -olowerdir=$LOWER,upperdir=./up,workdir=./work ./root
 
 		# Other mounts
-		sudo mount --bind "$TARGET" "./root/home/$BUILD_USER/pkgwork"
-		sudo mount --bind "/home/$BUILD_USER/.ccache" "./root/home/$BUILD_USER/.ccache"
-		sudo mount --bind "$SRCCACHE_DIR" "./root/home/$BUILD_USER/pkgsrc"
+		sudo mount --bind "$TARGET" "${_HOME}/pkgwork"
+		sudo mount --bind "/home/$BUILD_USER/.ccache" "${_HOME}/.ccache"
+		sudo mount --bind "$SRCCACHE_DIR" "${_HOME}/pkgsrc"
 		sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
-		sudo mount overlay -t overlay -olowerdir=$REPO_PKGDEST,upperdir=./dest.up,workdir=./dest.work "./root/home/$BUILD_USER/pkgdest"
+		sudo mount overlay -t overlay -olowerdir=$REPO_PKGDEST,upperdir=./dest.up,workdir=./dest.work "${_HOME}/pkgdest"
+
+		# Create wizard
+		echo '#!/usr/bin/env bash' | tee "$TARGET_WIZARD"
+		chown $BUILD_USER:$BUILD_USER "$TARGET_WIZARD"
+		chmod 755 "$TARGET_WIZARD"
 
 		# Finish
-		$TARGET_RUN sudo pacman -Syu --noconfirm
 		popd
-	else
-		echo "$WTMK Updating chroot"
-		$TARGET_RUN sudo pacman -Syu --noconfirm
 	fi
+	
+	# * CHROOT Update
+	target_run sudo pacman -Syu --noconfirm
 
 	# * Treats VCs
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]; then
-		$TARGET_RUN sudo pacman -S --needed --noconfirm git
+		target_run sudo pacman -S --needed --noconfirm git
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-svn$')" ]]; then
-		$TARGET_RUN sudo pacman -S --needed --noconfirm subversion
+		target_run sudo pacman -S --needed --noconfirm subversion
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-bzr$')" ]]; then
-		$TARGET_RUN sudo pacman -S --needed --noconfirm bzr
+		target_run sudo pacman -S --needed --noconfirm bzr
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-hg$')" ]]; then
-		$TARGET_RUN sudo pacman -S --needed --noconfirm mercurial
+		target_run sudo pacman -S --needed --noconfirm mercurial
 	fi
 
 	# * Treats multilib
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]; then
 		echo "$WTMK lib32-* detected, treating..."
-		$TARGET_RUN sudo pacman -S --needed --noconfirm multilib-devel
+		target_run sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
 	# * Unreal Engine
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^unreal-engine$')" ]]; then
 		echo "$WTMK pantheon-core-git detected, treating..."
-		$TARGET_RUN sudo pacman -S --needed --noconfirm openssh
+		target_run sudo pacman -S --needed --noconfirm openssh
 	fi
 	
 	# * Pantheon GIT
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^pantheon-(core|desktop)-git$')" ]]; then
 		echo "$WTMK pantheon-core-git detected, treating..."
-		$TARGET_RUN sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
+		target_run sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(pantheon|wingpanel|switchboard|gala)\-.*git$')" ]]; then
 		echo "$WTMK pantheon-*-git detected, treating..."
-		$TARGET_RUN sudo pacman -S --needed --noconfirm granite-git cmake
+		target_run sudo pacman -S --needed --noconfirm granite-git cmake
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
-		$TARGET_RUN sudo pacman -S --needed --noconfirm switchboard-git
+		target_run sudo pacman -S --needed --noconfirm switchboard-git
 	fi
 
 	# * @Lone_Wolf's Mesa
@@ -158,10 +168,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * User cases
 	if [[ ! -z "$TARGET_REMPKGS" ]]; then
-		$TARGET_RUN sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
+		target_run sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
 	fi
 	if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
-		$TARGET_RUN sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
+		target_run sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
 	fi
 	if [[ ! -z "$TARGET_ENV" ]]; then
 		TARGET_ENVFILE="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgenv.sh"
@@ -170,16 +180,19 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# * Makepkg
-	echo "$WTMK Finally build it:"
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^firefox(-wayland)?-hg$')" ]]; then
 		echo "$WTMK firefox-hg detected, treating..."
-		$TARGET_RUN sudo pacman -S --needed --noconfirm xorg-server-xvfb
-		$TARGET_RUN \
+		target_run sudo pacman -S --needed --noconfirm xorg-server-xvfb
+		target_run \
 			/usr/local/bin/x11-wrapper \
 			/usr/local/bin/internal-makepkg -s $@
 	else
-		$TARGET_RUN /usr/local/bin/internal-makepkg -s $@
+		target_run /usr/local/bin/internal-makepkg -s $@
 	fi
+	
+	# Spawn contaienr and do everything
+	echo "$WTMK Finally spawning it:"
+	$TARGET_RUN "/home/$BUILD_USER/wizard.sh"
 	RESULT="$?"
 	
 	# * Deploy
