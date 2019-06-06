@@ -42,7 +42,7 @@ echo "$UNIQ_ACCESS" |\
 	sed 's/GeoIP[^:]*: .., //g' |\
 	sed -r 's/^\ *([^\ ]*)\ ([^\ ]*)\ (.*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><td>\3<\/td><\/tr>/g'
 echo '</table><br/>'
-echo '<code>Total users: '
+echo '<code>Users total: '
 echo "$UNIQ_ACCESS" |\
 	grep 'chaotic-aur\.db\.sig' |\
 	awk '{print $1}' |\
@@ -78,6 +78,19 @@ cat ../pkgs.txt |\
 	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<tr><td><code>\1<\/code><\/td><td><code>\2<\/code><\/td><td><code>\3<\/code><\/td><\/tr>/'
 echo '</table>'
 
-echo '<!--'
-df -h
-echo '--></body></html>'
+echo '<h3>Important status</h3>'
+echo '<h4>Finite Resources</h4>'
+_DEF_IFS=$IFS
+IFS=$'\n'
+_AVAIL=($(df --output=avail -h /tmp / /media/http2 | tail -n 3))
+_USED=($(du -h -d0 /tmp/chaotic-chroot/source-cache /tmp/chaotic-chroot/pacman-cache /srv/http/chaotic-aur/x86_64 /srv/http/chaotic-aur/archive/ | awk '{print $1}'))
+IFS=$_DEF_IFS
+echo '<table border="1"><tr><td>Resource</td><td>Used</td><td>Free</td></tr>'
+echo "<tr><td>source cache<br/>(repos, artifacts, etc)</td><td>${_USED[0]}</td><td>${_AVAIL[0]}</td></tr>"
+echo "<tr><td>pacman cache<br/>(dependencies binaries)</td><td>${_USED[1]}</td><td>${_AVAIL[0]}</td></tr>"
+echo "<tr><td>repo output<br/>(binaries)</td><td>${_USED[2]}</td><td>${_AVAIL[1]}</td></tr>"
+echo "<tr><td>repo archive<br/>(outdate binaries)</td><td>${_USED[3]}</td><td>${_AVAIL[2]}</td></tr>"
+echo '</table>'
+
+
+echo '</body></html>'

@@ -2,7 +2,11 @@
 export TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
 mkdir -p "$TKGLOGS"
 
-# Wine helpers
+#
+# Change building settings to automate
+#
+
+# - Wine
 wine_setup() {
 	git checkout customization.cfg PKGBUILD
 
@@ -29,6 +33,7 @@ wine_setup() {
 	echo "[build-tkg] customization setted to: ${_PKGNAME}"
 }
 
+# - Linux
 kernel_setup() {
 	git checkout customization.cfg PKGBUILD
 
@@ -61,6 +66,21 @@ kernel_setup() {
 	export TARGET_EXTRAPKGS='ccache'
 }
 
+# - NVIDIA
+nvidia_setup() {
+	rm options
+
+	sed --debug -i'' "
+	s/read \-p \"What driver version do you want\?.*$/export CONDITION=$1/g
+	s/read \-p \"Build the dkms package or the regular one\?.*$/export CONDITION=$2/g
+	" PKGBUILD
+
+	export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,50-tkg-pds,51-tkg-bmq,-clear,-rt,-mainline}{,-headers})"
+}
+
+#
+# Helpers
+#
 wine_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
@@ -71,77 +91,94 @@ wine_makepkg() {
 	~/chaotic-add
 }
 
+#
 # Clone TKG
-cd /tmp
+#
+cd /tmp || exit
 rm -rf TkG
 git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG
-cd TkG
+cd TkG || exit
 
-# Build Wine
+#
+# Build
+#
+
+# - Wine
 if [ -z "$TKG_NOWINE" ]; then
-cd wine-tkg-git
-for VARIATION in 'false false false false' 'false true false false' 'true true false false' 'true false false false' 'false false true false' 'true false true false' 'false false false true' 'false true false true' 'true true false true' 'true false false true' 'false false true true' 'true false true true'
-do
-	git reset --hard HEAD
-	git clean -dfx
-	rm wine-tkg-userpatches/*.mypatch
-	rm wine-tkg-userpatches/*.mystagingpatch
-	rm wine-tkg-userpatches/*.myrevert
-	
-	wine_setup $VARIATION
-	rm -rf ./src
-	
-	wine_makepkg -sC 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
-	
-	sed -i'' "
-	s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
-	s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
-	" customization.cfg
-	
-	echo "[build-tkg] customization setted to: ${_PKGNAME/%-git/-opt-git}"
+	cd wine-tkg-git || exit
+	for VARIATION in 'false false false false' 'false true false false' 'true true false false' 'true false false false' 'false false true false' 'true false true false' 'false false false true' 'false true false true' 'true true false true' 'true false false true' 'false false true true' 'true false true true'
+	do
+		git reset --hard HEAD
+		git clean -dfx
+		rm wine-tkg-userpatches/*.mypatch
+		rm wine-tkg-userpatches/*.mystagingpatch
+		rm wine-tkg-userpatches/*.myrevert
+		
+		wine_setup $VARIATION
+		rm -rf ./src
+		
+		wine_makepkg -sC 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
+		
+		sed -i'' "
+		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
+		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
+		" customization.cfg
+		
+		echo "[build-tkg] customization setted to: ${_PKGNAME/%-git/-opt-git}"
 
-	export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
-	ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
-	ln -srf "src/${_PKGNAME}-64-build" "src/${_OPT_PKGNAME}-64-build"
-	
-	wine_makepkg -Rc 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
-done
+		export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
+		ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
+		ln -srf "src/${_PKGNAME}-64-build" "src/${_OPT_PKGNAME}-64-build"
+		
+		wine_makepkg -Rc 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
+	done
 
-git checkout customization.cfg PKGBUILD
-unset TARGET_UPPER TARGET_NUKE TARGET_EXTRAPKGS
-cd ..
+	git checkout customization.cfg PKGBUILD
+	unset TARGET_UPPER TARGET_NUKE TARGET_EXTRAPKGS
+	cd ..
 fi
 
-# Build Proton
-#if [ -z "$TKG_NOPROTON" ]; then
-#cd proton-tkg
-#export MAKEPKG=$HOME/chaotic-makepkg --sign --noconfirm -C
-#./proton-tkg.sh
-#~/chaotic-add
-#unset MAKEPKG
-#cd ..
-#fi
-
-# Build Linux
+# - Linux 5.0
 if [ -z "$TKG_NO50" ]; then
-cd linux50-tkg
-kernel_setup 'pds'
-~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux50.log"
-~/chaotic-add
-unset TARGET_EXTRAPKGS
-cd ..
+	cd linux50-tkg || exit
+	kernel_setup 'pds'
+	~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux50.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+	cd ..
 fi
 
+# - Linux 5.1
 if [ -z "$TKG_NO51" ]; then
-cd linux51-tkg
-kernel_setup 'bmq'
-~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51.log"
-~/chaotic-add
-unset TARGET_EXTRAPKGS
-cd ..
+	cd linux51-tkg || exit
+	kernel_setup 'bmq'
+	~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+	cd ..
 fi
 
-# Clean anything else
+# - NVIDIA
+if [ -z "$TKG_NONV" ]; then
+	cd nvidia-all || exit
+	nvidia_setup '3' '2'
+	~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all-3-2.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+	cd ..
+fi
+
+# - WINETRICKS
+if [ -z "$TKG_WTRICKS" ]; then
+	cd winetricks-tkg-git || exit
+	~/chaotic-makepkg --sign --noconfirm -C 2>&1 | tee "$TKGLOGS/winetricks.log"
+	~/chaotic-add
+	cd ..
+fi
+
+#
+# Clean
+#
 echo '[build-tkg] Nuking everything'
-cd /tmp
+cd /tmp || exit
 sudo rm -rf TkG

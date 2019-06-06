@@ -1,2 +1,6 @@
-#!/usr/bin/env sh
-bash -c "xvfb-run -a -n 97 -s '-extension GLX -screen 0 1280x1024x24' $@"
+#!/bin/bash
+export SHELL=/bin/bash
+xvfb-run -a -n 97 \
+	-s '-extension GLX -screen 0 1280x1024x24' \
+	$@
+

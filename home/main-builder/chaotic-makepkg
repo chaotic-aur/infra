@@ -15,7 +15,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	BASE_PKGS='base-devel'
 	BASE_NUKE=0
 	TARGET="$PWD"
-	TARGET_UPPER="${TARGET_UPPER:-tmp.$(uuidgen)}"
+	#TARGET_UPPER="${TARGET_UPPER:-tmp.$(uuidgen)}"
 	TARGET_NUKE=${TARGET_NUKE:-1}
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 	SRCCACHE_DIR="$CHROOT/source-cache"
@@ -82,7 +82,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# * CHROOT
-	MECHA_NAME="m$(date +%d%H%M)$(echo "$_PKGNAME_HEAD" | md5sum | cut -c1-8)"
+	MECHA_NAME="pkg$(echo "$_PKGNAME_HEAD" | sha256sum | cut -c1-11)"
+	TARGET_UPPER="${TARGET_UPPER:-$MECHA_NAME}"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	TARGET_WIZARD="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/wizard.sh"
 	function target_run() {
@@ -94,6 +95,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK Building chroot"
 		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CHROOT/$TARGET_UPPER/"{up,work,root,dest.{up,work}}
 		pushd "$CHROOT/$TARGET_UPPER"
+
+		echo "$_PKGINFO" > debug.txt
+		date +'%Y-%m-%d %H:%M:%S' >> debug.txt
 		
 		LOWER="$CHROOT/$BASE"
 		_HOME="./root/home/$BUILD_USER"
@@ -115,6 +119,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 		# Finish
 		popd
+	else
+		echo "$WTMK Found an older chroot, please clean it: $TARGET_UPPER"
+		exit 69
 	fi
 	
 	# * CHROOT Update
@@ -182,9 +189,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Makepkg
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^firefox(-wayland)?-hg$')" ]]; then
 		echo "$WTMK firefox-hg detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm xorg-server-xvfb
 		target_run \
-			/usr/local/bin/x11-wrapper \
+			SHELL=/bin/bash \
 			/usr/local/bin/internal-makepkg -s $@
 	else
 		target_run /usr/local/bin/internal-makepkg -s $@

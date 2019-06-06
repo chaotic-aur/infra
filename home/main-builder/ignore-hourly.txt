@@ -38,6 +38,8 @@ lib32-llvm-libs-minimal-git
 lib32-llvm-libs-svn
 lib32-llvm-minimal-git
 lib32-llvm-svn
+lib32-nvidia-utils-tkg
+lib32-opencl-nvidia-tkg
 libarchive-qt
 libcprime
 libcsys
@@ -68,7 +70,11 @@ lone_wolf-llvm-libs-git
 lone_wolf-ocaml-git
 mir-git
 nss-hg
+nvidia-egl-wayland-tkg
+nvidia-tkg
+nvidia-utils-tkg
 ocaml-minimal-git
+opencl-nvidia-tkg
 retdec-git
 rpcs3-git
 vlc-git
@@ -96,5 +102,6 @@ wine-tkg-staging-esync-vkd3d-faudio-git
 wine-tkg-staging-esync-vkd3d-faudio-opt-git
 wine-tkg-staging-esync-vkd3d-git
 wine-tkg-staging-esync-vkd3d-opt-git
+winetricks-tkg-git
 wireguard-dkms-git
 wireguard-tools-git
