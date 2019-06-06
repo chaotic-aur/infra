@@ -64,7 +64,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
 		
 		$BASE_USR_RUN mkdir -p "/home/$BUILD_USER/"{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs,.gnupg}
-		cp -ar "/home/$BUILD_USER/.ssh" "./$BASE/home/$BUILD_USER/"
 		$BASE_USR_RUN chmod 700 "/home/$BUILD_USER/.gnupg"
 		cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$BASE/home/$BUILD_USER/.gnupg"
 
@@ -148,6 +147,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Unreal Engine
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^unreal-engine$')" ]]; then
 		echo "$WTMK pantheon-core-git detected, treating..."
+		cp -ar "/home/$BUILD_USER/.ssh" "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/"
 		target_run sudo pacman -S --needed --noconfirm openssh
 	fi
 	
