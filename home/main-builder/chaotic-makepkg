@@ -2,11 +2,6 @@
 WTMK='[chaotic-makepkg]'
 NEWLINE=$'\n'
 if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
-	if [[ -z "$(echo "$@" | grep '\-\-sign')" ]]; then
-		echo 'This is used in a repo, where is --sign ??'
-		exit -1
-	fi
-
 	# * Defaults
 	BUILD_USER='main-builder'
 	CHROOT='/tmp/chaotic-chroot'
@@ -20,6 +15,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 	SRCCACHE_DIR="$CHROOT/source-cache"
 	REPO_PKGDEST='/srv/http/chaotic-aur/x86_64'
+	CHAOTIC_KEY='3056513887B78AEB'
 
 	# * PKG data
 	echo "$WTMK Grabbing pkgname(s*)"
@@ -67,9 +63,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$BASE_RUN useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER
 		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
 		
-		$BASE_USR_RUN mkdir -p /home/$BUILD_USER/{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs}
+		$BASE_USR_RUN mkdir -p "/home/$BUILD_USER/"{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs,.gnupg}
 		cp -ar "/home/$BUILD_USER/.ssh" "./$BASE/home/$BUILD_USER/"
-		cp -ar "/home/$BUILD_USER/.gnupg" "./$BASE/home/$BUILD_USER/"
+		$BASE_USR_RUN chmod 700 "/home/$BUILD_USER/.gnupg"
+		cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$BASE/home/$BUILD_USER/.gnupg"
 
 		# Finish
 		$BASE_RUN pacman -Scc --noconfirm
@@ -94,6 +91,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"
 		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CHROOT/$TARGET_UPPER/"{up,work,root,dest.{up,work}}
+		chown $BUILD_USER:$BUILD_USER "$CHROOT/$TARGET_UPPER/dest.up"
 		pushd "$CHROOT/$TARGET_UPPER"
 
 		echo "$_PKGINFO" > debug.txt
@@ -203,7 +201,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	
 	# * Deploy
 	# Push artifacts to dest
-	mv "$CHROOT/$TARGET_UPPER/dest.up"/* "$REPO_PKGDEST/"
+	pushd "$CHROOT/$TARGET_UPPER/dest.up"
+		gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor ./*
+		mv ./* "$REPO_PKGDEST/"
+	popd
 
 	# * Nuke
 	if [[ "$TARGET_NUKE" == '1' ]]; then

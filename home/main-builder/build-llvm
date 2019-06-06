@@ -11,7 +11,7 @@ single_build() {
 	
 	echo '[build-llvm] Building'
 	cd "$1"
-	~/chaotic-makepkg --sign -sc --nocheck --noconfirm \
+	~/chaotic-makepkg -c --nocheck --noconfirm \
 		2>&1 | tee "$LOGDIR/${1}.log" && \
 		~/chaotic-add
 	
