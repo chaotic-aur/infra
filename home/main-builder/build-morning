@@ -6,7 +6,7 @@ BUILDDIR="morning.$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$BUILDDIR" || exit
 cd "$BUILDDIR" || exit
 
-repoctl down vlc-git rpcs3-git wireguard-dkms-git mir-git ffmpeg-full retdec-git nss-hg firefox-wayland-hg firefox-hg
+repoctl down vlc-git rpcs3-git wireguard-dkms-git ffmpeg-full retdec-git nss-hg 
 ~/chaotic-batchbuild
 rm add.log
 mv ./*.log "$LOGDIR/"
@@ -15,3 +15,8 @@ cd ..
 rm -rf "$BUILDDIR"
 
 ~/build-llvm
+
+~/build-firefoxes
+
+cd "$LOGDIR"
+~/chaotic-clean-logs

@@ -73,6 +73,7 @@ nvidia_setup() {
 	sed --debug -i'' "
 	s/read \-p \"What driver version do you want\?.*$/export CONDITION=$1/g
 	s/read \-p \"Build the dkms package or the regular one\?.*$/export CONDITION=$2/g
+	s/read /echo /g
 	" PKGBUILD
 
 	export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,50-tkg-pds,51-tkg-bmq,-clear,-rt,-mainline}{,-headers})"
@@ -160,7 +161,7 @@ fi
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
 	cd nvidia-all || exit
-	nvidia_setup '3' '2'
+	nvidia_setup '1' '2'
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all-3-2.log"
 	~/chaotic-add
 	unset TARGET_EXTRAPKGS
@@ -181,3 +182,8 @@ fi
 echo '[build-tkg] Nuking everything'
 cd /tmp || exit
 sudo rm -rf TkG
+
+
+# - Logs
+cd "$TKGLOGS"
+~/chaotic-clean-logs

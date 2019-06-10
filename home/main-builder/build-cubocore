@@ -10,3 +10,4 @@ mkdir -p "$LDIR"
 mv *.log "$LDIR/"
 
 cd /tmp && rm -rf ./wiki
+cd "$LDIR" && ~/chaotic-clean-logs

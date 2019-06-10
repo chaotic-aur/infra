@@ -30,6 +30,7 @@ dxvk-wine64-git
 ffmpeg-full
 firefox-hg
 firefox-wayland-hg
+kplasmafoxhelper
 lib32-clang-git
 lib32-clang-svn
 lib32-llvm-git
@@ -75,6 +76,7 @@ nvidia-tkg
 nvidia-utils-tkg
 ocaml-minimal-git
 opencl-nvidia-tkg
+plasmafox
 retdec-git
 rpcs3-git
 vlc-git

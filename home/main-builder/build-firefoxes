@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+cd /tmp
+
+#  Do our directory
+BUILDDIR="firefox.$(date '+%Y%m%d%H%M%S')"
+mkdir -p "$BUILDDIR"
+cd "$BUILDDIR"
+
+# Download our beloved firefox
+repoctl down firefox-wayland-hg firefox-hg | tee _repoctl_down.log
+
+# Librewish likes this forks
+git clone https://github.com/torvic9/plasmafox.git
+git clone https://github.com/torvic9/kplasmafoxhelper.git
+
+# Enable ccache
+export TARGET_EXTRAPKGS='ccache'
+sed -i'' 's/options=(/options=(ccache /g' firefox*/PKGBUILD plasmafox/PKGBUILD
+
+# YAY!
+echo '[build-firefox] Building! '
+~/chaotic-batchbuild firefox-hg -- firefox-wayland-hg -- plasmafox -- kplasmafoxhelper
+
+# Logging cause things get crazy
+echo '[build-hourly] Submiting logs:'
+LOGDIR=/srv/http/chaotic-aur/makepkglogs/_daily
+mkdir -p "$LOGDIR"
+mv ./*.log "$LOGDIR/"
+
+# Cleaning hour
+echo '[build-hourly] Nuking temp directories'
+cd ..
+rm -rf "$BUILDDIR"
+
+echo '[build-hourly] Removing logs from compiled packages'
+cd "$LOGDIR"
+~/chaotic-clean-logs
+

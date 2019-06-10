@@ -111,8 +111,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 		# Create wizard
 		echo '#!/usr/bin/env bash' | tee "$TARGET_WIZARD"
-		chown $BUILD_USER:$BUILD_USER "$TARGET_WIZARD"
-		chmod 755 "$TARGET_WIZARD"
+		sudo chown $BUILD_USER:$BUILD_USER "$TARGET_WIZARD"
+		sudo chmod 755 "$TARGET_WIZARD"
 
 		# Finish
 		popd
@@ -179,20 +179,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
 	fi
 	if [[ ! -z "$TARGET_ENV" ]]; then
-		TARGET_ENVFILE="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgenv.sh"
-		echo '#!/usr/bin/env sh' | sudo tee "$TARGET_ENVFILE" && \
-		echo "$TARGET_ENV" | sudo tee -a "$TARGET_ENVFILE"
+		echo "$TARGET_ENV" | tee -a "$TARGET_WIZARD"
 	fi
 
 	# * Makepkg
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^firefox(-wayland)?-hg$')" ]]; then
-		echo "$WTMK firefox-hg detected, treating..."
-		target_run \
-			SHELL=/bin/bash \
-			/usr/local/bin/internal-makepkg -s $@
-	else
-		target_run /usr/local/bin/internal-makepkg -s $@
-	fi
+	target_run /usr/local/bin/internal-makepkg -s $@
 	
 	# Spawn contaienr and do everything
 	echo "$WTMK Finally spawning it:"
@@ -202,7 +193,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Deploy
 	# Push artifacts to dest
 	pushd "$CHROOT/$TARGET_UPPER/dest.up"
-		gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor ./*
+		for f in ./*; do
+			gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor "$f"
+		done
 		mv ./* "$REPO_PKGDEST/"
 	popd
 

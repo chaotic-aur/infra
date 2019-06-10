@@ -2,7 +2,7 @@
 TOREM=$(grep -l -P 'ERROR: (A|The) package( group)? has already been built' *.log)
 [[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
 
-TOREM=$(grep -l 'Created signature file' *.log)
+TOREM=$(grep -l 'Finished making: ' *.log)
 [[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
 
 TOREM=$(grep -l 'PKGBUILD does not exist.' *.log)
