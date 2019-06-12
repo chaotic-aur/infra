@@ -18,15 +18,14 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	CHAOTIC_KEY='3056513887B78AEB'
 
 	# * PKG data
-	echo "$WTMK Grabbing pkgname(s*)"
-	_PKGINFO="$(makepkg --printsrcinfo)"
-	if [[ -z "$_PKGINFO" ]]; then exit '-1'; fi
-	_PKGNAME="$(echo "$_PKGINFO" | grep -Po '(?<=pkgname = )(.*)$')"
-	_PKGNAME_HEAD="$(echo "$_PKGNAME" | head -n 1)"
+	# I can't run makepkg --printsrcinfo without the container
+	# and can't create the container without the package name
+	# so I'll assume this folder contains the package name :P
+	_PKGNAME_HEAD="${PWD##*/}"
 	SRCCACHE_DIR="$SRCCACHE_DIR/$_PKGNAME_HEAD"
 	
 	# * Threats those who use sqlite-replication
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^dqlite(-git)?$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^dqlite(-git)?$')" ]]; then
 		export BASE='dqlite-root'
 		export BASE_PKGS="sqlite-replication ${BASE_PKGS}"
 		export BASE_NUKE=1
@@ -125,19 +124,26 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	target_run sudo pacman -Syu --noconfirm
 
 	# * Treats VCs
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-git$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-git$')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm git
 	fi
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-svn$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-svn$')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm subversion
 	fi
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-bzr$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-bzr$')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm bzr
 	fi
-	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '\-hg$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm mercurial
 	fi
 
+	# * PKG data
+	echo "$WTMK Grabbing pkgname(s*)"
+	_PKGINFO="$($TARGET_RUN -q makepkg -s --printsrcinfo)"
+	if [[ -z "$_PKGINFO" ]]; then exit '-1'; fi
+	_PKGNAME="$(echo "$_PKGINFO" | grep -Po '(?<=pkgname = )(.*)$')"
+	_PKGNAME_HEAD="$(echo "$_PKGNAME" | head -n 1)"
+	
 	# * Treats multilib
 	if [[ ! -z "$(echo "$_PKGNAME" | grep -P '^lib32\-')" ]]; then
 		echo "$WTMK lib32-* detected, treating..."
