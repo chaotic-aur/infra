@@ -211,7 +211,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Deploy
 	# Push artifacts to dest
 	sudo umount -Rv "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"
-	export SIG_FAILED=0
 	pushd "$CHROOT/$TARGET_UPPER/dest.up"
 		for f in ./*; do
 			gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor "$f"

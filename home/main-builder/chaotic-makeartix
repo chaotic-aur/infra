@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+export ALIEN_NAME='artix'
+export ALIEN_PACSTRAP='pacstrap -M -G -C /home/main-builder/chaotic-artix/pacman.conf'
+export ALIEN_BIND='none'
+export ALIEN_OUT='aur/artix-x86_64'
+exec ~/chaotic-makealien $@

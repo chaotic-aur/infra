@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 ALIEN_NAME="${ALIEN_NAME:-aarch64}"
-ALIEN_BOOTSTRAP="${ALIEN_BOOTSTRAP:-/usr/local/bin/arch-bootstrap -a aarch64}"
+#ALIEN_BOOTSTRAP="${ALIEN_BOOTSTRAP:-/usr/local/bin/arch-bootstrap -a aarch64 -d pacman-cache }"
 ALIEN_BIND="${ALIEN_BIND:-/usr/bin/qemu-aarch64-static}"
 ALIEN_OUT="${ALIEN_OUT:-aur/aarch64}"
 
@@ -47,12 +47,12 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -d "$CHROOT/$BASE" ]]; then
 		# Create infra
 		echo "$WTMK Bulding lowerdir..."
-		mkdir -p "$CHROOT/$BASE"
+		mkdir -p "$PKGCACHE_DIR" "$CHROOT/$BASE"
 		echo $$ > "$CHROOT/$BASE.lock"
 		pushd "$CHROOT"
 
 		# Basic packages
-		sudo $ALIEN_BOOTSTRAP "./$BASE"
+		sudo $ALIEN_PACSTRAP "./$BASE" $BASE_PKGS
 		$BASE_RUN pacman-key --init
 		$BASE_RUN pacman-key --populate
 
@@ -61,9 +61,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
 		sudo mkdir -p "./$BASE/usr/local/bin/"
 		sudo cp "$CHSRC/internal-makepkg" "./$BASE/usr/local/bin/"
-
-		# Base packages
-		$BASE_RUN pacman -Syu $BASE_PKGS --noconfirm
 
 		# Minimum locale
 		echo 'en_US.UTF-8 UTF-8' | sudo tee "./$BASE/etc/locale.gen"
@@ -172,7 +169,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Deploy
 	# Push artifacts to dest
 	sudo umount -Rv "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"
-	export SIG_FAILED=0
 	pushd "$CHROOT/$TARGET_UPPER/dest.up"
 		for f in ./*; do
 			gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor "$f"
