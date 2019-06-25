@@ -8,19 +8,15 @@ mkdir -p "$BUILDDIR"
 cd "$BUILDDIR"
 
 # Download our beloved firefox
-repoctl down firefox-wayland-hg firefox-hg | tee _repoctl_down.log
+repoctl down firefox-wayland-hg firefox-hg
 
 # Librewish likes this forks
 git clone https://github.com/torvic9/plasmafox.git
 git clone https://github.com/torvic9/kplasmafoxhelper.git
 
-# Enable ccache
-export TARGET_EXTRAPKGS='ccache'
-sed -i'' 's/options=(/options=(ccache /g' firefox*/PKGBUILD plasmafox/PKGBUILD
-
 # YAY!
 echo '[build-firefox] Building! '
-~/chaotic-batchbuild firefox-hg -- firefox-wayland-hg -- plasmafox -- kplasmafoxhelper
+~/chaotic-batchbuild kplasmafoxhelper -- plasmafox -- firefox-hg -- firefox-wayland-hg
 
 # Logging cause things get crazy
 echo '[build-hourly] Submiting logs:'

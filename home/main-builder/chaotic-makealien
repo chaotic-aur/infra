@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
-WTMK='[chaotic-makepkg]'
+ALIEN_NAME="${ALIEN_NAME:-aarch64}"
+ALIEN_BOOTSTRAP="${ALIEN_BOOTSTRAP:-/usr/local/bin/arch-bootstrap -a aarch64}"
+ALIEN_BIND="${ALIEN_BIND:-/usr/bin/qemu-aarch64-static}"
+ALIEN_OUT="${ALIEN_OUT:-aur/aarch64}"
+
+WTMK='[chaotic-makealien]'
 NEWLINE=$'\n'
 if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# Check if PKGBUILD is present
@@ -10,17 +15,16 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * Defaults
 	BUILD_USER='main-builder'
-	CHROOT='/tmp/chaotic-chroot'
-	CHSRC="$HOME/chaotic-chroot"
+	CHROOT="/tmp/chaotic-${ALIEN_NAME}"
+	CHSRC="$HOME/chaotic-${ALIEN_NAME}"
 	BASE='base-root'
 	BASE_PKGS='base-devel'
 	BASE_NUKE=0
 	TARGET="$PWD"
-	#TARGET_UPPER="${TARGET_UPPER:-tmp.$(uuidgen)}"
 	TARGET_NUKE=${TARGET_NUKE:-1}
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 	SRCCACHE_DIR="$CHROOT/source-cache"
-	REPO_PKGDEST='/srv/http/chaotic-aur/x86_64'
+	REPO_PKGDEST="/srv/http/chaotic-${ALIEN_OUT}"
 	CHAOTIC_KEY='3056513887B78AEB'
 
 	# Doesn't work with any user
@@ -36,17 +40,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	_PKGNAME_HEAD="${PWD##*/}"
 	SRCCACHE_DIR="$SRCCACHE_DIR/$_PKGNAME_HEAD"
 	
-	# * Threats those who use sqlite-replication
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^dqlite(-git)?$')" ]]; then
-		export BASE='dqlite-root'
-		export BASE_PKGS="sqlite-replication ${BASE_PKGS}"
-		export BASE_NUKE=1
-	fi
-
 	# * CHROOT Lowdir
 	BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
 	BASE_USR_RUN="sudo arch-chroot -u $BUILD_USER $CHROOT/$BASE"
-	#BASE_RUN="sudo systemd-nspawn -M $BASE -u root -D $CHROOT/$BASE"
+	#[[ "${ALIEN_BIND}" != 'none' ]] && BASE_RUN="${BASE_RUN} ${ALIEN_BIND}"
 	if [[ ! -d "$CHROOT/$BASE" ]]; then
 		# Create infra
 		echo "$WTMK Bulding lowerdir..."
@@ -55,14 +52,18 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		pushd "$CHROOT"
 
 		# Basic packages
-		sudo pacstrap -C "$CHSRC/pacman.conf" "./$BASE" $BASE_PKGS
+		sudo $ALIEN_BOOTSTRAP "./$BASE"
+		$BASE_RUN pacman-key --init
+		$BASE_RUN pacman-key --populate
 
 		# Build settings
 		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
 		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
 		sudo mkdir -p "./$BASE/usr/local/bin/"
 		sudo cp "$CHSRC/internal-makepkg" "./$BASE/usr/local/bin/"
-		sudo cp "$CHSRC/x11-wrapper" "./$BASE/usr/local/bin/"
+
+		# Base packages
+		$BASE_RUN pacman -Syu $BASE_PKGS --noconfirm
 
 		# Minimum locale
 		echo 'en_US.UTF-8 UTF-8' | sudo tee "./$BASE/etc/locale.gen"
@@ -92,6 +93,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	MECHA_NAME="pkg$(echo "$_PKGNAME_HEAD" | sha256sum | cut -c1-11)"
 	TARGET_UPPER="${TARGET_UPPER:-$MECHA_NAME}"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
+	[[ "${ALIEN_BIND}" != 'none' ]] && TARGET_RUN="${TARGET_RUN} --bind ${ALIEN_BIND}"
 	TARGET_WIZARD="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/wizard.sh"
 	function target_run() {
 		echo "$@" | tee -a "$TARGET_WIZARD"
@@ -114,10 +116,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 		# Other mounts
 		sudo mount --bind "$TARGET" "${_HOME}/pkgwork"
-		sudo mount --bind "/home/$BUILD_USER/.ccache" "${_HOME}/.ccache"
+		#sudo mount --bind "/home/$BUILD_USER/.ccache" "${_HOME}/.ccache"
 		sudo mount --bind "$SRCCACHE_DIR" "${_HOME}/pkgsrc"
 		sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
-		sudo mount overlay -t overlay -olowerdir=$REPO_PKGDEST,upperdir=./dest.up,workdir=./dest.work "${_HOME}/pkgdest"
+		sudo mount overlay -t overlay -olowerdir=$REPO_PKGDEST,upperdir=./dest.up,workdir=./dest.work "${_HOME}/pkgdest" || echo "$WTMK Funny world isn't it?"
 
 		# Create wizard
 		echo '#!/usr/bin/env bash' | tee "$TARGET_WIZARD"
@@ -147,47 +149,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm mercurial
 	fi
-
-	# * Unreal Engine
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^unreal-engine$')" ]]; then
-		echo "$WTMK pantheon-core-git detected, treating..."
-		cp -ar "/home/$BUILD_USER/.ssh" "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/"
-		target_run sudo pacman -S --needed --noconfirm openssh
-	fi
-	
-	# * Pantheon GIT
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-(core|desktop)-git$')" ]]; then
-		echo "$WTMK pantheon-core-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(pantheon|wingpanel|switchboard|gala)\-.*git$')" ]]; then
-		echo "$WTMK pantheon-*-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm granite-git cmake
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
-		echo "$WTMK switchboad-*-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm switchboard-git
-	fi
-
-	# * @Lone_Wolf's Mesa
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?mesa-git$')" ]]; then
-		echo "$WTMK E ai meu chapa!"
-		export TARGET_ENV="export MESA_WHICH_LLVM=1${NEWLINE}${TARGET_ENV}"
-	fi
-	
-	# * PKG data
-	#echo "$WTMK Grabbing pkgname(s*)"
-	#_PKGINFO="$($TARGET_RUN -q makepkg -s --printsrcinfo)"
-	#if [[ -z "$_PKGINFO" ]]; then exit '-1'; fi
-	#_PKGNAME="$(echo "$_PKGINFO" | grep -Po '(?<=pkgname = )(.*)$')"
-	#_PKGNAME_HEAD="$(echo "$_PKGNAME" | head -n 1)"
-	
-	# * Treats multilib
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32\-')" ]]; then
-		echo "$WTMK lib32-* detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm multilib-devel
-	fi
-
 
 	# * User cases
 	if [[ ! -z "$TARGET_REMPKGS" ]]; then

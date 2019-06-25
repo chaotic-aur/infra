@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+cd /srv/http/chaotic-aur/x86_64 || exit
+
+DUPLICATED=$(
+  ls |\
+    grep -Po "^(.*)(?=(?:(?:-[^-]*){3}\.pkg\.tar(?>\.xz)?)$)" |\
+    uniq -d
+)
+
+[[ -z "$DUPLICATED" ]] && echo "No duplicate packages were found!" || echo -e "Duplicate packages:\n$DUPLICATED" 

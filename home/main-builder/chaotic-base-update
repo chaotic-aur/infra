@@ -12,10 +12,9 @@ if [[ -d "$CHROOT/$BASE" ]]; then
 	done
 	echo $$ > "$CHROOT/$BASE.lock"
 	echo '[chaotic-chroot] Updating lowerdir...'
-	sudo mount --bind /srv "$CHROOT/$BASE/srv"
 	sudo mount --bind /tmp/chaotic-chroot/pacman-cache "$CHROOT/$BASE/var/cache/pacman/pkg"
 	$BASE_RUN pacman -Syu --noconfirm
 	$BASE_RUN pacman -Scc --noconfirm
-	sudo umount "$CHROOT/$BASE/srv"
+	sudo umount "$CHROOT/$BASE/var/cache/pacman/pkg"
 	rm "$CHROOT/$BASE.lock"
 fi

@@ -16,8 +16,6 @@ wine_setup() {
 	fi
 
 	sed -i'' "
-	s/_COMPILEWITH=\"[^\"]*\"/_COMPILEWITH=\"zapcc\"/g
-	s/_OPTIONAL_MARCHFLAG=\"[^\"]*\"/_OPTIONAL_MARCHFLAG=\"\"/g
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
 	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
@@ -25,6 +23,7 @@ wine_setup() {
 	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$3\"/g
 	s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
 	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$4\"/g
+	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 	" customization.cfg
 
 	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
@@ -85,7 +84,7 @@ nvidia_setup() {
 wine_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
-	export TARGET_EXTRAPKGS='ccache zapcc'
+	export TARGET_EXTRAPKGS='ccache'
         ~/chaotic-makepkg \
 		--noconfirm $@
 	~/chaotic-add
@@ -110,9 +109,6 @@ if [ -z "$TKG_NOWINE" ]; then
 	do
 		git reset --hard HEAD
 		git clean -dfx
-		rm wine-tkg-userpatches/*.mypatch
-		rm wine-tkg-userpatches/*.mystagingpatch
-		rm wine-tkg-userpatches/*.myrevert
 		
 		wine_setup $VARIATION
 		rm -rf ./src
@@ -187,3 +183,4 @@ sudo rm -rf TkG
 # - Logs
 cd "$TKGLOGS"
 ~/chaotic-clean-logs
+rm *-opt-git.log

@@ -3,7 +3,7 @@
 cd /var/log/httpd
 UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort -u | awk '!/::1/')
 
-echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>'
+echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family: sans-serif;">'
 echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintainer&#x27;s notes.</p><h2>Ranks, Numbers and Packages</h2>'
 
 echo '<h3>Time range</h3><ul>'
@@ -15,6 +15,7 @@ echo '</code></li>'
 echo '<li>Until: <code>'
 tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
 echo '</code></li></ul>'
+echo '<p>Every detail displayed in this page comes from data capture only in between this time range!</p>'
 
 echo '<h3>Top 25 most downloaded (per unique users):</h3>'
 echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'

@@ -26,5 +26,3 @@ for _PKG_PRE in '' 'lib32-'; do
 		single_build "${_PKG_PRE}llvm${_PKG_POS}"
 	done
 done
-single_build 'compiler-rt-minimal-git'
-single_build 'clang-minimal-git'
