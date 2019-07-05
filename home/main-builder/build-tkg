@@ -75,7 +75,11 @@ nvidia_setup() {
 	s/read /echo /g
 	" PKGBUILD
 
-	export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,50-tkg-pds,51-tkg-bmq,-clear,-rt,-mainline}{,-headers})"
+	if [ "$2" == '1' ]; then
+		export TARGET_EXTRAPKGS='linux-headers'
+	else
+		export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,50-tkg-pds,51-tkg-bmq,-clear,-rt,-mainline}-headers)"
+	fi
 }
 
 #
@@ -84,7 +88,7 @@ nvidia_setup() {
 wine_makepkg() {
 	export TARGET_UPPER='wine'
 	export TARGET_NUKE=0
-	export TARGET_EXTRAPKGS='ccache'
+	export TARGET_EXTRAPKGS='ccache mingw-w64-gcc'
         ~/chaotic-makepkg \
 		--noconfirm $@
 	~/chaotic-add
@@ -94,9 +98,8 @@ wine_makepkg() {
 # Clone TKG
 #
 cd /tmp || exit
-rm -rf TkG
-git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG
-cd TkG || exit
+git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG || exit 4
+cd TkG
 
 #
 # Build
@@ -157,7 +160,11 @@ fi
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
 	cd nvidia-all || exit
-	nvidia_setup '1' '2'
+	#nvidia_setup '1' '2'
+	#~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all-3-2.log"
+	#~/chaotic-add
+	#git checkout PKGBUILD
+	nvidia_setup '1' '1'
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all-3-2.log"
 	~/chaotic-add
 	unset TARGET_EXTRAPKGS

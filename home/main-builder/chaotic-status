@@ -67,10 +67,16 @@ echo '<code>Total: '
 wc -l < ../pkgs.txt
 echo '</code><br/><code>GIT/SVN/HG/BZR: '
 grep -Pe '-(git|svn|hg|bzr)-' ../pkgs.txt | wc -l
-echo '</code><br/><code>Failing: '
+echo '</code><br/><code>Failing (hourly): '
 echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 2)
+echo '</code><br/><code>Failing (daily): '
+echo $(expr $(ls -1 ../makepkglogs/_daily/*.log | wc -l) - 2)
+echo '</code><br/><code>Failing (TkG): '
+echo $(ls -1 ../makepkglogs/_daily/tkg/*.log 2>&- | wc -l)
 echo '</code><br/><code>systemd-nspawn fu**ing us: '
 grep -l 'scope already exists' ../makepkglogs/*.log | wc -l
+echo '</code><br/><code>wrongly terminated containers: '
+grep -l 'Found an older chroot' ../makepkglogs/*.log | wc -l
 echo '</code><br/>'
 
 echo '<h4>Versions:</h4>'

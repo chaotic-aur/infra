@@ -16,7 +16,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	BASE_PKGS='base-devel'
 	BASE_NUKE=0
 	TARGET="$PWD"
-	#TARGET_UPPER="${TARGET_UPPER:-tmp.$(uuidgen)}"
 	TARGET_NUKE=${TARGET_NUKE:-1}
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 	SRCCACHE_DIR="$CHROOT/source-cache"
@@ -175,13 +174,12 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		export TARGET_ENV="export MESA_WHICH_LLVM=1${NEWLINE}${TARGET_ENV}"
 	fi
 	
-	# * PKG data
-	#echo "$WTMK Grabbing pkgname(s*)"
-	#_PKGINFO="$($TARGET_RUN -q makepkg -s --printsrcinfo)"
-	#if [[ -z "$_PKGINFO" ]]; then exit '-1'; fi
-	#_PKGNAME="$(echo "$_PKGINFO" | grep -Po '(?<=pkgname = )(.*)$')"
-	#_PKGNAME_HEAD="$(echo "$_PKGNAME" | head -n 1)"
-	
+	# * Linux-Clear
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^linux-clear')" ]]; then
+		echo "$WTMK Galera estranha!"
+		sed -i'' 's/^_subarch=.*$/_subarch=26/g' PKGBUILD
+	fi
+
 	# * Treats multilib
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32\-')" ]]; then
 		echo "$WTMK lib32-* detected, treating..."

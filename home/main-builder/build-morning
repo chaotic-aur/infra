@@ -2,21 +2,36 @@
 LOGDIR='/srv/http/chaotic-aur/makepkglogs/_daily'
 cd /tmp
 
+# Create and enter build dir
 BUILDDIR="morning.$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$BUILDDIR" || exit
 cd "$BUILDDIR" || exit
 
+# batchb build all these bad guys
 repoctl down vlc-git rpcs3-git wireguard-dkms-git ffmpeg-full retdec-git nss-hg 
 ~/chaotic-batchbuild
+
+# Build both xamarin variations
+repoctl down xamarin-android-git
+pushd xamarin-android-git
+	~/chaotic-makepkg --noconfirm | tee ../xamarin-android-git.log
+	sed -i'' "s/#_include_proprietary=(.*)$/_include_proprietary=true" PKGBUILD
+	~/chaotic-makepkg --noconfirm | tee ../xamarin-android-proprietary-git.log
+	~/chaotic-add
+popd
+
+# Move logs around
 rm add.log
 mv ./*.log "$LOGDIR/"
 
+# Leave build dir
 cd ..
 rm -rf "$BUILDDIR"
 
+# Others specials guys
 ~/build-llvm
-
 ~/build-firefoxes
 
+# Remove logs about succesful builds
 cd "$LOGDIR"
 ~/chaotic-clean-logs
