@@ -78,7 +78,7 @@ nvidia_setup() {
 	if [ "$2" == '1' ]; then
 		export TARGET_EXTRAPKGS='linux-headers'
 	else
-		export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,51-tkg-bmq,-clear,-rt,-mainline}-headers)"
+		export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,51-tkg-bmq,51-tkg-pds,52-tkg-bmq,52-tkg-pds,-clear,-rt,-mainline}-headers)"
 	fi
 }
 

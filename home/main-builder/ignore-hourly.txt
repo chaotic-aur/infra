@@ -46,6 +46,12 @@ libcprime
 libcsys
 linux51-tkg-bmq
 linux51-tkg-bmq-headers
+linux51-tkg-pds
+linux51-tkg-pds-headers
+linux52-tkg-bmq
+linux52-tkg-bmq-headers
+linux52-tkg-pds
+linux52-tkg-pds-headers
 lldb-git
 lldb-svn
 lld-git
