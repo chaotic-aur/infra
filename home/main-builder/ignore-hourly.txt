@@ -44,10 +44,6 @@ lib32-opencl-nvidia-tkg
 libarchive-qt
 libcprime
 libcsys
-linux420-tkg-pds
-linux420-tkg-pds-headers
-linux50-tkg-pds
-linux50-tkg-pds-headers
 linux51-tkg-bmq
 linux51-tkg-bmq-headers
 lldb-git
