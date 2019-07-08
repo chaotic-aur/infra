@@ -44,12 +44,14 @@ lib32-opencl-nvidia-tkg
 libarchive-qt
 libcprime
 libcsys
-linux420-tkg-pds
-linux420-tkg-pds-headers
-linux50-tkg-pds
-linux50-tkg-pds-headers
 linux51-tkg-bmq
 linux51-tkg-bmq-headers
+linux51-tkg-pds
+linux51-tkg-pds-headers
+linux52-tkg-bmq
+linux52-tkg-bmq-headers
+linux52-tkg-pds
+linux52-tkg-pds-headers
 lldb-git
 lldb-svn
 lld-git
@@ -105,7 +107,6 @@ wine-tkg-staging-esync-vkd3d-faudio-git
 wine-tkg-staging-esync-vkd3d-faudio-opt-git
 wine-tkg-staging-esync-vkd3d-git
 wine-tkg-staging-esync-vkd3d-opt-git
-winetricks-tkg-git
 wireguard-dkms-git
 wireguard-tools-git
 xamarin-android-git

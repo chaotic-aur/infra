@@ -44,7 +44,7 @@ kernel_setup() {
 	s/_cpusched=\"[^\"]*\"/_cpusched=\"$1\"/g
 	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"0\"/g
 	s/_ftracedisable=\"[^\"]*\"/_ftracedisable=\"true\"/g
-	s/_numadisable=\"[^\"]*\"/_numadisable=\"true\"/g
+	s/_numadisable=\"[^\"]*\"/_numadisable=\"false\"/g
 	s/_full_tickless=\"[^\"]*\"/_full_tickless=\"true\"/g
 	s/_voluntary_preempt=\"[^\"]*\"/_voluntary_preempt=\"true\"/g
 	s/_acs_override=\"[^\"]*\"/_acs_override=\"true\"/g
@@ -61,7 +61,7 @@ kernel_setup() {
 	" customization.cfg
 
 	echo '[build-tkg] applied kernel customization'
-	
+
 	export TARGET_EXTRAPKGS='ccache'
 }
 
@@ -78,7 +78,7 @@ nvidia_setup() {
 	if [ "$2" == '1' ]; then
 		export TARGET_EXTRAPKGS='linux-headers'
 	else
-		export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,50-tkg-pds,51-tkg-bmq,-clear,-rt,-mainline}-headers)"
+		export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,51-tkg-bmq,51-tkg-pds,52-tkg-bmq,52-tkg-pds,-clear,-rt,-mainline}-headers)"
 	fi
 }
 
@@ -112,23 +112,23 @@ if [ -z "$TKG_NOWINE" ]; then
 	do
 		git reset --hard HEAD
 		git clean -dfx
-		
+
 		wine_setup $VARIATION
 		rm -rf ./src
-		
+
 		wine_makepkg -sC 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
-		
+
 		sed -i'' "
 		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
 		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
 		" customization.cfg
-		
+
 		echo "[build-tkg] customization setted to: ${_PKGNAME/%-git/-opt-git}"
 
 		export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
 		ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
 		ln -srf "src/${_PKGNAME}-64-build" "src/${_OPT_PKGNAME}-64-build"
-		
+
 		wine_makepkg -Rc 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
 	done
 
@@ -141,7 +141,21 @@ fi
 if [ -z "$TKG_NO51" ]; then
 	cd linux51-tkg || exit
 	kernel_setup 'bmq'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51.log"
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51-bmq.log"
+	kernel_setup 'pds'
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51-pds.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+	cd ..
+fi
+
+# - Linux 5.2
+if [ -z "$TKG_NO52" ]; then
+	cd linux52-tkg || exit
+	kernel_setup 'bmq'
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux52-bmq.log"
+	kernel_setup 'pds'
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux52-pds.log"
 	~/chaotic-add
 	unset TARGET_EXTRAPKGS
 	cd ..
@@ -154,14 +168,6 @@ if [ -z "$TKG_NONV" ]; then
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all.log"
 	~/chaotic-add
 	unset TARGET_EXTRAPKGS
-	cd ..
-fi
-
-# - WINETRICKS
-if [ -z "$TKG_WTRICKS" ]; then
-	cd winetricks-tkg-git || exit
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/winetricks.log"
-	~/chaotic-add
 	cd ..
 fi
 
