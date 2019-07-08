@@ -61,7 +61,7 @@ kernel_setup() {
 	" customization.cfg
 
 	echo '[build-tkg] applied kernel customization'
-	
+
 	export TARGET_EXTRAPKGS='ccache'
 }
 
@@ -112,23 +112,23 @@ if [ -z "$TKG_NOWINE" ]; then
 	do
 		git reset --hard HEAD
 		git clean -dfx
-		
+
 		wine_setup $VARIATION
 		rm -rf ./src
-		
+
 		wine_makepkg -sC 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
-		
+
 		sed -i'' "
 		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
 		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
 		" customization.cfg
-		
+
 		echo "[build-tkg] customization setted to: ${_PKGNAME/%-git/-opt-git}"
 
 		export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
 		ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
 		ln -srf "src/${_PKGNAME}-64-build" "src/${_OPT_PKGNAME}-64-build"
-		
+
 		wine_makepkg -Rc 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
 	done
 
