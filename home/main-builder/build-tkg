@@ -147,6 +147,16 @@ if [ -z "$TKG_NO51" ]; then
 	cd ..
 fi
 
+# - Linux 5.2
+if [ -z "$TKG_NO52" ]; then
+	cd linux52-tkg || exit
+	kernel_setup 'bmq'
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux52.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+	cd ..
+fi
+
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
 	cd nvidia-all || exit
