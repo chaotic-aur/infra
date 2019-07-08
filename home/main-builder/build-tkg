@@ -11,7 +11,7 @@ wine_setup() {
 	git checkout customization.cfg PKGBUILD
 
 	export _USE_DXVKGI='true'
-	if [ "$3" = 'true' ]; then
+	if [ "$3" == 'true' ]; then
 		export _USE_DXVKGI='false'
 	fi
 
@@ -137,16 +137,6 @@ if [ -z "$TKG_NOWINE" ]; then
 	cd ..
 fi
 
-# - Linux 5.0
-if [ -z "$TKG_NO50" ]; then
-	cd linux50-tkg || exit
-	kernel_setup 'pds'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux50.log"
-	~/chaotic-add
-	unset TARGET_EXTRAPKGS
-	cd ..
-fi
-
 # - Linux 5.1
 if [ -z "$TKG_NO51" ]; then
 	cd linux51-tkg || exit
@@ -160,12 +150,8 @@ fi
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
 	cd nvidia-all || exit
-	#nvidia_setup '1' '2'
-	#~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all-3-2.log"
-	#~/chaotic-add
-	#git checkout PKGBUILD
-	nvidia_setup '1' '1'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all-3-2.log"
+	nvidia_setup '3' '1'
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all.log"
 	~/chaotic-add
 	unset TARGET_EXTRAPKGS
 	cd ..
