@@ -105,7 +105,6 @@ wine-tkg-staging-esync-vkd3d-faudio-git
 wine-tkg-staging-esync-vkd3d-faudio-opt-git
 wine-tkg-staging-esync-vkd3d-git
 wine-tkg-staging-esync-vkd3d-opt-git
-winetricks-tkg-git
 wireguard-dkms-git
 wireguard-tools-git
 xamarin-android-git
