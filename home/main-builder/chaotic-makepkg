@@ -180,6 +180,12 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sed -i'' 's/^_subarch=.*$/_subarch=26/g' PKGBUILD
 	fi
 
+	# * People who think they're smart
+	if [[ ! -z "$(grep -P '^PKGEXT=' PKGBUILD)" ]]; then
+		echo "$WTMK If you never try you'll never fail!"
+		sed -i'' 's/^PKGEXT=.*$//g' PKGBUILD
+	fi
+
 	# * Treats multilib
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32\-')" ]]; then
 		echo "$WTMK lib32-* detected, treating..."

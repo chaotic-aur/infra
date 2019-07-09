@@ -31,13 +31,13 @@
 		<ul>
 			<li>Telegram channel with news and updates: <a target="_blank" href="https://t.me/lonewolf_builder">@lonewolf_builder</a></li>
 			<li>Server's infra source code: <a target="_blank" href="https://github.com/PedroHLC/chaotic-aur">GitHub</a></li>
-			<li>Monthly statistics: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/analytics.html">Ranks, Numbers and Packages</a></li>
+			<li>Monthly statistics: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/analytics.html">Ranks, Numbers, and Packages</a></li>
 			<li>Failing pkg logs: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/makepkglogs">Directory entries</a></li>
 			<li>Monthly bot requests received logs: <a href="https://lonewolf.pedrohlc.com/badboyts.txt">TXT</a></li>
 			<li>Online live console with builds: <a href="http://lonewolf-builder.duckdns.org:23001">GOTTY</a></li>
 			<li>Server's resources usage: <a href="http://lonewolf-builder.duckdns.org:19999">NetData</a></li>
 			<li>Packages sorted by last-updated: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/x86_64/?C=M;O=D">Directory entries</a></li>
-			<li>One week-old archive: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/archive">Directory entries</a></li>
+			<li>Short archive: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/archive">Directory entries</a></li>
 		</ul>
 
 		<h2>How to use it?</h2>
@@ -51,8 +51,9 @@
 			sudo pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB<br/>
 			sudo pacman-key --lsign-key 3056513887B78AEB
 		</code>
-
 		<!--p>In case this keyserver fails, try this: <code>hkps://hkps.pool.sks-keyservers.net</code> or <code>hkp://p80.pool.sks-keyservers.net:80</code></p-->
+
+		<p>If you need to omit one package update to use only locally built ones (e.g: with native optimizations), <a href="https://www.archlinux.org/pacman/pacman.conf.5.html" target="_blank">you can</a> add '<code>IgnorePkg = ...</code>' to repo's section in <code>/etc/pacman.conf</code></p>
 
 		<h2>Work-in-progress</h2>
 		<p>There are experimental packages for <a href="https://lonewolf.pedrohlc.com/chaotic-aur/aarch64/?C=M;O=D">aarch64</a> and <a href="https://lonewolf.pedrohlc.com/chaotic-aur/artix-x86_64/?C=M;O=D">Artix</a>. Please contact me for requesting packages and/or updates.</p>
@@ -60,7 +61,7 @@
 		<h2>Maintainer:</h2>
 		<code>
 			Pedro H. Lara Campos <a target="_blank" href="https://github.com/PedroHLC">&lt;github.com/PedroHLC&gt;</a><br/>
-			2019-06-25
+			2019-07-08
 		</code>
 	</body>
 </html>
