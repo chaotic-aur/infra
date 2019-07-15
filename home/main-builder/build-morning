@@ -14,9 +14,9 @@ repoctl down vlc-git rpcs3-git wireguard-dkms-git ffmpeg-full retdec-git nss-hg
 # Build both xamarin variations
 repoctl down xamarin-android-git
 pushd xamarin-android-git
-	~/chaotic-makepkg --noconfirm | tee ../xamarin-android-git.log
-	sed -i'' "s/#_include_proprietary=(.*)$/_include_proprietary=true" PKGBUILD
-	~/chaotic-makepkg --noconfirm | tee ../xamarin-android-proprietary-git.log
+	~/chaotic-makepkg --noconfirm | tee "$LOGDIR/xamarin-android-git.log"
+	sed -i'' 's/\#_include_proprietary\=(.*)$/_include_proprietary=true/g' PKGBUILD
+	~/chaotic-makepkg -cC --noconfirm | tee "$LOGDIR/xamarin-android-proprietary-git.log"
 	~/chaotic-add
 popd
 

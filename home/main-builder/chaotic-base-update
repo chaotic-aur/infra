@@ -3,6 +3,7 @@
 # * Defaults
 CHROOT='/tmp/chaotic-chroot'
 BASE='base-root'
+BUILD_USER='main-builder'
 
 # * CHROOT Lowdir
 BASE_RUN="sudo systemd-nspawn -M update-base -u root -D $CHROOT/$BASE"
@@ -14,7 +15,7 @@ if [[ -d "$CHROOT/$BASE" ]]; then
 	echo '[chaotic-chroot] Updating lowerdir...'
 	sudo mount --bind /tmp/chaotic-chroot/pacman-cache "$CHROOT/$BASE/var/cache/pacman/pkg"
 	$BASE_RUN pacman -Syu --noconfirm
-	$BASE_RUN pacman -Scc --noconfirm
 	sudo umount "$CHROOT/$BASE/var/cache/pacman/pkg"
+	cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "$CHROOT/$BASE/home/$BUILD_USER/.gnupg"
 	rm "$CHROOT/$BASE.lock"
 fi

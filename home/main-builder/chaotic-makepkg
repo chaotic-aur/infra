@@ -78,7 +78,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$BASE/home/$BUILD_USER/.gnupg"
 
 		# Finish
-		$BASE_RUN pacman -Scc --noconfirm
 		popd
 		rm "$CHROOT/$BASE.lock"
 	else
@@ -167,6 +166,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm switchboard-git
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-music-git$')" ]]; then
+		echo "$WTMK pantheon-music-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm libsignon-glib
+	fi
 
 	# * @Lone_Wolf's Mesa
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?mesa-git$')" ]]; then
@@ -178,6 +181,16 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^linux-clear')" ]]; then
 		echo "$WTMK Galera estranha!"
 		sed -i'' 's/^_subarch=.*$/_subarch=26/g' PKGBUILD
+	fi
+
+	# * Tired of things not getting fixed in AUR
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^featherpad-git$')" ]]; then
+		echo "$WTMK feather-pad-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm hunspell
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?vkd3d-git$')" ]]; then
+		echo "$WTMK vkd3d-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm vulkan-headers-git
 	fi
 
 	# * People who think they're smart

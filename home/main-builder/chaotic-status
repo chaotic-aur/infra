@@ -1,5 +1,20 @@
 #!/usr/bin/env bash
 
+# Settings
+NUM_DOWN=25
+NUM_USERS=10
+NUM_UPDT=15
+IP_CENSOR='s/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/\1.XXX.YYY.\4/g'
+
+# Special me
+if [[ ! -z "$CHAOTIC_SUPER" ]]; then
+	NUM_DOWN=10000
+	NUM_USERS=10000
+	IP_CENSOR='s/-/-/g'
+fi
+
+# Code
+
 cd /var/log/httpd
 UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort -u | awk '!/::1/')
 
@@ -17,15 +32,19 @@ tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
 echo '</code></li></ul>'
 echo '<p>Every detail displayed in this page comes from data capture only in between this time range!</p>'
 
-echo '<h3>Top 25 most downloaded (per unique users):</h3>'
-echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
-echo "$UNIQ_ACCESS" |\
+PKGS_IP_COUNT=$(
+	echo "$UNIQ_ACCESS" |\
 	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	sort -u |\
 	awk '{print $2}' |\
 	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)' |\
-	sort | uniq -c | sort -nr |\
-	head -n 25 |\
+	sort | uniq -c | sort -nr
+)
+
+echo '<h3>Top 25 most downloaded (per unique users):</h3>'
+echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
+echo "$PKGS_IP_COUNT" |\
+	head -n $NUM_DOWN |\
 	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
 echo '</table><br/>'
 
@@ -36,10 +55,10 @@ echo "$UNIQ_ACCESS" |\
 	sort -u |\
 	awk '{print $1}' |\
 	sort | uniq -c | sort -nr |\
-	head -n 10 |\
+	head -n $NUM_USERS |\
 	awk '{print "echo -n \""$0" \"; geoiplookup "$2"; "}' |\
 	bash |\
-	sed -r 's/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/\1.XXX.YYY.\4/g' |\
+	sed -r "$IP_CENSOR" |\
 	sed 's/GeoIP[^:]*: .., //g' |\
 	sed -r 's/^\ *([^\ ]*)\ ([^\ ]*)\ (.*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><td>\3<\/td><\/tr>/g'
 echo '</table><br/>'
@@ -56,15 +75,15 @@ echo '<ul>'
 cd /srv/http/chaotic-aur/x86_64
 find . -type f -name "*.pkg.tar.xz" \
 	-printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
-	sort | tail -n 15 | awk '{print $2}' |\
+	sort | tail -n $NUM_UPDT | awk '{print $2}' |\
 	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	awk '{print "\t"$0}' | tac |\
 	sed 's/$/<\/code><\/li>/;s/^/<li><code>/' 
 echo '</ul>'
+PKGS_TOTAL=$(wc -l < ../pkgs.txt)
 
 echo '<h3>Packages:</h3>'
-echo '<code>Total: '
-wc -l < ../pkgs.txt
+echo "<code>Total: ${PKGS_TOTAL}"
 echo '</code><br/><code>GIT/SVN/HG/BZR: '
 grep -Pe '-(git|svn|hg|bzr)-' ../pkgs.txt | wc -l
 echo '</code><br/><code>Failing (hourly): '
@@ -77,6 +96,8 @@ echo '</code><br/><code>systemd-nspawn fu**ing us: '
 grep -l 'scope already exists' ../makepkglogs/*.log | wc -l
 echo '</code><br/><code>wrongly terminated containers: '
 grep -l 'Found an older chroot' ../makepkglogs/*.log | wc -l
+echo '</code><br/><code>Downloaded at least once (including now removed packages): '
+echo "$PKGS_IP_COUNT" | wc -l
 echo '</code><br/>'
 
 echo '<h4>Versions:</h4>'
