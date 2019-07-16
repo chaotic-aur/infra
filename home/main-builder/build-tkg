@@ -171,6 +171,15 @@ if [ -z "$TKG_NONV" ]; then
 	cd ..
 fi
 
+# - vulkan-headers
+if [ -z "$TKG_NOVK" ]; then
+	cd vulkan-headers-git || exit
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/vulkan-headers-git.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+	cd ..
+fi
+
 #
 # Clean
 #

@@ -83,6 +83,7 @@ plasmafox
 retdec-git
 rpcs3-git
 vlc-git
+vulkan-headers-git
 wine-tkg-esync-faudio-git
 wine-tkg-esync-faudio-opt-git
 wine-tkg-esync-git
