@@ -166,13 +166,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm switchboard-git
 	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-music-git$')" ]]; then
-		echo "$WTMK pantheon-music-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm libsignon-glib
-	fi
 
 	# * @Lone_Wolf's Mesa
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?mesa-git$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?mesa(-aco)?-git$')" ]]; then
 		echo "$WTMK E ai meu chapa!"
 		export TARGET_ENV="export MESA_WHICH_LLVM=1${NEWLINE}${TARGET_ENV}"
 	fi
@@ -180,10 +176,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Linux-Clear
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^linux-clear')" ]]; then
 		echo "$WTMK Galera estranha!"
-		sed -i'' 's/^_subarch=.*$/_subarch=26/g' PKGBUILD
+		sed -i'' 's/^_subarch=.*$/_subarch=27/g' PKGBUILD
 	fi
 
-	# * Tired of things not getting fixed in AUR
+	# * Tired of things not getting fixed in AUR & ArchLinux
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^featherpad-git$')" ]]; then
 		echo "$WTMK feather-pad-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm hunspell
@@ -191,6 +187,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?vkd3d-git$')" ]]; then
 		echo "$WTMK vkd3d-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm vulkan-headers-git
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^qps-git$')" ]]; then
+		echo "$WTMK qps-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm lxqt-build-tools
 	fi
 
 	# * People who think they're smart

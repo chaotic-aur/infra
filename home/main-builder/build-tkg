@@ -40,12 +40,12 @@ kernel_setup() {
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_OPTIPROFILE=\"[^\"]*\"/_OPTIPROFILE=\"1\"/g
 	s/_modprobeddb=\"[^\"]*\"/_modprobeddb=\"false\"/g
-	s/_menuconfig=\"[^\"]*\"/_menuconfig=\"false\"/g
+	s/_menunconfig=\"[^\"]*\"/_menunconfig=\"false\"/g
 	s/_cpusched=\"[^\"]*\"/_cpusched=\"$1\"/g
 	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"0\"/g
 	s/_ftracedisable=\"[^\"]*\"/_ftracedisable=\"true\"/g
 	s/_numadisable=\"[^\"]*\"/_numadisable=\"false\"/g
-	s/_full_tickless=\"[^\"]*\"/_full_tickless=\"true\"/g
+	s/_tickless=\"[^\"]*\"/_tickless=\"1\"/g
 	s/_voluntary_preempt=\"[^\"]*\"/_voluntary_preempt=\"true\"/g
 	s/_acs_override=\"[^\"]*\"/_acs_override=\"true\"/g
 	s/_ksm_uksm=\"[^\"]*\"/_ksm_uksm=\"true\"/g

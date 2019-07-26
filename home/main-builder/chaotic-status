@@ -96,8 +96,6 @@ echo '</code><br/><code>systemd-nspawn fu**ing us: '
 grep -l 'scope already exists' ../makepkglogs/*.log | wc -l
 echo '</code><br/><code>wrongly terminated containers: '
 grep -l 'Found an older chroot' ../makepkglogs/*.log | wc -l
-echo '</code><br/><code>Downloaded at least once (including now removed packages): '
-echo "$PKGS_IP_COUNT" | wc -l
 echo '</code><br/>'
 
 echo '<h4>Versions:</h4>'
