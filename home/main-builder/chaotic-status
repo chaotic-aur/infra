@@ -16,21 +16,29 @@ fi
 # Code
 
 cd /var/log/httpd
-UNIQ_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | sort -u | awk '!/::1/')
+[ -z "$NOT_MAIN" ] && MAIN_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
+MIRROR_LOG="/home/paran0id/logs/nginx_access.log"
+[ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo cat "$MIRROR_LOG" | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
+
+UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" | sort -u)
 
 echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family: sans-serif;">'
 echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintainer&#x27;s notes.</p><h2>Ranks, Numbers and Packages</h2>'
 
-echo '<h3>Time range</h3><ul>'
-echo '<li>From: <code>'
+echo '<h3>About numbers source</h3><ul>'
+echo '<li>Data aquired from main repo logs, between <code>'
 find . -type f -name "access*" -printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
 	sort | head -n 1 | awk '{print $2}' |\
 	xargs head -n 1 | grep -Po '(?<=\[)([^\]])*'
-echo '</code></li>'
-echo '<li>Until: <code>'
+echo '</code> and <code>'
 tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
-echo '</code></li></ul>'
-echo '<p>Every detail displayed in this page comes from data capture only in between this time range!</p>'
+echo '</code></li>' '<li>Data aquired from @BangL'"'"'s mirror logs, between <code>'
+sudo head -n 1 "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
+echo '</code> and <code>'
+sudo tail -n 1 "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
+echo '</code></li>' '</ul>'
+
+echo '<!-- MAIN REPO ' $(echo "$MAIN_ACCESS" | wc -l) ' || MIRROR ' $(echo "$MIRROR_ACCESS" | wc -l) ' -->' 
 
 PKGS_IP_COUNT=$(
 	echo "$UNIQ_ACCESS" |\
@@ -91,7 +99,11 @@ echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 2)
 echo '</code><br/><code>Failing (daily): '
 echo $(expr $(ls -1 ../makepkglogs/_daily/*.log | wc -l) - 2)
 echo '</code><br/><code>Failing (TkG): '
-echo $(ls -1 ../makepkglogs/_daily/tkg/*.log 2>&- | wc -l)
+if [ "$(systemctl is-active build-sunset.service)" == 'active' ]; then
+	echo 'Building now...'
+else
+	echo $(ls -1 ../makepkglogs/_daily/tkg/*.log 2>&- | wc -l)
+fi
 echo '</code><br/><code>systemd-nspawn fu**ing us: '
 grep -l 'scope already exists' ../makepkglogs/*.log | wc -l
 echo '</code><br/><code>wrongly terminated containers: '

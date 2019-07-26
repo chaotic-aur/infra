@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
 LOGDIR='/srv/http/chaotic-aur/makepkglogs/_daily'
-mkdir -p '/tmp/daily.llvm'
+cd /tmp
+
+# Someplace nice to work
+BUILDDIR="llvm.$(date '+%Y%m%d%H%M%S')"
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR" || exit
 
 single_build() {
-	cd '/tmp/daily.llvm'
-	echo "[build-llvm] Target: $1"
-
-	echo '[build-llvm] Downloading'
+	echo '[build-llvm] Selected ' "$1"
 	repoctl down "$1" || return
 	
-	echo '[build-llvm] Building'
-	cd "$1"
+	echo '[build-llvm] Building ' "$1"
+	pushd "$1" || return
 	~/chaotic-makepkg -c --nocheck --noconfirm \
-		2>&1 | tee "$LOGDIR/${1}.log" && \
+		2>&1 | tee "../${1}.log" && \
 		~/chaotic-add
 	
-	echo '[build-llvm] Nuking'
-	cd '/tmp/daily.llvm'
+	echo '[build-llvm] Nuking ' "$1"
+	popd
 	rm -rf "$1"
 }
 
@@ -26,3 +28,16 @@ for _PKG_PRE in '' 'lib32-'; do
 		single_build "${_PKG_PRE}llvm${_PKG_POS}"
 	done
 done
+
+# We deserve to know the truth!
+echo '[build-llvm] Submiting logs'
+rm add.log
+mv ./*.log "$LOGDIR/"
+
+echo '[build-llvm] Cleaning dirty'
+cd ..
+rm -rf "$BUILDDIR"
+
+echo '[build-llvm] Remove successful packages from logs'
+cd "$LOGDIR"
+~/chaotic-clean-logs

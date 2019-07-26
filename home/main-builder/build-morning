@@ -4,7 +4,7 @@ cd /tmp
 
 # Create and enter build dir
 BUILDDIR="morning.$(date '+%Y%m%d%H%M%S')"
-mkdir -p "$BUILDDIR" || exit
+mkdir -p "$BUILDDIR"
 cd "$BUILDDIR" || exit
 
 # batchb build all these bad guys
@@ -14,9 +14,9 @@ repoctl down vlc-git rpcs3-git wireguard-dkms-git ffmpeg-full retdec-git nss-hg
 # Build both xamarin variations
 repoctl down xamarin-android-git
 pushd xamarin-android-git
-	~/chaotic-makepkg --noconfirm | tee "$LOGDIR/xamarin-android-git.log"
+	~/chaotic-makepkg --noconfirm | tee '../xamarin-android-git.log'
 	sed -i'' 's/^#_include_proprietary=.*$/_include_proprietary=true/g' PKGBUILD
-	~/chaotic-makepkg -cC --noconfirm | tee "$LOGDIR/xamarin-android-proprietary-git.log"
+	~/chaotic-makepkg -cC --noconfirm | tee '../xamarin-android-proprietary-git.log'
 	~/chaotic-add
 popd
 
@@ -28,10 +28,10 @@ mv ./*.log "$LOGDIR/"
 cd ..
 rm -rf "$BUILDDIR"
 
-# Others specials guys
-~/build-llvm
-~/build-firefoxes
-
 # Remove logs about succesful builds
 cd "$LOGDIR"
 ~/chaotic-clean-logs
+
+# Others specials guys
+~/build-llvm
+~/build-firefoxes

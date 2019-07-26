@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-
+LOGDIR=/srv/http/chaotic-aur/makepkglogs/_daily
 cd /tmp
 
 #  Do our directory
 BUILDDIR="firefox.$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$BUILDDIR"
-cd "$BUILDDIR"
+cd "$BUILDDIR" || exit
 
 # Download our beloved firefox
 repoctl down firefox-wayland-hg
@@ -18,10 +18,9 @@ git clone https://github.com/torvic9/kplasmafoxhelper.git
 echo '[build-firefox] Building! '
 ~/chaotic-batchbuild kplasmafoxhelper -- plasmafox -- firefox-hg -- firefox-wayland-hg
 
-# Logging cause things get crazy
+# Move logs around
 echo '[build-hourly] Submiting logs:'
-LOGDIR=/srv/http/chaotic-aur/makepkglogs/_daily
-mkdir -p "$LOGDIR"
+rm add.log
 mv ./*.log "$LOGDIR/"
 
 # Cleaning hour
