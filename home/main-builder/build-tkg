@@ -2,6 +2,37 @@
 export TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
 mkdir -p "$TKGLOGS"
 
+# CONFIG
+
+# - Wine
+
+# (staging vkd3d faudio)
+local _WINE_VARIATIONS=(
+	'false false false'
+	'false false true'	# faudio
+	'false true false'	# vkd3d
+	'false true true'	# vkd3d, faudio
+	'true false false'	# staging
+	'true false true'	# staging, faudio
+	'true true false'	# staging, vkd3d
+	'true true true'	# staging, vkd3d, faudio
+)
+
+# - Linux
+
+# (version)
+local _LINUX_VERSIONS=(
+	#'419'
+	'51'
+	'52'
+	#'53-rc'
+)
+# (scheduler yield)
+local _LINUX_VARIATIONS=(
+	'pds 0'
+	'bmq 1'
+)
+
 #
 # Change building settings to automate
 #
@@ -10,26 +41,25 @@ mkdir -p "$TKGLOGS"
 wine_setup() {
 	git checkout customization.cfg PKGBUILD
 
-	export _USE_DXVKGI='true'
-	if [ "$3" == 'true' ]; then
-		export _USE_DXVKGI='false'
+	local _USE_DXVKGI='true'
+	if [ "$2" == 'true' ]; then
+		_USE_DXVKGI='false'
 	fi
 
 	sed -i'' "
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
 	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
-	s/_use_pba=\"[^\"]*\"/_use_pba=\"$2\"/g
-	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$3\"/g
+	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$2\"/g
 	s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
-	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$4\"/g
+	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$3\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 	" customization.cfg
 
 	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
 	export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
 
-	echo "[build-tkg] customization setted to: ${_PKGNAME}"
+	echo "[build-tkg] customization set to: ${_PKGNAME}"
 }
 
 # - Linux
@@ -42,10 +72,10 @@ kernel_setup() {
 	s/_modprobeddb=\"[^\"]*\"/_modprobeddb=\"false\"/g
 	s/_menunconfig=\"[^\"]*\"/_menunconfig=\"false\"/g
 	s/_cpusched=\"[^\"]*\"/_cpusched=\"$1\"/g
-	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"0\"/g
+	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"$2\"/g
 	s/_ftracedisable=\"[^\"]*\"/_ftracedisable=\"true\"/g
 	s/_numadisable=\"[^\"]*\"/_numadisable=\"false\"/g
-	s/_tickless=\"[^\"]*\"/_tickless=\"1\"/g
+	s/_tickless=\"[^\"]*\"/_tickless=\"2\"/g
 	s/_voluntary_preempt=\"[^\"]*\"/_voluntary_preempt=\"true\"/g
 	s/_acs_override=\"[^\"]*\"/_acs_override=\"true\"/g
 	s/_ksm_uksm=\"[^\"]*\"/_ksm_uksm=\"true\"/g
@@ -78,7 +108,16 @@ nvidia_setup() {
 	if [ "$2" == '1' ]; then
 		export TARGET_EXTRAPKGS='linux-headers'
 	else
-		export TARGET_EXTRAPKGS="$(echo linux{,-lts,-zen,51-tkg-bmq,51-tkg-pds,52-tkg-bmq,52-tkg-pds,-clear,-rt,-mainline}-headers)"
+		local _EXTRAPKGS="$(echo linux{,-lts,-zen,-clear,-rt,-mainline}-headers)"
+		for VERSION in "${_LINUX_VERSIONS[@]}"
+		do
+			for VARIATION in "${_LINUX_VARIATIONS[@]}"
+			do
+				local _VAR=($VARIATION)
+				_EXTRAPKGS+=" linux$VERSION-tkg-${_VAR[0]}"
+				export TARGET_EXTRAPKGS=$_EXTRAPKGS
+			done
+		done
 	fi
 }
 
@@ -108,7 +147,7 @@ cd TkG
 # - Wine
 if [ -z "$TKG_NOWINE" ]; then
 	cd wine-tkg-git || exit
-	for VARIATION in 'false false false false' 'false true false false' 'true true false false' 'true false false false' 'false false true false' 'true false true false' 'false false false true' 'false true false true' 'true true false true' 'true false false true' 'false false true true' 'true false true true'
+	for VARIATION in "${_WINE_VARIATIONS[@]}"
 	do
 		git reset --hard HEAD
 		git clean -dfx
@@ -123,7 +162,7 @@ if [ -z "$TKG_NOWINE" ]; then
 		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
 		" customization.cfg
 
-		echo "[build-tkg] customization setted to: ${_PKGNAME/%-git/-opt-git}"
+		echo "[build-tkg] customization set to: ${_PKGNAME/%-git/-opt-git}"
 
 		export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
 		ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
@@ -137,28 +176,26 @@ if [ -z "$TKG_NOWINE" ]; then
 	cd ..
 fi
 
-# - Linux 5.1
-if [ -z "$TKG_NO51" ]; then
-	cd linux51-tkg || exit
-	kernel_setup 'bmq'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51-bmq.log"
-	kernel_setup 'pds'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux51-pds.log"
-	~/chaotic-add
-	unset TARGET_EXTRAPKGS
-	cd ..
-fi
-
-# - Linux 5.2
-if [ -z "$TKG_NO52" ]; then
-	cd linux52-tkg || exit
-	kernel_setup 'bmq'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux52-bmq.log"
-	kernel_setup 'pds'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux52-pds.log"
-	~/chaotic-add
-	unset TARGET_EXTRAPKGS
-	cd ..
+# - Linux
+if [ -z "$TKG_NOLINUX" ]; then
+	for VERSION in "${_LINUX_VERSIONS[@]}"
+	do
+		directory="linux${VERSION}-tkg"
+		if [ -d $directory ]; then
+			cd $directory || exit
+			for VARIATION in "${_LINUX_VARIATIONS[@]}"
+			do
+				kernel_setup $VARIATION
+				local _VAR=($VARIATION)
+				~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux${VERSION}-${_VAR[0]}.log"
+				~/chaotic-add
+				unset TARGET_EXTRAPKGS
+			done
+			cd ..
+		else
+			echo "No code for linux${VERSION} found."
+		fi
+	done
 fi
 
 # - NVIDIA
@@ -175,6 +212,15 @@ fi
 if [ -z "$TKG_NOVK" ]; then
 	cd vulkan-headers-git || exit
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/vulkan-headers-git.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+	cd ..
+fi
+
+# - mesa
+if [ -z "TKG_NOMESA" ]; then
+	cd mesa-git || exit
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
 	~/chaotic-add
 	unset TARGET_EXTRAPKGS
 	cd ..
