@@ -218,11 +218,10 @@ if [ -z "$TKG_NOVK" ]; then
 fi
 
 # - mesa
-if [ -z "TKG_NOMESA" ]; then
+if [ -z "$TKG_NOMESA" ]; then
 	cd mesa-git || exit
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
 	~/chaotic-add
-	unset TARGET_EXTRAPKGS
 	cd ..
 fi
 
