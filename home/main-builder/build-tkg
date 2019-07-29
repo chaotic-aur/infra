@@ -7,7 +7,7 @@ mkdir -p "$TKGLOGS"
 # - Wine
 
 # (staging vkd3d faudio)
-local _WINE_VARIATIONS=(
+_WINE_VARIATIONS=(
 	'false false false'
 	'false false true'	# faudio
 	'false true false'	# vkd3d
@@ -21,14 +21,14 @@ local _WINE_VARIATIONS=(
 # - Linux
 
 # (version)
-local _LINUX_VERSIONS=(
+_LINUX_VERSIONS=(
 	#'419'
 	'51'
 	'52'
 	#'53-rc'
 )
 # (scheduler yield)
-local _LINUX_VARIATIONS=(
+_LINUX_VARIATIONS=(
 	'pds 0'
 	'bmq 1'
 )
