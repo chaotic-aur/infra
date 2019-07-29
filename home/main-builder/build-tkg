@@ -121,6 +121,21 @@ nvidia_setup() {
 	fi
 }
 
+# - Mesa
+mesa_setup() {
+	git checkout customization.cfg PKGBUILD
+
+	sed -i'' "
+	s/^#?MESA_WHICH_LLVM=.*$/MESA_WHICH_LLVM=1/g
+	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
+	" customization.cfg
+
+	echo '[build-tkg] applied mesa customization'
+	
+	export TARGET_MECHA='mesatkg'
+}
+
+
 #
 # Helpers
 #
@@ -220,8 +235,10 @@ fi
 # - mesa
 if [ -z "$TKG_NOMESA" ]; then
 	cd mesa-git || exit
+	mesa_setup
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
 	~/chaotic-add
+	unset TARGET_MECHA
 	cd ..
 fi
 

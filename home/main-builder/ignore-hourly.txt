@@ -39,6 +39,7 @@ lib32-llvm-libs-minimal-git
 lib32-llvm-libs-svn
 lib32-llvm-minimal-git
 lib32-llvm-svn
+lib32-mesa-tkg-git
 lib32-nvidia-utils-tkg
 lib32-opencl-nvidia-tkg
 libarchive-qt
@@ -71,6 +72,7 @@ lone_wolf-lib32-llvm-libs-git
 lone_wolf-llvm-git
 lone_wolf-llvm-libs-git
 lone_wolf-ocaml-git
+mesa-tkg-git
 mir-git
 nss-hg
 nvidia-dkms-tkg
