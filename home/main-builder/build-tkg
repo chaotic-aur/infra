@@ -82,6 +82,7 @@ kernel_setup() {
 	s/_bcachefs=\"[^\"]*\"/_bcachefs=\"true\"/g
 	s/_bfqmq=\"[^\"]*\"/_bfqmq=\"true\"/g
 	s/_zfsfix=\"[^\"]*\"/_zfsfix=\"true\"/g
+	s/_fsync=\"[^\"]*\"/_fsync=\"true\"/g
 	s/_processor_opt=\"[^\"]*\"/_processor_opt=\"generic\"/g
 	s/_smt_nice=\"[^\"]*\"/_smt_nice=\"true\"/g
 	s/_random_trust_cpu=\"[^\"]*\"/_random_trust_cpu=\"true\"/g
@@ -133,6 +134,7 @@ mesa_setup() {
 	echo '[build-tkg] applied mesa customization'
 	
 	export TARGET_MECHA='mesatkg'
+	export TARGET_EXTRAPKGS='multilib-devel'
 }
 
 
@@ -239,6 +241,7 @@ if [ -z "$TKG_NOMESA" ]; then
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
 	~/chaotic-add
 	unset TARGET_MECHA
+	unset TARGET_EXTRAPKGS
 	cd ..
 fi
 
