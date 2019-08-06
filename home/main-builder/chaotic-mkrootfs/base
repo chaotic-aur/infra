@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -o errexit
+
+# constraints
+[[ "$(whoami)" != 'main-builder' ]] && echo 'Oh Who Are You?' && exit
+
+# constants & settings
+[ -z "$BUILD_DIR" ] && source ~/'chaotic-mkrootfs/env-default'
+readonly BUILD_ID="${BUILD_ID:-$(date '+%Y%m%d%H%M%S')}"
+readonly BUILD_NAME="${BUILD_NAME:-base-${BUILD_ID}-$BUILD_ARCH}"
+readonly BUILD_BASE_PKGS="${BUILD_BASE_PKGS:-base networkmanager}"
+readonly BUILD_IMAGE="${BUILD_NAME}.ext4.img"
+
+# create the directory
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
+
+# create root env
+sudo mkfs.ext4 -m 0 -q "$BUILD_IMAGE" 4G
+sudo mkdir "$BUILD_NAME"
+sudo mount -t ext4 "$BUILD_IMAGE" "$BUILD_NAME"
+pushd "$BUILD_NAME"
+
+# install base
+sudo pacstrap -GM . base
+
+# set locale
+pushd ./etc
+sudo rm localtime
+sudo ln -s ../usr/share/zoneinfo/UTC ./localtime
+popd
+sudo arch-chroot . hwclock --systohc
+
+echo 'en_US.UTF-8 UTF-8' | sudo tee -a ./etc/locale.gen > /dev/null
+sudo arch-chroot . locale-gen
+
+echo 'LANG=en_US.UTF-8' | sudo cp /dev/stdin ./etc/locale.conf
+echo 'KEYMAP=us' | sudo cp /dev/stdin ./etc/vconsole.conf
+
+# set hostname and hosts
+echo 'myarchlinux' | sudo cp /dev/stdin ./etc/hostname
+
+cat <<EOF | sudo tee -a ./etc/hosts > /dev/null
+127.0.0.1	localhost
+::1		localhost
+127.0.1.1	myarchlinux.localdomain	myarchlinux
+EOF
+
+# add some servers
+cat <<EOF | sudo tee -a ./etc/pacman.d/mirrorlist > /dev/null
+Server = http://mirrors.evowise.com/archlinux/\$repo/os/\$arch
+Server = http://mirror.rackspace.com/archlinux/\$repo/os/\$arch
+EOF
+sudo arch-chroot . pacman-key --init
+sudo arch-chroot . pacman-key --populate archlinux
+sudo arch-chroot . pacman -Syu --noconfirm
+
+# change kernel
+sudo arch-chroot . pacman -R linux --noconfirm
+sudo arch-chroot . pacman -S linux-zen linux-zen-headers --noconfirm
+
+# root password
+echo -e 'nicepass\nnicepass' | sudo arch-chroot . passwd root
+
+# add chaotic-aur
+sudo arch-chroot . pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB
+sudo arch-chroot . pacman-key --lsign-key 3056513887B78AEB 
+sudo arch-chroot . pacman -Syu --noconfirm
+
+cat <<EOF | sudo tee -a ./etc/paciman.conf > /dev/null
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+
+[chaotic-aur]
+Server = https://lonewolf.pedrohlc.com/\$repo/\$arch
+Server = http://chaotic.bangl.de/\$repo/\$arch
+EOF
+
+# essentials
+sudo pacman -r . -R vi --noconfirm
+sudo pacman -r . -S --noconfirm --needed \
+	base-devel multilib-devel git \
+	sudo yay networkmanager pulseaudio-alsa \
+	grub efibootmgr os-prober \
+	ntfs-3g dosfstools mtools exfat-utils unrar p7zip \
+	neovim-drop-in openssh tmux mosh htop \
+	intel-ucode mesa lib32-mesa libva-mesa-driver vulkan-icd-loader \
+	android-udev-git gvfs-mtp
+
+sudo systemctl --root=. enable NetworkManager
+
+# create frogjr
+sudo arch-chroot . useradd -m -g wheel -G users -s /bin/bash frogjr
+echo -e 'nicepass\nnicepass' | sudo arch-chroot . passwd frogjr
+echo '%wheel ALL=(ALL) ALL' | sudo tee -a ./etc/sudoers > /dev/null
+
+# clean caches
+yes | sudo pacman -r . -Scc
+
+# move rootfs to a tar.xz
+[ "$BUILD_BASE_TAR" == '1' ] && sudo tar -cJf ../"${BUILD_NAME}.tar.xz" .
+
+# we no longer need extracted rootfs
+popd
+sudo umount -Rv "$BUILD_NAME"
+sudo rm -rf "$BUILD_NAME/"
+
+# convert image
+qemu-img convert -f raw -O qcow2 -c "$BUILD_IMAGE" "${BUILD_NAME}.qcow2"
+sudo rm "$BUILD_IMAGE"
+
+echo '[chaotic-mkrootfs] Finishing creating ' "${BUILD_NAME}.qcow2"

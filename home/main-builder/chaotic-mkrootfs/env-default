@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+readonly BUILD_DIR='/tmp/chaotic-rootfs'
+readonly BUILD_ARCH='x86_64'

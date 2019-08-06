@@ -158,13 +158,17 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK pantheon-core-git/gala-stable detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
 	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(pantheon|lightdm-pantheon|wingpanel|switchboard|gala)\-.*git$')" ]]; then
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^((pantheon|lightdm-pantheon|wingpanel|switchboard|gala)\-.*git|eidete-bzr)$')" ]]; then
 		echo "$WTMK pantheon-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm granite-git cmake
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm switchboard-git
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wingpanel\-.*\-git|pantheon-applications-menu-git$')" ]]; then
+		echo "$WTMK pantheon-*-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm wingpanel-git
 	fi
 
 	# * @Lone_Wolf's Mesa
@@ -195,6 +199,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32-gamemode$')" ]]; then
 		echo "$WTMK lib32-gamemode detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm lib32-dbus
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^bitcoin-git$')" ]]; then
+		echo "$WTMK lib32-gamemode detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm python
 	fi
 
 	# * People who think they're smart
