@@ -121,6 +121,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo '#!/usr/bin/env bash' | tee "$TARGET_WIZARD"
 		sudo chown $BUILD_USER:$BUILD_USER "$TARGET_WIZARD"
 		sudo chmod 755 "$TARGET_WIZARD"
+		target_run set -o errexit
 
 		# Finish
 		popd
@@ -159,8 +160,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^((pantheon|lightdm-pantheon|wingpanel|switchboard|gala)\-.*git|eidete-bzr)$')" ]]; then
-		echo "$WTMK pantheon-*-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm granite-git cmake
+		if [[ ! -z "$(grep 'granite' PKGBUILD)" ]]; then
+			echo "$WTMK pantheon-*-git detected, treating..."
+			target_run sudo pacman -S --needed --noconfirm granite-git
+		fi
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
@@ -199,10 +202,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32-gamemode$')" ]]; then
 		echo "$WTMK lib32-gamemode detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm lib32-dbus
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^bitcoin-git$')" ]]; then
-		echo "$WTMK lib32-gamemode detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm python
 	fi
 
 	# * People who think they're smart
