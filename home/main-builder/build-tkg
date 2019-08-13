@@ -33,6 +33,12 @@ _LINUX_VARIATIONS=(
 	'bmq 1'
 )
 
+# - NVIDIA
+_NVIDIA_VARIATIONS=(
+	'regular 3'
+	'vulkandev 1'
+)
+
 #
 # Change building settings to automate
 #
@@ -66,12 +72,13 @@ wine_setup() {
 kernel_setup() {
 	git checkout customization.cfg PKGBUILD
 
-	sed --debug -i'' "
+	sed -i'' "
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_OPTIPROFILE=\"[^\"]*\"/_OPTIPROFILE=\"1\"/g
 	s/_modprobeddb=\"[^\"]*\"/_modprobeddb=\"false\"/g
 	s/_menunconfig=\"[^\"]*\"/_menunconfig=\"false\"/g
 	s/_cpusched=\"[^\"]*\"/_cpusched=\"$1\"/g
+	s/_rr_interval=\"[^\"]*\"/_rr_interval=\"default\"/g
 	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"$2\"/g
 	s/_ftracedisable=\"[^\"]*\"/_ftracedisable=\"true\"/g
 	s/_numadisable=\"[^\"]*\"/_numadisable=\"false\"/g
@@ -99,11 +106,15 @@ kernel_setup() {
 # - NVIDIA
 nvidia_setup() {
 	rm options
+	git checkout customization.cfg PKGBUILD
 
-	sed --debug -i'' "
-	s/read \-p \"What driver version do you want\?.*$/export CONDITION=$1/g
-	s/read \-p \"Build the dkms package or the regular one\?.*$/export CONDITION=$2/g
-	s/read /echo /g
+	sed -i'' "
+	s/_driver_branch=\"[^\"]*\"/_driver_branch=\"$1\"/g
+	s/_dkms=\"[^\"]*\"/_dkms=\"true\"/g
+	" customization.cfg
+
+	sed -i'' "
+	s/read \-p \"What driver version do you want\?.*$/export CONDITION=$2/g
 	" PKGBUILD
 
 	if [ "$2" == '1' ]; then
@@ -218,10 +229,13 @@ fi
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
 	cd nvidia-all || exit
-	nvidia_setup '3' '1'
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-all.log"
-	~/chaotic-add
-	unset TARGET_EXTRAPKGS
+	for VARIATION in "${_LINUX_VARIATIONS[@]}"; do
+		nvidia_setup $VARIATION
+		local _VAR=($VARIATION)
+		~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-${_VAR[0]}.log"
+		~/chaotic-add
+		unset TARGET_EXTRAPKGS
+	done
 	cd ..
 fi
 
