@@ -165,12 +165,16 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 			target_run sudo pacman -S --needed --noconfirm granite-git
 		fi
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-polkit-agent-git$')" ]]; then
+		echo "$WTMK pantheon-polkit-agent-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm cmake
+	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm switchboard-git
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wingpanel\-.*\-git|pantheon-applications-menu-git$')" ]]; then
-		echo "$WTMK pantheon-*-git detected, treating..."
+		echo "$WTMK wingpanel-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm wingpanel-git
 	fi
 

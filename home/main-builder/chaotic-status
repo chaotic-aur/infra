@@ -20,7 +20,9 @@ cd /var/log/httpd
 MIRROR_LOG="/home/paran0id/logs/nginx_access.log"
 [ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo cat "$MIRROR_LOG" | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
 
-UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" | sed 's/vk-winelib/vk-mingw/g;s/esync/fsync/g;s/wine-tkg-.*-git/wine-tkg-...-git/g;s/linux..-tkg-.../linuxNN-tkg-.../g' | sort -u)
+UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" |\
+	sed 's/vk-winelib/vk-mingw/g;s/esync/fsync/g;s/wine-tkg-.*-git/wine-tkg/g;s/linux..-tkg-.../linux-tkg/g' |\
+	sort -u)
 
 echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family: sans-serif;">'
 echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintainer&#x27;s notes.</p><h2>Ranks, Numbers and Packages</h2>'
