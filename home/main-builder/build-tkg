@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 export TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
 mkdir -p "$TKGLOGS"
+set -o errexit
 
 # CONFIG
 
@@ -31,6 +32,17 @@ _LINUX_VERSIONS=(
 _LINUX_VARIATIONS=(
 	'pds 0'
 	'bmq 1'
+)
+
+# (processors)
+_LINUX_LATEST='52'
+_LINUX_MARCH=('atom' 'barcelona' 'bobcat' 'broadwell'
+	'bulldozer' 'cannonlake' 'core2' 'excavator'
+	'haswell' 'icelake' 'ivybridge' 'jaguar'
+	'k10' 'k8' 'k8sse3' 'mpsc' 'nehalem'
+	'piledriver' 'sandybridge' 'silvermont'
+	'skylake' 'skylakex' 'steamroller'
+	'westmere' 'zen' 'zen2'
 )
 
 # - NVIDIA
@@ -103,6 +115,15 @@ kernel_setup() {
 	export TARGET_EXTRAPKGS='ccache'
 }
 
+kernel_march_setup() {
+	kernel_setup $@
+
+	sed -i'' "
+	s/_processor_opt=\"[^\"]*\"/_processor_opt=\"$3\"/g
+	s/_custom_pkgbase=\"[^\"]*\"/_custom_pkgbase=\"linux-tkg-$1-$3\"/g
+	" customization.cfg
+}
+
 # - NVIDIA
 nvidia_setup() {
 	rm options
@@ -117,20 +138,7 @@ nvidia_setup() {
 	s/read \-p \"What driver version do you want\?.*$/export CONDITION=$2/g
 	" PKGBUILD
 
-	if [ "$2" == '1' ]; then
-		export TARGET_EXTRAPKGS='linux-headers'
-	else
-		local _EXTRAPKGS="$(echo linux{,-lts,-zen,-clear,-rt,-mainline}-headers)"
-		for VERSION in "${_LINUX_VERSIONS[@]}"
-		do
-			for VARIATION in "${_LINUX_VARIATIONS[@]}"
-			do
-				local _VAR=($VARIATION)
-				_EXTRAPKGS+=" linux$VERSION-tkg-${_VAR[0]}"
-				export TARGET_EXTRAPKGS=$_EXTRAPKGS
-			done
-		done
-	fi
+	export TARGET_EXTRAPKGS='linux-headers'
 }
 
 # - Mesa
@@ -214,7 +222,7 @@ if [ -z "$TKG_NOLINUX" ]; then
 			for VARIATION in "${_LINUX_VARIATIONS[@]}"
 			do
 				kernel_setup $VARIATION
-				local _VAR=($VARIATION)
+				_VAR=($VARIATION)
 				~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux${VERSION}-${_VAR[0]}.log"
 				~/chaotic-add
 				unset TARGET_EXTRAPKGS
@@ -226,12 +234,27 @@ if [ -z "$TKG_NOLINUX" ]; then
 	done
 fi
 
+# - Linux wit MARCH
+if [ -z "$TKG_NOLINUXMARCH" ]; then
+	cd "linux${_LINUX_LATEST}-tkg" || exit
+		for _VAR_SCHED in "${_LINUX_VARIATIONS[@]}"; do
+			for _VAR_MARCH in "${_LINUX_MARCH[@]}"; do
+				kernel_march_setup $_VAR_SCHED $_VAR_MARCH
+				_VAR=($_VAR_SCHED)
+				~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux-${_VAR[0]}-${_VAR_MARCH}.log"
+				~/chaotic-add
+				unset TARGET_EXTRAPKGS
+			done
+		done
+	cd ..
+fi
+
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
 	cd nvidia-all || exit
 	for VARIATION in "${_LINUX_VARIATIONS[@]}"; do
 		nvidia_setup $VARIATION
-		local _VAR=($VARIATION)
+		_VAR=($VARIATION)
 		~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-${_VAR[0]}.log"
 		~/chaotic-add
 		unset TARGET_EXTRAPKGS
