@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-export TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
-mkdir -p "$TKGLOGS"
 set -o errexit
 
 # CONFIG
+readonly TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
+readonly BLDTART='TkG.common'
 
 # - Wine
 
@@ -103,12 +103,13 @@ wine_makepkg() {
 # Clone TKG
 #
 cd /tmp || exit
-git clone https://github.com/Tk-Glitch/PKGBUILDS.git TkG || exit 4
-cd TkG
+git clone https://github.com/Tk-Glitch/PKGBUILDS.git "$BLDTART"
+cd "$BLDTART"
 
 #
 # Build
 #
+mkdir -p "$TKGLOGS"
 
 # - Wine
 if [ -z "$TKG_NOWINE" ]; then
@@ -180,7 +181,7 @@ fi
 #
 echo '[build-tkg] Nuking everything'
 cd /tmp || exit
-sudo rm -rf TkG
+sudo rm -rf "$BLDTART"
 
 
 # - Logs

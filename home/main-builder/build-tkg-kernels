@@ -2,18 +2,18 @@
 set -o errexit
 
 # CONFIG
-readonly _LOGS_PATH='/srv/http/chaotic-aur/makepkglogs/_daily/tkg/kernels'
+readonly TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg/kernels'
 readonly _TARGET_DIR='TkG.kernels'
 
 
 # (version)
-_LINUX_LTS='419'
-_LINUX_STABLE='52'
-_LINUX_SCHED=(
+readonly _LINUX_LTS='419'
+readonly _LINUX_STABLE='52'
+readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
 )
-_LINUX_MARCH=('generic'
+readonly _LINUX_MARCH=('generic'
     'atom' 'barcelona' 'bobcat' 'broadwell'
 	'bulldozer' 'cannonlake' 'core2' 'excavator'
 	'haswell' 'icelake' 'ivybridge' 'jaguar'
@@ -102,4 +102,4 @@ sudo rm -rf "$_TARGET_DIR"
 
 # - Logs
 cd "$TKGLOGS"
-~/chaotic-clean-logs
+#~/chaotic-clean-logs

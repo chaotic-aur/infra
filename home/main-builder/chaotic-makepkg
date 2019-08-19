@@ -169,6 +169,14 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK pantheon-polkit-agent-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm cmake
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-dpms-helper-git$')" ]]; then
+		echo "$WTMK pantheon-dpms-helper-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm gnome-settings-daemon-elementary
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wingpanel-indicator-ayatana(-git)?$')" ]]; then
+		echo "$WTMK wingpanel-indicator-ayatana detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm gtk3-ubuntu
+	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
 		echo "$WTMK switchboad-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm switchboard-git
@@ -176,6 +184,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wingpanel\-.*\-git|pantheon-applications-menu-git$')" ]]; then
 		echo "$WTMK wingpanel-*-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm wingpanel-git
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(libindicator|ido)-ubuntu$')" ]]; then
+		echo "$WTMK ido-ubuntu detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm python3 gtk3-ubuntu
 	fi
 
 	# * @Lone_Wolf's Mesa
