@@ -20,7 +20,7 @@ echo '[build-firefox] Building! '
 
 # Move logs around
 echo '[build-hourly] Submiting logs:'
-rm add.log
+rm _add.log || echo 'No add?'
 mv ./*.log "$LOGDIR/"
 
 # Cleaning hour

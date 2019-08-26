@@ -21,7 +21,7 @@ pushd xamarin-android-git
 popd
 
 # Move logs around
-rm add.log
+rm _add.log
 mv ./*.log "$LOGDIR/"
 
 # Leave build dir

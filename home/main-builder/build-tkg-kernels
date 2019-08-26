@@ -12,6 +12,7 @@ readonly _LINUX_STABLE='52'
 readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
+	'muqss 0'
 )
 readonly _LINUX_MARCH=('generic'
     'atom' 'barcelona' 'bobcat' 'broadwell'
@@ -35,12 +36,16 @@ kernel_setup() {
 	if [ "$3" == 'generic' ]; then
 		local _PKGBASE="linux-tkg-$1"
 	fi
+	if [ "$4" == 'lts' ]; then
+		local _PKGBASE="linux-lts-tkg-$1"
+	fi
 
 	sed -i'' "
 	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
 	s/_OPTIPROFILE=\"[^\"]*\"/_OPTIPROFILE=\"1\"/g
 	s/_modprobeddb=\"[^\"]*\"/_modprobeddb=\"false\"/g
 	s/_menunconfig=\"[^\"]*\"/_menunconfig=\"false\"/g
+	s/_diffconfig=\"[^\"]*\"/_diffconfig=\"false\"/g
 	s/_cpusched=\"[^\"]*\"/_cpusched=\"$1\"/g
 	s/_rr_interval=\"[^\"]*\"/_rr_interval=\"default\"/g
 	s/_sched_yield_type=\"[^\"]*\"/_sched_yield_type=\"$2\"/g
@@ -49,6 +54,7 @@ kernel_setup() {
 	s/_tickless=\"[^\"]*\"/_tickless=\"2\"/g
 	s/_voluntary_preempt=\"[^\"]*\"/_voluntary_preempt=\"true\"/g
 	s/_acs_override=\"[^\"]*\"/_acs_override=\"true\"/g
+	s/_amd_overdrive_flickering_fix=\"[^\"]*\"/_amd_overdrive_flickering_fix=\"false\"/g
 	s/_ksm_uksm=\"[^\"]*\"/_ksm_uksm=\"true\"/g
 	s/_bcachefs=\"[^\"]*\"/_bcachefs=\"true\"/g
 	s/_bfqmq=\"[^\"]*\"/_bfqmq=\"true\"/g
@@ -91,6 +97,20 @@ for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
 	done
 done
 popd
+
+#
+# LTS
+#
+pushd "linux${_LINUX_LTS}-tkg"
+for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
+	kernel_setup $_VAR_SCHED 'generic' 'lts'
+	_VAR=($_VAR_SCHED)
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux-lts-${_VAR[0]}.log"
+	~/chaotic-add
+	unset TARGET_EXTRAPKGS
+done
+popd
+
 
 #
 # Clean

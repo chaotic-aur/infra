@@ -165,8 +165,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 			target_run sudo pacman -S --needed --noconfirm granite-git
 		fi
 	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-polkit-agent-git$')" ]]; then
-		echo "$WTMK pantheon-polkit-agent-git detected, treating..."
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-(polkit-agent|files)-git$')" ]]; then
+		echo "$WTMK pantheon-*-git without cmake detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm cmake
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-dpms-helper-git$')" ]]; then
@@ -215,9 +215,17 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK qps-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm lxqt-build-tools
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^msbuild(\-git)?$')" ]]; then
+		echo "$WTMK msbuild detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm nuget-nightly dotnet-{host,sdk,runtime}-preview 
+	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32-gamemode$')" ]]; then
 		echo "$WTMK lib32-gamemode detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm lib32-dbus
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^mingw-w64-gcc$')" ]]; then
+		echo "$WTMK mingw gcc detected, treating..."
+		sed -i'' 's/\--disable-dw2-exceptions/--disable-sjlj-exceptions --with-dwarf2/g' PKGBUILD
 	fi
 
 	# * People who think they're smart

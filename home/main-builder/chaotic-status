@@ -21,7 +21,7 @@ MIRROR_LOG="/home/paran0id/logs/nginx_access.log"
 [ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo cat "$MIRROR_LOG" | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
 
 UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" |\
-	sed 's/vk-winelib/vk-mingw/g;s/esync/fsync/g;s/wine-tkg-.*-git/wine-tkg/g;s/linux..-tkg-.../linux-tkg/g' |\
+	sed 's/vk-winelib/vk-mingw/g;s/esync/fsync/g' |\
 	sort -u)
 
 echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family: sans-serif;">'
@@ -47,16 +47,17 @@ PKGS_IP_COUNT=$(
 	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	sort -u |\
 	awk '{print $2}' |\
-	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)' |\
-	sort | uniq -c | sort -nr
+	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)'
 )
 
-echo '<h3>Top 25 most downloaded (per unique users):</h3>'
+echo '<h3>Top ' $NUM_DOWN ' most downloaded (per unique users):</h3>'
 echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
 echo "$PKGS_IP_COUNT" |\
+	sed 's/wine-tkg-.*-git/wine-tkg-*/g;s/linux-tkg-...-[^-]*/linux-tkg-*/g;s/linux..-tkg-.../linux-tkg-*/g' |\
+	sort | uniq -c | sort -nr |\
 	head -n $NUM_DOWN |\
 	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
-echo '</table><br/>'
+echo '</table>' '* For TkG packages check <a href="#tkg">here</a>.<br/>'
 
 echo '<h3>Top 10 users (per unique downloaded packages):</h3>'
 echo '<table border="1"><tr><td>Packages</td><td>IP</td><td>Country</td></tr>'
@@ -132,5 +133,14 @@ echo "<tr><td>repo archive<br/>(outdate binaries)</td><td>${_AVAIL[2]}</td></tr>
 echo "<tr><td>system</td><td>${_AVAIL[1]}</td></tr>"
 echo '</table>'
 
+
+echo '<h3 id="tkg">TkG most downloaded (per unique users):</h3>'
+echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
+echo "$PKGS_IP_COUNT" |\
+	grep -P '\-tkg(\-|$)' |\
+	sed -r 's/linux(420|50|51|52)-tkg/linux-tkg/g' |\
+	sort | uniq -c | sort -nr |\
+	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
+echo '</table><br/>'
 
 echo '</body></html>'

@@ -31,7 +31,7 @@ done
 
 # We deserve to know the truth!
 echo '[build-llvm] Submiting logs'
-rm add.log
+rm _add.log || echo 'No add?'
 mv ./*.log "$LOGDIR/"
 
 echo '[build-llvm] Cleaning dirty'
