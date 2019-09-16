@@ -3,7 +3,7 @@ LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/cubocore_
 cd /tmp
 
 git clone https://gitlab.com/cubocore/wiki.git
-cd ./wiki/PKGBUILD || exit
+cd ./wiki/PKGBUILD-git || exit
 ~/chaotic-batchbuild
 
 mkdir -p "$LDIR"

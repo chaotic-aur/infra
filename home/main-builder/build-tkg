@@ -56,12 +56,13 @@ wine_setup() {
 
 # - NVIDIA
 nvidia_setup() {
-	rm options
+	rm options || echo 'Starting first NV variation...'
 	git checkout customization.cfg PKGBUILD
 
 	sed -i'' "
 	s/_driver_branch=\"[^\"]*\"/_driver_branch=\"$1\"/g
 	s/_dkms=\"[^\"]*\"/_dkms=\"true\"/g
+	s/_nvdxvktest=\"[^\"]*\"/_nvdxvktest=\"true\"/g
 	" customization.cfg
 
 	sed -i'' "
@@ -76,7 +77,7 @@ mesa_setup() {
 	git checkout customization.cfg PKGBUILD
 
 	sed -i'' "
-	s/^#?MESA_WHICH_LLVM=.*$/MESA_WHICH_LLVM=1/g
+	s/#MESA_WHICH_LLVM=/MESA_WHICH_LLVM=4/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 	" customization.cfg
 
@@ -146,7 +147,7 @@ fi
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
 	cd nvidia-all || exit
-	for VARIATION in "${_LINUX_VARIATIONS[@]}"; do
+	for VARIATION in "${_NVIDIA_VARIATIONS[@]}"; do
 		nvidia_setup $VARIATION
 		_VAR=($VARIATION)
 		~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-${_VAR[0]}.log"
@@ -167,7 +168,8 @@ fi
 
 # - mesa
 if [ -z "$TKG_NOMESA" ]; then
-	cd mesa-git || exit
+	ln -s mesa-git mesa-tkg-git
+	cd mesa-tkg-git || exit
 	mesa_setup
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
 	~/chaotic-add
@@ -188,4 +190,5 @@ sudo rm -rf "$BLDTART"
 cd "$TKGLOGS"
 echo '[build-tkg] No need of successful logs'
 ~/chaotic-clean-logs
+cd  "$TKGLOGS"
 rm *-opt-git.log || echo 'OKAY'

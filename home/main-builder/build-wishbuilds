@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/librewish
+cd /tmp
+
+git clone https://github.com/librewish/wishbuilds.git
+cd ./wishbuilds/manjarowish || exit
+~/chaotic-batchbuild
+
+mkdir -p "$LDIR"
+mv *.log "$LDIR/"
+
+cd .. || exit
+rm -rf wishbuilds
+
+cd /tmp && rm -rf ./wiki
+cd "$LDIR" && ~/chaotic-clean-logs

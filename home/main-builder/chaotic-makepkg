@@ -199,7 +199,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * Linux-Clear
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^linux-clear')" ]]; then
 		echo "$WTMK Galera estranha!"
-		sed -i'' 's/^_subarch=.*$/_subarch=27/g' PKGBUILD
+		sed -i'' 's/^_subarch=.*$/_subarch='"$(grep Generic-x86-64 PKGBUILD | awk -F '.' '{print $1}' | awk '{print $2}')"'/g' PKGBUILD
 	fi
 
 	# * Tired of things not getting fixed in AUR & ArchLinux
@@ -227,6 +227,14 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK mingw gcc detected, treating..."
 		sed -i'' 's/\--disable-dw2-exceptions/--disable-sjlj-exceptions --with-dwarf2/g' PKGBUILD
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^mono-git$')" ]]; then
+		echo "$WTMK mono-git detected, treating..."
+		sed -i'' 's/# go-oo build:/return/g' PKGBUILD
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lxqt-sudo-git$')" ]]; then
+		echo "$WTMK lxqt-sudo-git detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm lxqt-build-tools-git
+	fi
 
 	# * People who think they're smart
 	if [[ ! -z "$(grep -P '^PKGEXT=' PKGBUILD)" ]]; then
@@ -240,7 +248,6 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
-
 	# * User cases
 	if [[ ! -z "$TARGET_REMPKGS" ]]; then
 		target_run sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
@@ -252,8 +259,16 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$TARGET_ENV" | tee -a "$TARGET_WIZARD"
 	fi
 
+	# * Sometimes X is stil required...
+	if [[ ! -z "$TARGET_USEX" ]]; then
+		echo "$WTMK X was required, treating..."
+		target_run sudo pacman -S --needed --noconfirm xorg-server-xvfb
+		target_run xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s $@
+
 	# * Makepkg
-	target_run /usr/local/bin/internal-makepkg -s $@
+	else
+		target_run /usr/local/bin/internal-makepkg -s $@
+	fi
 	
 	# Spawn contaienr and do everything
 	echo "$WTMK Finally spawning it:"
@@ -282,7 +297,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ "$BASE_NUKE" == '1' ]]; then
 		echo "$WTMK Nuking BASE..."
 		sudo rm -rf "$CHROOT/$BASE" || \
-		echo "$WTMK Unable to nuke!"
+	echo "$WTMK Unable to nuke!"
 	fi
 
 	# Don't even know if this works...

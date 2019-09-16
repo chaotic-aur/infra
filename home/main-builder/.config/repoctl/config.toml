@@ -15,7 +15,44 @@ repo = "/srv/http/chaotic-aur/x86_64/chaotic-aur.db.tar.gz"
 
 # ignore_aur is a set of package names that are ignored in conjunction
 # with AUR related tasks, such as determining if there is an update or not.
-ignore_aur = ["coreaction", "corearchiver", "corebox", "corefm", "coregarage", "corehunt", "coreimage", "coreinfo", "corekeyboard", "corepad", "corepaint", "corepdf", "corepins", "coreplayer", "corerenamer", "coreshot", "corestats", "corestuff", "coreterminal", "coretime", "coreuniverse", "kplasmafoxhelper", "lib32-mesa-tkg-git", "lib32-nvidia-utils-tkg", "lib32-opencl-nvidia-tkg", "libarchive-qt", "libcprime", "libcsys", "linux51-tkg-bmq", "linux51-tkg-bmq-headers", "linux51-tkg-pds", "linux51-tkg-pds-headers", "linux52-tkg-bmq", "linux52-tkg-bmq-headers", "linux52-tkg-pds", "linux52-tkg-pds-headers", "mesa-tkg-git", "nvidia-dkms-tkg", "nvidia-egl-wayland-tkg", "nvidia-utils-tkg", "opencl-nvidia-tkg", "plasmafox", "wine-tkg-fsync-faudio-git", "wine-tkg-fsync-faudio-opt-git", "wine-tkg-fsync-git", "wine-tkg-fsync-opt-git", "wine-tkg-fsync-vkd3d-faudio-git", "wine-tkg-fsync-vkd3d-faudio-opt-git", "wine-tkg-fsync-vkd3d-git", "wine-tkg-fsync-vkd3d-opt-git", "wine-tkg-fsync-faudio-git", "wine-tkg-fsync-faudio-opt-git", "wine-tkg-fsync-git", "wine-tkg-fsync-opt-git", "wine-tkg-fsync-vkd3d-faudio-git", "wine-tkg-fsync-vkd3d-faudio-opt-git", "wine-tkg-fsync-vkd3d-git", "wine-tkg-fsync-vkd3d-opt-git", "wine-tkg-staging-fsync-faudio-git", "wine-tkg-staging-fsync-faudio-opt-git", "wine-tkg-staging-fsync-git", "wine-tkg-staging-fsync-opt-git", "wine-tkg-staging-fsync-vkd3d-faudio-git", "wine-tkg-staging-fsync-vkd3d-faudio-opt-git", "wine-tkg-staging-fsync-vkd3d-git", "wine-tkg-staging-fsync-vkd3d-opt-git", "wine-tkg-staging-fsync-faudio-git", "wine-tkg-staging-fsync-faudio-opt-git", "wine-tkg-staging-fsync-git", "wine-tkg-staging-fsync-opt-git", "wine-tkg-staging-fsync-vkd3d-faudio-git", "wine-tkg-staging-fsync-vkd3d-faudio-opt-git", "wine-tkg-staging-fsync-vkd3d-git", "wine-tkg-staging-fsync-vkd3d-opt-git", "xamarin-android-proprietary-git"]
+ignore_aur = ["clang-analyzer-git","clang-analyzer-svn","clang-compiler-rt-git","clang-compiler-rt-svn",
+"clang-git","clang-minimal-git","clang-svn","clang-tools-extra-git","clang-tools-extra-svn","compiler-rt-minimal-git",
+"coreaction-git","corearchiver-git","corefm-git","coregarage-git","corehunt-git",
+"coreimage-git","coreinfo-git","corepad-git","corepaint-git","corepdf-git",
+"corepins-git","coreplayer-git","corerenamer-git","coreshot-git","corekeyboard-git"
+"corestats-git","corestuff-git","coreterminal-git","coretime-git","coreuniverse-git",
+"dxvk-git","dxvk-wine32-git","dxvk-wine64-git","ffmpeg-full","firefox-hg","firefox-wayland-hg","kplasmafoxhelper","lib32-clang-git",
+"lib32-clang-svn","lib32-llvm-git","lib32-llvm-libs-git","lib32-llvm-libs-minimal-git","lib32-llvm-libs-svn","lib32-llvm-minimal-git",
+"lib32-llvm-svn","lib32-mesa-tkg-git","lib32-nvidia-dev-utils-tkg","lib32-nvidia-utils-tkg","lib32-opencl-nvidia-dev-tkg",
+"lib32-opencl-nvidia-tkg","libarchive-qt-git","libcprime-git","libcsys-git",
+"linux-lts-tkg-bmq","linux-lts-tkg-bmq-headers","linux-lts-tkg-muqss","linux-lts-tkg-muqss-headers","linux-lts-tkg-pds",
+"linux-lts-tkg-pds-headers","linux-tkg-bmq-atom","linux-tkg-bmq-barcelona","linux-tkg-bmq-bobcat","linux-tkg-bmq-broadwell",
+"linux-tkg-bmq-bulldozer","linux-tkg-bmq-cannonlake","linux-tkg-bmq-core2","linux-tkg-bmq-excavator","linux-tkg-bmq-haswell",
+"linux-tkg-bmq-icelake","linux-tkg-bmq-ivybridge","linux-tkg-bmq-jaguar","linux-tkg-bmq-k10","linux-tkg-bmq-k8","linux-tkg-bmq-k8sse3",
+"linux-tkg-bmq-mpsc","linux-tkg-bmq-nehalem","linux-tkg-bmq-piledriver","linux-tkg-bmq-sandybridge","linux-tkg-bmq-silvermont",
+"linux-tkg-bmq-skylake","linux-tkg-bmq-skylakex","linux-tkg-bmq-steamroller","linux-tkg-bmq-westmere","linux-tkg-bmq-zen",
+"linux-tkg-bmq-zen2","linux-tkg-muqss-atom","linux-tkg-muqss-barcelona","linux-tkg-muqss-bobcat","linux-tkg-muqss-broadwell",
+"linux-tkg-muqss-bulldozer","linux-tkg-muqss-cannonlake","linux-tkg-muqss-core2","linux-tkg-muqss-excavator","linux-tkg-muqss-haswell",
+"linux-tkg-muqss-icelake","linux-tkg-muqss-ivybridge","linux-tkg-muqss-jaguar","linux-tkg-muqss-k10","linux-tkg-muqss-k8",
+"linux-tkg-muqss-k8sse3","linux-tkg-muqss-mpsc","linux-tkg-muqss-nehalem","linux-tkg-muqss-piledriver","linux-tkg-muqss-sandybridge",
+"linux-tkg-muqss-silvermont","linux-tkg-muqss-skylake","linux-tkg-muqss-skylakex","linux-tkg-muqss-steamroller","linux-tkg-muqss-westmere",
+"linux-tkg-muqss-zen","linux-tkg-muqss-zen2","linux-tkg-pds-atom","linux-tkg-pds-barcelona","linux-tkg-pds-bobcat","linux-tkg-pds-broadwell",
+"linux-tkg-pds-bulldozer","linux-tkg-pds-cannonlake","linux-tkg-pds-core2","linux-tkg-pds-excavator","linux-tkg-pds-haswell",
+"linux-tkg-pds-icelake","linux-tkg-pds-ivybridge","linux-tkg-pds-jaguar","linux-tkg-pds-k10","linux-tkg-pds-k8","linux-tkg-pds-k8sse3",
+"linux-tkg-pds-mpsc","linux-tkg-pds-nehalem","linux-tkg-pds-piledriver","linux-tkg-pds-sandybridge","linux-tkg-pds-silvermont",
+"linux-tkg-pds-skylake","linux-tkg-pds-skylakex","linux-tkg-pds-steamroller","linux-tkg-pds-westmere","linux-tkg-pds-zen",
+"linux-tkg-pds-zen2","lldb-git","lldb-svn","lld-git","lld-svn","llvm-git","llvm-libs-git","llvm-libs-minimal-git","llvm-libs-svn",
+"llvm-minimal-git","llvm-ocaml-git","llvm-ocaml-svn","llvm-svn","lone_wolf-clang-git","lone_wolf-compiler-rt-git","lone_wolf-lib32-llvm-git",
+"lone_wolf-lib32-llvm-libs-git","lone_wolf-llvm-git","lone_wolf-llvm-libs-git","lone_wolf-ocaml-git","manjarowish-dark-kde-settings",
+"manjarowish-light-kde-settings","manjarowish-lxqt-kwin-dark-settings","manjarowish-lxqt-kwin-light-settings","manjarowish-pantheon-settings",
+"mesa-tkg-git","mir-git","nss-hg","nvidia-dev-dkms-tkg","nvidia-dev-egl-wayland-tkg","nvidia-dev-utils-tkg","nvidia-dkms-tkg",
+"nvidia-egl-wayland-tkg","nvidia-tkg","nvidia-utils-tkg","ocaml-minimal-git","opencl-nvidia-dev-tkg","opencl-nvidia-tkg","plasmafox",
+"retdec-git","rpcs3-git","vlc-git","vulkan-headers-git","wine-tkg-fsync-faudio-git","wine-tkg-fsync-faudio-opt-git","wine-tkg-fsync-git",
+"wine-tkg-fsync-opt-git","wine-tkg-fsync-vkd3d-faudio-git","wine-tkg-fsync-vkd3d-faudio-opt-git","wine-tkg-fsync-vkd3d-git",
+"wine-tkg-fsync-vkd3d-opt-git","wine-tkg-staging-fsync-faudio-git","wine-tkg-staging-fsync-faudio-opt-git","wine-tkg-staging-fsync-git",
+"wine-tkg-staging-fsync-opt-git","wine-tkg-staging-fsync-vkd3d-faudio-git","wine-tkg-staging-fsync-vkd3d-faudio-opt-git",
+"wine-tkg-staging-fsync-vkd3d-git","wine-tkg-staging-fsync-vkd3d-opt-git","wireguard-dkms-git","wireguard-tools-git","xamarin-android-git",
+"xamarin-android-proprietary-git"]
 
 # backup specifies whether package files should be backed up or deleted.
 # If it is set to false, then obsolete package files are deleted.

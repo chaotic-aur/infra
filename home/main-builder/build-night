@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 ~/build-cubocore
+~/build-wishbuilds
 ~/chaotic-clean-archive
 

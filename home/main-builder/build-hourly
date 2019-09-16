@@ -2,8 +2,8 @@
 
 # We need to know when things are stuck
 function freeze-notify() {
-	sleep 7200
-	telegram-send '[BOT ALERT] Last hourly build started 2h ago'
+	sleep 10800
+	telegram-send '[BOT ALERT] Last hourly build started 3h ago'
 }
 freeze-notify &
 export FREEZE_NOTIFIER=$!
