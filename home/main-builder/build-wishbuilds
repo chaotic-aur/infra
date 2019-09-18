@@ -9,8 +9,5 @@ cd ./wishbuilds/manjarowish || exit
 mkdir -p "$LDIR"
 mv *.log "$LDIR/"
 
-cd .. || exit
-rm -rf wishbuilds
-
-cd /tmp && rm -rf ./wiki
+cd /tmp && rm -rf ./wishbuilds
 cd "$LDIR" && ~/chaotic-clean-logs

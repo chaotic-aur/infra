@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -o  errexit
+cd /srv/http/chaotic-aur/makepkglogs
+grep 'older chroot' /srv/http/chaotic-aur/makepkglogs/*.log

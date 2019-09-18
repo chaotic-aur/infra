@@ -19,7 +19,7 @@ ignore_aur = ["clang-analyzer-git","clang-analyzer-svn","clang-compiler-rt-git",
 "clang-git","clang-minimal-git","clang-svn","clang-tools-extra-git","clang-tools-extra-svn","compiler-rt-minimal-git",
 "coreaction-git","corearchiver-git","corefm-git","coregarage-git","corehunt-git",
 "coreimage-git","coreinfo-git","corepad-git","corepaint-git","corepdf-git",
-"corepins-git","coreplayer-git","corerenamer-git","coreshot-git","corekeyboard-git"
+"corepins-git","coreplayer-git","corerenamer-git","coreshot-git","corekeyboard-git",
 "corestats-git","corestuff-git","coreterminal-git","coretime-git","coreuniverse-git",
 "dxvk-git","dxvk-wine32-git","dxvk-wine64-git","ffmpeg-full","firefox-hg","firefox-wayland-hg","kplasmafoxhelper","lib32-clang-git",
 "lib32-clang-svn","lib32-llvm-git","lib32-llvm-libs-git","lib32-llvm-libs-minimal-git","lib32-llvm-libs-svn","lib32-llvm-minimal-git",

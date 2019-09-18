@@ -157,6 +157,7 @@ lone_wolf-llvm-libs-git
 lone_wolf-ocaml-git
 manjarowish-dark-kde-settings
 manjarowish-light-kde-settings
+manjarowish-lxqt-kwin-dark-coreapps-settings
 manjarowish-lxqt-kwin-dark-settings
 manjarowish-lxqt-kwin-light-settings
 manjarowish-pantheon-settings
