@@ -235,6 +235,18 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK lxqt-sudo-git detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm lxqt-build-tools-git
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wolfenstein3d$')" ]]; then
+		echo "$WTMK wolfenstein3d detected, treating..."
+		target_run export SDL_VIDEODRIVER=dummy
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(wcm|wf-shell)-git$')" ]]; then
+		echo "$WTMK wayfire detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm wayfire-git
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wf-shell-git$')" ]]; then
+		echo "$WTMK wayfire shell detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm gtk-layer-shell-git
+	fi
 
 	# * People who think they're smart
 	if [[ ! -z "$(grep -P '^PKGEXT=' PKGBUILD)" ]]; then

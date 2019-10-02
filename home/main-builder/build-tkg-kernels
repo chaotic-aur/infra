@@ -60,6 +60,7 @@ kernel_setup() {
 	s/_bfqmq=\"[^\"]*\"/_bfqmq=\"true\"/g
 	s/_zfsfix=\"[^\"]*\"/_zfsfix=\"true\"/g
 	s/_fsync=\"[^\"]*\"/_fsync=\"true\"/g
+	s/_umip_instruction_emulation=\"[^\"]*\"/_umip_instruction_emulation=\"true\"/g
 	s/_processor_opt=\"[^\"]*\"/_processor_opt=\"$3\"/g
 	s/_smt_nice=\"[^\"]*\"/_smt_nice=\"true\"/g
 	s/_random_trust_cpu=\"[^\"]*\"/_random_trust_cpu=\"true\"/g

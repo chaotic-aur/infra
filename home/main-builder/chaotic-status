@@ -18,10 +18,11 @@ fi
 cd /var/log/httpd
 [ -z "$NOT_MAIN" ] && MAIN_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
 MIRROR_LOG="/home/paran0id/logs/nginx_access.log"
-[ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo cat "$MIRROR_LOG" | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
+TODAY="$(date --date='-1 month' +'%d\/%b')"
+[ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo awk "/.* \[${TODAY}\//{y=1}y" "$MIRROR_LOG" | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
 
 UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" |\
-	sed 's/vk-winelib/vk-mingw/g;s/esync/fsync/g' |\
+	sed 's/vk-winelib/vk-mingw/g' |\
 	sort -u)
 
 echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family: sans-serif;">'
@@ -35,7 +36,7 @@ find . -type f -name "access*" -printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
 echo '</code> and <code>'
 tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
 echo '</code></li>' '<li>Data aquired from @BangL'"'"'s mirror logs, between <code>'
-sudo head -n 1 "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
+sudo awk "/.* \[${TODAY}\//{y=1}y" "$MIRROR_LOG" | head -n 1 | grep -Po '(?<=\[)([^\]])*'
 echo '</code> and <code>'
 sudo tail -n 1 "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
 echo '</code></li>' '</ul>'
@@ -52,8 +53,12 @@ PKGS_IP_COUNT=$(
 
 echo '<h3>Top ' $NUM_DOWN ' most downloaded (per unique users):</h3>'
 echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
-echo "$PKGS_IP_COUNT" |\
+echo "$UNIQ_ACCESS" |\
+	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	sed 's/wine-tkg-.*-git/wine-tkg-*/g;s/linux-tkg-...-[^-]*/linux-tkg-*/g;s/linux..-tkg-.../linux-tkg-*/g' |\
+	sort -u |\
+	awk '{print $2}' |\
+	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)' |\
 	sort | uniq -c | sort -nr |\
 	head -n $NUM_DOWN |\
 	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
@@ -128,8 +133,7 @@ IFS=$_DEF_IFS
 echo '<table border="1"><tr><td>Resource</td><td>Free</td></tr>'
 echo "<tr><td>source cache<br/>(repos, artifacts, etc)</td><td>${_AVAIL[0]}</td></tr>"
 echo "<tr><td>pacman cache<br/>(dependencies binaries)</td><td>${_AVAIL[0]}</td></tr>"
-echo "<tr><td>repo output<br/>(binaries)</td><td>${_AVAIL[3]}</td></tr>"
-echo "<tr><td>repo archive<br/>(outdate binaries)</td><td>${_AVAIL[2]}</td></tr>"
+echo "<tr><td>repo output<br/>(binaries, archive)</td><td>${_AVAIL[3]}</td></tr>"
 echo "<tr><td>system</td><td>${_AVAIL[1]}</td></tr>"
 echo '</table>'
 

@@ -189,6 +189,5 @@ sudo rm -rf "$BLDTART"
 # - Logs
 cd "$TKGLOGS"
 echo '[build-tkg] No need of successful logs'
+rm *-opt-git.log || echo '[build-tkg] No -opt builds logs found'
 ~/chaotic-clean-logs
-cd  "$TKGLOGS"
-rm *-opt-git.log || echo 'OKAY'
