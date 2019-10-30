@@ -19,16 +19,16 @@ echo '[build-firefox] Building! '
 ~/chaotic-batchbuild kplasmafoxhelper -- plasmafox -- firefox-hg -- firefox-wayland-hg
 
 # Move logs around
-echo '[build-hourly] Submiting logs:'
+echo '[build-firefox] Submiting logs:'
 rm _add.log || echo 'No add?'
 mv ./*.log "$LOGDIR/"
 
 # Cleaning hour
-echo '[build-hourly] Nuking temp directories'
+echo '[build-firefox] Nuking temp directories'
 cd ..
 rm -rf "$BUILDDIR"
 
-echo '[build-hourly] Removing logs from compiled packages'
+echo '[build-firefox] Removing logs from compiled packages'
 cd "$LOGDIR"
 ~/chaotic-clean-logs
 

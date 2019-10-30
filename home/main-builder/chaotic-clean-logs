@@ -7,3 +7,5 @@ TOREM=$(grep -l 'Finished making: ' *.log)
 
 TOREM=$(grep -l 'PKGBUILD does not exist.' *.log)
 [[ ! -z "$TOREM" ]] && echo "$TOREM" | xargs rm
+
+exit 0

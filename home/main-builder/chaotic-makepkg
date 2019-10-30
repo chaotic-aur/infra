@@ -245,7 +245,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wf-shell-git$')" ]]; then
 		echo "$WTMK wayfire shell detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm gtk-layer-shell-git
+		target_run sudo pacman -S --needed --noconfirm gtk-layer-shell-git libpulse
 	fi
 
 	# * People who think they're smart

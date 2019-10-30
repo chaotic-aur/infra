@@ -8,17 +8,19 @@ WTMK='[chaotic-makealien]'
 NEWLINE=$'\n'
 if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# Check if PKGBUILD is present
-	if [ ! -e './PKGBUILD' ]; then
+	if [[ ! -e './PKGBUILD' && ! -e './APKBUILD' ]]; then
 		echo "$WTMK You made it wrong pal!"
 		exit -4
 	fi
 
 	# * Defaults
+	IS_IT_ARCH=${IS_IT_ARCH:-1}
+	IS_IT_ALPINE=${IS_IT_ALPINE:-0}
 	BUILD_USER='main-builder'
 	CHROOT="/tmp/chaotic-${ALIEN_NAME}"
 	CHSRC="$HOME/chaotic-${ALIEN_NAME}"
 	BASE='base-root'
-	BASE_PKGS='base-devel'
+	BASE_PKGS="${BASE_PKGS:-base-devel}"
 	BASE_NUKE=0
 	TARGET="$PWD"
 	TARGET_NUKE=${TARGET_NUKE:-1}
@@ -53,31 +55,41 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 		# Basic packages
 		sudo $ALIEN_PACSTRAP "./$BASE" $BASE_PKGS
-		$BASE_RUN pacman-key --init
-		$BASE_RUN pacman-key --populate
-
-		# Build settings
-		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
-		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
-		sudo mkdir -p "./$BASE/usr/local/bin/"
-		sudo cp "$CHSRC/internal-makepkg" "./$BASE/usr/local/bin/"
-
-		# Minimum locale
-		echo 'en_US.UTF-8 UTF-8' | sudo tee "./$BASE/etc/locale.gen"
-		echo 'LANG=en_US.UTF-8' | sudo tee "./$BASE/etc/locale.conf"
-		sudo ln -rsf "./$BASE/usr/share/zoneinfo/America/Sao_Paulo" "./$BASE/etc/localtime"
-		$BASE_RUN locale-gen
-
-		# Build User
-		$BASE_RUN useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER
-		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
 		
-		$BASE_USR_RUN mkdir -p "/home/$BUILD_USER/"{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs,.gnupg}
-		$BASE_USR_RUN chmod 700 "/home/$BUILD_USER/.gnupg"
-		cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$BASE/home/$BUILD_USER/.gnupg"
+		if [ "$IS_IT_ARCH" == '1' ]; then
+			$BASE_RUN pacman-key --init
+			$BASE_RUN pacman-key --populate
 
-		# Finish
-		$BASE_RUN pacman -Scc --noconfirm
+			# Build settings
+			sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
+			sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
+			sudo mkdir -p "./$BASE/usr/local/bin/"
+			sudo cp "$CHSRC/internal-makepkg" "./$BASE/usr/local/bin/"
+
+			# Minimum locale
+			echo 'en_US.UTF-8 UTF-8' | sudo tee "./$BASE/etc/locale.gen"
+			echo 'LANG=en_US.UTF-8' | sudo tee "./$BASE/etc/locale.conf"
+			sudo ln -rsf "./$BASE/usr/share/zoneinfo/America/Sao_Paulo" "./$BASE/etc/localtime"
+			$BASE_RUN locale-gen
+
+			# Build User
+			$BASE_RUN useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER
+			echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
+		
+			$BASE_USR_RUN mkdir -p "/home/$BUILD_USER/"{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs,.gnupg}
+			$BASE_USR_RUN chmod 700 "/home/$BUILD_USER/.gnupg"
+			cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$BASE/home/$BUILD_USER/.gnupg"
+
+			# Finish
+			$BASE_RUN pacman -Scc --noconfirm
+		fi
+
+		if [ "$IS_IT_ALPINE" == '1' ]; then
+			$BASE_RUN /usr/sbin/adduser -D -u $(id -u $BUILD_USER) -h /home/$BUILD_USER -G abuild -s /bin/ash $BUILD_USER
+			$BASE_USR_RUN /bin/mkdir -p "/home/$BUILD_USER/"{pkgwork,pkgdest,pkgsrc,makepkglogs}
+			echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
+		fi
+
 		popd
 		rm "$CHROOT/$BASE.lock"
 	else
@@ -91,6 +103,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	TARGET_UPPER="${TARGET_UPPER:-$MECHA_NAME}"
 	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
 	[[ "${ALIEN_BIND}" != 'none' ]] && TARGET_RUN="${TARGET_RUN} --bind ${ALIEN_BIND}"
+	[[ ! -z "$DONT_USE_SYSTEMD" ]] && TARGET_RUN="sudo arch-chroot $CHROOT/$TARGET_UPPER/root /bin/su -l $BUILD_USER -c"
 	TARGET_WIZARD="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/wizard.sh"
 	function target_run() {
 		echo "$@" | tee -a "$TARGET_WIZARD"
@@ -113,13 +126,20 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 		# Other mounts
 		sudo mount --bind "$TARGET" "${_HOME}/pkgwork"
-		#sudo mount --bind "/home/$BUILD_USER/.ccache" "${_HOME}/.ccache"
-		sudo mount --bind "$SRCCACHE_DIR" "${_HOME}/pkgsrc"
-		sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
+		if [ "$IS_IT_ARCH" == '1' ]; then
+			sudo mount --bind "$SRCCACHE_DIR" "${_HOME}/pkgsrc"
+			sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
+		fi
 		sudo mount overlay -t overlay -olowerdir=$REPO_PKGDEST,upperdir=./dest.up,workdir=./dest.work "${_HOME}/pkgdest" || echo "$WTMK Funny world isn't it?"
 
 		# Create wizard
-		echo '#!/usr/bin/env bash' | tee "$TARGET_WIZARD"
+		if [ "$IS_IT_ALPINE" == '1' ]; then
+			echo '#!/bin/ash' | tee "$TARGET_WIZARD"
+		elif [ "$IS_IT_ARCH" == '1' ]; then
+			echo '#!/usr/bin/env bash' | tee "$TARGET_WIZARD"
+		else
+			echo '#!/usr/bin/env sh' | tee "$TARGET_WIZARD"
+		fi
 		sudo chown $BUILD_USER:$BUILD_USER "$TARGET_WIZARD"
 		sudo chmod 755 "$TARGET_WIZARD"
 
@@ -130,36 +150,43 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		exit 69
 	fi
 	
-	# * CHROOT Update
-	target_run sudo pacman -Syu --noconfirm
+	if [ "$IS_IT_ARCH" == '1' ]; then
+		# * CHROOT Update
+		target_run sudo pacman -Syu --noconfirm
 
-	# * Treats VCs
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-git$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-svn$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm subversion
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-bzr$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm bzr
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm mercurial
+		# * Treats VCs
+		if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-git$')" ]]; then
+			target_run sudo pacman -S --needed --noconfirm git
+		fi
+		if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-svn$')" ]]; then
+			target_run sudo pacman -S --needed --noconfirm subversion
+		fi
+		if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-bzr$')" ]]; then
+			target_run sudo pacman -S --needed --noconfirm bzr
+		fi
+		if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
+			target_run sudo pacman -S --needed --noconfirm mercurial
+		fi
+
+		# * User cases
+		if [[ ! -z "$TARGET_REMPKGS" ]]; then
+			target_run sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
+		fi
+		if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
+			target_run sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
+		fi
+		if [[ ! -z "$TARGET_ENV" ]]; then
+			echo "$TARGET_ENV" | tee -a "$TARGET_WIZARD"
+		fi
+
+		# * Makepkg
+		target_run /usr/local/bin/internal-makepkg -s $@
 	fi
 
-	# * User cases
-	if [[ ! -z "$TARGET_REMPKGS" ]]; then
-		target_run sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
+	if [ "$IS_IT_ALPINE" == '1' ]; then
+		target_run cd /home/$BUILD_USER/pkgwork
+		target_run /usr/bin/abuild -P /home/$BUILD_USER/pkgdest -r
 	fi
-	if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
-		target_run sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
-	fi
-	if [[ ! -z "$TARGET_ENV" ]]; then
-		echo "$TARGET_ENV" | tee -a "$TARGET_WIZARD"
-	fi
-
-	# * Makepkg
-	target_run /usr/local/bin/internal-makepkg -s $@
 	
 	# Spawn contaienr and do everything
 	echo "$WTMK Finally spawning it:"

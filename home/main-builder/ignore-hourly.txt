@@ -179,6 +179,7 @@ retdec-git
 rpcs3-git
 vlc-git
 vulkan-headers-git
+vulkan-headers-tkg-git
 wine-tkg-fsync-faudio-git
 wine-tkg-fsync-faudio-opt-git
 wine-tkg-fsync-git
