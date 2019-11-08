@@ -12,7 +12,6 @@ readonly _LINUX_STABLE='53'
 readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
-	'muqss 0'
 )
 readonly _LINUX_MARCH=('generic'
     'atom' 'barcelona' 'bobcat' 'broadwell'

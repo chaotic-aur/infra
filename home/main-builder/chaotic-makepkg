@@ -195,6 +195,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK E ai meu chapa!"
 		export TARGET_ENV="export MESA_WHICH_LLVM=1${NEWLINE}${TARGET_ENV}"
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32-mesa-git$')" ]]; then
+		echo "$WTMK snoop05 wanted!"
+		sed -i'' 's/,iris /,iris,zink /g;s/makedepends=\(/makedepends=(vulkan-headers /g;s/^depends=\(/depends=(lib32-vulkan-icd-loader /g' PKGBUILD
+	fi
 	
 	# * Linux-Clear
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^linux-clear')" ]]; then
@@ -246,6 +250,14 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wf-shell-git$')" ]]; then
 		echo "$WTMK wayfire shell detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm gtk-layer-shell-git libpulse
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^jitsi-nightly$')" ]]; then
+		echo "$WTMK jitsi-nightly detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm git
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^plymouth-kcm$')" ]]; then
+		echo "$WTMK plymouth-kcm detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm kdelibs4support
 	fi
 
 	# * People who think they're smart

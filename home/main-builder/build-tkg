@@ -9,14 +9,10 @@ readonly BLDTART='TkG.common'
 
 # (staging vkd3d faudio)
 _WINE_VARIATIONS=(
-	'false false false'
-	'false false true'	# faudio
-	'false true false'	# vkd3d
-	'false true true'	# vkd3d, faudio
-	'true false false'	# staging
-	'true false true'	# staging, faudio
-	'true true false'	# staging, vkd3d
-	'true true true'	# staging, vkd3d, faudio
+	'false false'
+	'false true'	# vkd3d
+	'true false'	# staging
+	'true true'	# staging, vkd3d
 )
 
 # - NVIDIA
@@ -44,7 +40,6 @@ wine_setup() {
 	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
 	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$2\"/g
 	s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
-	s/_use_faudio=\"[^\"]*\"/_use_faudio=\"$3\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 	" customization.cfg
 
