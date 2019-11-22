@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+tmux -S /tmp/chaotic-tmux new -s chaotic -d
+chgrp sudo /tmp/chaotic-tmux

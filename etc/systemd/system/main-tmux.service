@@ -1,0 +1,11 @@
+[Unit]
+Description=Tmux shared server
+
+[Service]
+User=main-builder
+Group=sudo
+WorkingDirectory=/home/main-builder
+ExecStart=/home/main-builder/chaotic-tmux
+
+[Install]
+WantedBy=multi-user.target

@@ -206,6 +206,12 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sed -i'' 's/^_subarch=.*$/_subarch='"$(grep Generic-x86-64 PKGBUILD | awk -F '.' '{print $1}' | awk '{print $2}')"'/g' PKGBUILD
 	fi
 
+	# NSS-HG for Firefox Nightlies
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^nss-hg')" ]]; then
+		echo "$WTMK I like my fox's toys very update!"
+		target_run sudo pacman -S --needed --noconfirm nspr-hg
+	fi
+
 	# * Tired of things not getting fixed in AUR & ArchLinux
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^featherpad-git$')" ]]; then
 		echo "$WTMK feather-pad-git detected, treating..."
@@ -287,11 +293,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$TARGET_USEX" ]]; then
 		echo "$WTMK X was required, treating..."
 		target_run sudo pacman -S --needed --noconfirm xorg-server-xvfb
-		target_run xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s $@
+		target_run xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s --noprogressbar $@
 
 	# * Makepkg
 	else
-		target_run /usr/local/bin/internal-makepkg -s $@
+		target_run /usr/local/bin/internal-makepkg -s --noprogressbar $@
 	fi
 	
 	# Spawn contaienr and do everything

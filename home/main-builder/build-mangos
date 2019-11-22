@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/flightlessmango
+cd /tmp
+
+git clone https://github.com/flightlessmango/PKGBUILDS.git mangos
+cd ./mangos || exit
+~/chaotic-batchbuild
+
+mkdir -p "$LDIR"
+mv *.log "$LDIR/"
+
+cd /tmp && rm -rf ./mangos
+cd "$LDIR" && ~/chaotic-clean-logs

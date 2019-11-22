@@ -66,7 +66,7 @@ sudo arch-chroot . pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB
 sudo arch-chroot . pacman-key --lsign-key 3056513887B78AEB 
 sudo arch-chroot . pacman -Syu --noconfirm
 
-cat <<EOF | sudo tee -a ./etc/paciman.conf > /dev/null
+cat <<EOF | sudo tee -a ./etc/pacman.conf > /dev/null
 [multilib]
 Include = /etc/pacman.d/mirrorlist
 

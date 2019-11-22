@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -o errexit
+
+# constraints
+[[ "$(whoami)" != 'main-builder' ]] && echo 'Oh Who Are You?' && exit
+
+# constants & settings
+[ -z "$BASE_BUILD_DIR" ] && source ~/'chaotic-mkrootfs/env-default'
+readonly BASE_BUILD_ID="${BASE_BUILD_ID:-$(date '+%Y%m%d%H%M%S')}"
+readonly BASE_BUILD_NAME="${BASE_BUILD_NAME:-ufscar-base-${BASE_BUILD_ID}-$BASE_BUILD_ARCH}"
+readonly BASE_BUILD_IMAGE="${BASE_BUILD_NAME}.img"
+
+# create the directory
+mkdir -p "$BASE_BUILD_DIR"
+cd "$BASE_BUILD_DIR"
+
+# create root env
+truncate -s 100G "$BASE_BUILD_IMAGE"
+sudo losetup /dev/loop9 "$BASE_BUILD_IMAGE"
+sudo parted /dev/loop9 mktable msdos
+sudo parted /dev/loop9 mkpart primary ext4 1M '100%'
+sudo partprobe /dev/loop9
+sudo mkfs.ext4 -q /dev/loop9p1
+sudo mkdir "$BASE_BUILD_NAME"
+sudo mount -t ext4 /dev/loop9p1 "$BASE_BUILD_NAME"
+pushd "$BASE_BUILD_NAME"
+
+# install base
+sudo pacstrap -GM . base
+
+# set locale
+pushd ./etc
+sudo rm localtime || echo 'There was no localtime'
+sudo ln -s ../usr/share/zoneinfo/America/Sao_Paulo ./localtime
+popd
+sudo arch-chroot . hwclock --systohc
+
+echo 'en_US.UTF-8 UTF-8' | sudo tee -a ./etc/locale.gen > /dev/null
+echo 'pt_BR.UTF-8 UTF-8' | sudo tee -a ./etc/locale.gen > /dev/null
+sudo arch-chroot . locale-gen
+
+echo 'LANG=pt_BR.UTF-8' | sudo cp /dev/stdin ./etc/locale.conf
+echo 'KEYMAP=br-abnt2' | sudo cp /dev/stdin ./etc/vconsole.conf
+sudo chmod 644 ./etc/locale.conf
+
+# set hostname and hosts
+echo 'ufscar-pc' | sudo cp /dev/stdin ./etc/hostname
+
+cat <<EOF | sudo tee -a ./etc/hosts > /dev/null
+127.0.0.1	localhost
+::1		localhost
+127.0.1.1	ufscar-pc.localdomain	ufscar
+EOF
+
+# add some servers
+cat <<EOF | sudo tee ./etc/pacman.d/mirrorlist > /dev/null
+Server = http://mirror.ufscar.br/archlinux/\$repo/os/\$arch
+Server = http://archlinux.c3sl.ufpr.br/\$repo/os/\$arch
+Server = http://www.caco.ic.unicamp.br/archlinux/\$repo/os/\$arch
+Server = https://www.caco.ic.unicamp.br/archlinux/\$repo/os/\$arch
+Server = http://linorg.usp.br/archlinux/\$repo/os/\$arch
+Server = http://pet.inf.ufsc.br/mirrors/archlinux/\$repo/os/\$arch
+Server = http://archlinux.pop-es.rnp.br/\$repo/os/\$arch
+Server = http://mirror.ufam.edu.br/archlinux/\$repo/os/\$arch
+Server = http://br.mirror.archlinux-br.org/\$repo/os/\$arch
+EOF
+sudo arch-chroot . pacman-key --init
+sudo arch-chroot . pacman-key --populate archlinux
+sudo arch-chroot . pacman -Syu --noconfirm
+
+# change kernel
+sudo arch-chroot . pacman -S linux-zen linux-zen-headers --noconfirm
+
+# root password
+sudo arch-chroot . passwd -d root
+
+# add chaotic-aur
+sudo arch-chroot . pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB
+sudo arch-chroot . pacman-key --lsign-key 3056513887B78AEB 
+sudo arch-chroot . pacman -Syu --noconfirm
+
+cat <<EOF | sudo tee -a ./etc/pacman.conf > /dev/null
+[multilib]
+Include = /etc/pacman.d/mirrorlist
+
+[chaotic-aur]
+Server = https://lonewolf.pedrohlc.com/\$repo/\$arch
+Server = http://chaotic.bangl.de/\$repo/\$arch
+EOF
+
+# essentials
+sudo pacman -r . -S --noconfirm --needed \
+	base-devel multilib-devel git \
+	sudo yay networkmanager pulseaudio-alsa \
+	grub efibootmgr os-prober \
+	ntfs-3g dosfstools mtools exfat-utils unrar p7zip \
+	nano neovim-drop-in openssh htop \
+	gvfs-mtp plasma sddm kdebase packagekit-qt5 \
+	{,lib32-}mesa {,lib32-}libva-mesa-driver {,lib32-}vulkan-icd-loader \
+	intel-ucode {,lib32-}libva-intel-driver xf86-video-intel \
+	xorg-server {,lib32-}vulkan-intel intel-media-driver \
+	firefox google-chrome mpv wine-staging \
+	wps-office wps-office-mui-pt-br ttf-wps-fonts \
+	quartus-130 libpng12 scilab-bin
+
+sudo systemctl --root=. enable NetworkManager
+sudo systemctl --root=. enable sddm
+
+# create main user
+sudo arch-chroot . useradd -m -g wheel -G users -s /bin/bash archer
+sudo arch-chroot . passwd -d archer
+echo '%wheel ALL=(ALL) ALL' | sudo tee -a ./etc/sudoers > /dev/null
+
+# add license server
+echo 'export LM_LICENSE_FILE=1800@licencas.ufscar.br' | sudo tee ./etc/profile.d/ufscar.sh > /dev/null
+
+# KDE autologin
+cat <<EOF | sudo tee -a ./etc/sddm.conf.d/00-ufscar.conf > /dev/null
+[Autologin]
+User=archer
+Session=plasma
+
+[Theme]
+Current=breeze
+EOF
+sudo chmod 644 ./etc/sddm.conf.d/00-ufscar.conf
+
+# KDE keyboard
+cat <<EOF | sudo tee -a ./etc/xdg/kxkbrc > /dev/null
+[Layout]
+LayoutList=br
+LayoutLoopCount=-1
+Model=pc101
+Use=true
+EOF
+sudo chmod 644 ./etc/xdg/kxkbrc
+
+# KDE locale
+cat <<EOF | sudo tee -a ./etc/xdg/plasma-localerc > /dev/null
+[Formats]
+LANG=pt_BR.UTF-8
+
+[Translations]
+LANGUAGE=pt_BR
+EOF
+sudo chmod 644 ./etc/xdg/plasma-localerc
+
+# clean caches
+yes | sudo pacman -r . -Scc
+
+# Virtio SCSI
+sudo sed -i'' 's/^MODULES=(/MODULES=(virtio virtio_scsi virtio_blk virtio_pci virtio_net /' ./etc/mkinitcpio.conf
+sudo arch-chroot . mkinitcpio -Pv
+
+# grub
+sudo sed -i'' 's/^GRUB_TIMEOUT=.*$/GRUB_TIMEOUT=0/g' ./etc/default/grub
+sudo arch-chroot . grub-install --target=i386-pc /dev/loop9
+sudo arch-chroot . grub-mkconfig -o /boot/grub/grub.cfg
+
+# move rootfs to a tar.xz
+[ "$BASE_BUILD_BASE_TAR" == '1' ] && sudo tar -cJf ../"${BASE_BUILD_NAME}.tar.xz" .
+
+# we no longer need extracted rootfs
+popd
+sudo umount -Rv "$BASE_BUILD_NAME"
+sudo sync
+sudo losetup -d /dev/loop9
+sudo rm -rf "$BASE_BUILD_NAME/"
+
+# convert image
+qemu-img convert -f raw -O qcow2 -c "$BASE_BUILD_IMAGE" "${BASE_BUILD_NAME}.qcow2"
+sudo rm "$BASE_BUILD_IMAGE"
+
+echo '[chaotic-mkrootfs] Finishing creating ' "${BASE_BUILD_NAME}.qcow2"

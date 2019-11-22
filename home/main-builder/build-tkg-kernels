@@ -12,6 +12,7 @@ readonly _LINUX_STABLE='53'
 readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
+	'muqss 0'
 )
 readonly _LINUX_MARCH=('generic'
     'atom' 'barcelona' 'bobcat' 'broadwell'
@@ -30,6 +31,7 @@ readonly _LINUX_MARCH=('generic'
 # - Linux
 kernel_setup() {
 	git checkout customization.cfg PKGBUILD
+	git pull -ff
 
 	local _PKGBASE="linux-tkg-$1-$3"
 	if [ "$3" == 'generic' ]; then

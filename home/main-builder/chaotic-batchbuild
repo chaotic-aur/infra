@@ -13,7 +13,7 @@ limit_build() {
 one_build() {
 	cd "./$1";
 	set -o pipefail
-	~/chaotic-makepkg -c --noconfirm $MAKEPKG_ARGS  2>&1 | tee ../$1.log && cd ..  && rm -rf "./$1" || cd ..
+	~/chaotic-makepkg -cC --noconfirm $MAKEPKG_ARGS  2>&1 | tee ../$1.log && cd ..  && rm -rf "./$1" || cd ..
 	set +o pipefail
 	echo "$WTMK Leaving: $1"
 	~/chaotic-add 2>&1 | tee -a _add.log
@@ -23,7 +23,7 @@ for dir in ${@:-*}; do
 	if [[ -d "$dir" ]]; then
 		limit_build
 		echo "$WTMK Building: $dir"
-		one_build "$dir" &
+		one_build "${dir%/}" &
 		sleep 1
 	elif [[ "$dir" = "--" ]]; then
 		echo "$WTMK Trapped in a wait"

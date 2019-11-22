@@ -142,7 +142,7 @@ echo '<h3 id="tkg">TkG most downloaded (per unique users):</h3>'
 echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
 echo "$PKGS_IP_COUNT" |\
 	grep -P '\-tkg(\-|$)' |\
-	sed -r 's/linux(420|50|51|52)-tkg/linux-tkg/g' |\
+	sed -r 's/linux(420|50|51|52)-tkg/linux-tkg/g;s/-faudio//g' |\
 	sort | uniq -c | sort -nr |\
 	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
 echo '</table><br/>'
