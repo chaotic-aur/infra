@@ -9,6 +9,7 @@ readonly BLDTART='TkG.common'
 
 # (staging vkd3d faudio)
 _WINE_VARIATIONS=(
+	'lol'
 	'false false'
 	'false true'	# vkd3d
 	'true false'	# staging
@@ -29,22 +30,27 @@ _NVIDIA_VARIATIONS=(
 wine_setup() {
 	git checkout customization.cfg PKGBUILD
 
-	local _USE_DXVKGI='true'
-	if [ "$2" == 'true' ]; then
-		_USE_DXVKGI='false'
+	if [ 'lol' == "$1" ]; then
+		cp ~/chaotic-chroot/lol.customization.cfg ./customization.cfg
+		export _PKGNAME='wine-tkg-lol-git'
+	else
+		local _USE_DXVKGI='true'
+		if [ "$2" == 'true' ]; then
+			_USE_DXVKGI='false'
+		fi
+
+		sed -i'' "
+		s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
+		s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
+		s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
+		s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$2\"/g
+		s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
+		s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
+		" customization.cfg
+
+		local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
+		export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
 	fi
-
-	sed -i'' "
-	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
-	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
-	s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
-	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$2\"/g
-	s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
-	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
-	" customization.cfg
-
-	local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
-	export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
 
 	echo "[build-tkg] customization set to: ${_PKGNAME}"
 }
@@ -124,6 +130,8 @@ if [ -z "$TKG_NOWINE" ]; then
 		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
 		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
 		" customization.cfg
+
+		[ "$VARIATION" == 'lol' ] && sed -i'' "s/wine-tkg-lol-git/wine-tkg-lol-opt-git/g" customization.cfg
 
 		echo "[build-tkg] customization set to: ${_PKGNAME/%-git/-opt-git}"
 

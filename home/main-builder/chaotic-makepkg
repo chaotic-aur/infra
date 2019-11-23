@@ -307,13 +307,15 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	
 	# * Deploy
 	# Push artifacts to dest
-	sudo umount -Rv "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"
-	pushd "$CHROOT/$TARGET_UPPER/dest.up"
-		for f in ./*; do
-			gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor "$f"
-		done
-		mv ./* "$REPO_PKGDEST/"
-	popd
+	if [ -z "$CHAOTIC_DONT_PUBLISH" ]; then
+		sudo umount -Rv "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"
+		pushd "$CHROOT/$TARGET_UPPER/dest.up"
+			for f in ./*; do
+				gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor "$f"
+			done
+			mv ./* "$REPO_PKGDEST/"
+		popd
+	fi
 
 	# * Nuke
 	if [[ "$TARGET_NUKE" == '1' ]]; then

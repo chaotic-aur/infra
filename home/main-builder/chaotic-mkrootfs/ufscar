@@ -9,6 +9,7 @@ set -o errexit
 readonly BASE_BUILD_ID="${BASE_BUILD_ID:-$(date '+%Y%m%d%H%M%S')}"
 readonly BASE_BUILD_NAME="${BASE_BUILD_NAME:-ufscar-base-${BASE_BUILD_ID}-$BASE_BUILD_ARCH}"
 readonly BASE_BUILD_IMAGE="${BASE_BUILD_NAME}.img"
+readonly BASE_BUILD_DEST='/srv/http/chaotic-aur/rootfs/'
 
 # create the directory
 mkdir -p "$BASE_BUILD_DIR"
@@ -89,7 +90,7 @@ Server = http://chaotic.bangl.de/\$repo/\$arch
 EOF
 
 # essentials
-sudo pacman -r . -S --noconfirm --needed \
+sudo arch-chroot . pacman -S --noconfirm --needed \
 	base-devel multilib-devel git \
 	sudo yay networkmanager pulseaudio-alsa \
 	grub efibootmgr os-prober \
@@ -101,7 +102,10 @@ sudo pacman -r . -S --noconfirm --needed \
 	xorg-server {,lib32-}vulkan-intel intel-media-driver \
 	firefox google-chrome mpv wine-staging \
 	wps-office wps-office-mui-pt-br ttf-wps-fonts \
-	quartus-130 libpng12 scilab-bin
+	quartus-130 libpng12 scilab-bin \
+	firefox-ublock-origin firefox-extension-plasma-integration
+sudo arch-chroot . pacman -Rsn --noconfirm konqueror
+sudo pacman -r . -U ~/'.ufscar/matlab-ufscar-9.7.0.0-0-x86_64.pkg.tar.xz' --noconfirm
 
 sudo systemctl --root=. enable NetworkManager
 sudo systemctl --root=. enable sddm
@@ -115,6 +119,8 @@ echo '%wheel ALL=(ALL) ALL' | sudo tee -a ./etc/sudoers > /dev/null
 echo 'export LM_LICENSE_FILE=1800@licencas.ufscar.br' | sudo tee ./etc/profile.d/ufscar.sh > /dev/null
 
 # KDE autologin
+sudo mkdir ./etc/sddm.conf.d
+sudo chmod 755 ./etc/sddm.conf.d
 cat <<EOF | sudo tee -a ./etc/sddm.conf.d/00-ufscar.conf > /dev/null
 [Autologin]
 User=archer
@@ -123,7 +129,7 @@ Session=plasma
 [Theme]
 Current=breeze
 EOF
-sudo chmod 644 ./etc/sddm.conf.d/00-ufscar.conf
+sudo chmod 600 ./etc/sddm.conf.d/00-ufscar.conf
 
 # KDE keyboard
 cat <<EOF | sudo tee -a ./etc/xdg/kxkbrc > /dev/null
@@ -144,6 +150,13 @@ LANG=pt_BR.UTF-8
 LANGUAGE=pt_BR
 EOF
 sudo chmod 644 ./etc/xdg/plasma-localerc
+
+# KDE theme
+cat <<EOF | sudo tee -a ./etc/xdg/plasmarc > /dev/null
+[Theme]
+name=breeze-dark
+EOF
+sudo chmod 644 ./etc/xdg/plasmarc
 
 # clean caches
 yes | sudo pacman -r . -Scc
@@ -168,7 +181,14 @@ sudo losetup -d /dev/loop9
 sudo rm -rf "$BASE_BUILD_NAME/"
 
 # convert image
+echo 'Converting image, this can take a while...'
 qemu-img convert -f raw -O qcow2 -c "$BASE_BUILD_IMAGE" "${BASE_BUILD_NAME}.qcow2"
 sudo rm "$BASE_BUILD_IMAGE"
+
+echo 'Signing'
+gpg --detach-sign --use-agent --no-armor "./${BASE_BUILD_NAME}.qcow2"
+
+echo 'Deploying'
+cp ./"${BASE_BUILD_NAME}.qcow2"{,.sig} "$BASE_BUILD_DEST"
 
 echo '[chaotic-mkrootfs] Finishing creating ' "${BASE_BUILD_NAME}.qcow2"
