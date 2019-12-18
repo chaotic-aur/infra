@@ -69,7 +69,7 @@ echo '<table border="1"><tr><td>Packages</td><td>IP</td><td>Country</td></tr>'
 echo "$UNIQ_ACCESS" |\
 	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
 	sort -u |\
-	awk '{print $1}' |\
+	awk '!/:/{print $1}' |\
 	sort | uniq -c | sort -nr |\
 	head -n $NUM_USERS |\
 	awk '{print "echo -n \""$0" \"; geoiplookup "$2"; "}' |\
@@ -77,7 +77,7 @@ echo "$UNIQ_ACCESS" |\
 	sed -r "$IP_CENSOR" |\
 	sed 's/GeoIP[^:]*: .., //g' |\
 	sed -r 's/^\ *([^\ ]*)\ ([^\ ]*)\ (.*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><td>\3<\/td><\/tr>/g'
-echo '</table><br/>'
+echo '</table><br/>(IPv4 only)'
 echo '<code>Users total: '
 echo "$UNIQ_ACCESS" |\
 	grep 'chaotic-aur\.db\.sig' |\

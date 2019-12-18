@@ -147,6 +147,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm mercurial
 	fi
 
+	# * Read options
+	if [[ ! -z `grep -Po "^options=\\([a-z! \"']*(?<!!)ccache[ '\"\\)]" PKGBUILD` ]]; then
+		target_run sudo pacman -S --needed --noconfirm ccache
+	fi
+
 	# * Unreal Engine
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^unreal-engine$')" ]]; then
 		echo "$WTMK pantheon-core-git detected, treating..."
@@ -264,6 +269,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^plymouth-kcm$')" ]]; then
 		echo "$WTMK plymouth-kcm detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm kdelibs4support
+	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lmms-git$')" ]]; then
+		echo "$WTMK plymouth-kcm detected, treating..."
+		target_run sudo pacman -S --needed --noconfirm perl-list-moreutils perl-xml-parser
 	fi
 
 	# * People who think they're smart

@@ -189,7 +189,8 @@ wine-tkg-fsync-vkd3d-faudio-git
 wine-tkg-fsync-vkd3d-faudio-opt-git
 wine-tkg-fsync-vkd3d-git
 wine-tkg-fsync-vkd3d-opt-git
-wine-tkg-lol-git
+wine-tkg-git-leagueoflegends
+wine-tkg-git-leagueoflegends-opt
 wine-tkg-staging-fsync-faudio-git
 wine-tkg-staging-fsync-faudio-opt-git
 wine-tkg-staging-fsync-git

@@ -78,8 +78,6 @@ sudo arch-chroot . passwd -d root
 # add chaotic-aur
 sudo arch-chroot . pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB
 sudo arch-chroot . pacman-key --lsign-key 3056513887B78AEB 
-sudo arch-chroot . pacman -Syu --noconfirm
-
 cat <<EOF | sudo tee -a ./etc/pacman.conf > /dev/null
 [multilib]
 Include = /etc/pacman.d/mirrorlist
@@ -88,6 +86,7 @@ Include = /etc/pacman.d/mirrorlist
 Server = https://lonewolf.pedrohlc.com/\$repo/\$arch
 Server = http://chaotic.bangl.de/\$repo/\$arch
 EOF
+sudo arch-chroot . pacman -Syu --noconfirm
 
 # essentials
 sudo arch-chroot . pacman -S --noconfirm --needed \
@@ -182,7 +181,7 @@ sudo rm -rf "$BASE_BUILD_NAME/"
 
 # convert image
 echo 'Converting image, this can take a while...'
-qemu-img convert -f raw -O qcow2 -c "$BASE_BUILD_IMAGE" "${BASE_BUILD_NAME}.qcow2"
+qemu-img convert -W -m 16 -f raw -O qcow2 -c "$BASE_BUILD_IMAGE" "${BASE_BUILD_NAME}.qcow2"
 sudo rm "$BASE_BUILD_IMAGE"
 
 echo 'Signing'

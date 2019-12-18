@@ -3,7 +3,7 @@ LOGDIR='/srv/http/chaotic-aur/makepkglogs/_daily'
 cd /tmp
 
 # Someplace nice to work
-BUILDDIR="llvm.$(date '+%Y%m%d%H%M%S')"
+BUILD_DIR="llvm.$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR" || exit
 
@@ -23,20 +23,21 @@ single_build() {
 }
 
 
-for _PKG_PRE in '' 'lib32-'; do
-	for _PKG_POS in {,'-minimal'}'-git'; do
-		single_build "${_PKG_PRE}llvm${_PKG_POS}"
+for _PKG_POS in {'-minimal'}'-git'; do
+	for _PKG_PRE in '' 'lib32-'; do
+		repoctl down "${_PKG_PRE}llvm${_PKG_POS}"
 	done
 done
 
+~/chaotic-batchbuild
+
 # We deserve to know the truth!
 echo '[build-llvm] Submiting logs'
-rm _add.log || echo 'No add?'
 mv ./*.log "$LOGDIR/"
 
 echo '[build-llvm] Cleaning dirty'
 cd ..
-rm -rf "$BUILDDIR"
+rm -rf "$BUIL_DDIR"
 
 echo '[build-llvm] Remove successful packages from logs'
 cd "$LOGDIR"
