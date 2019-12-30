@@ -15,7 +15,7 @@ export _NEW_SIGS="$(find *.sig -newer ~/last-add)"
 if [[ "$_NEW_SIGS" != "" ]]
 then
 	export _PKGS=$(echo "$_NEW_SIGS" |\
-		grep -Po '(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz)?\.sig)')
+		grep -Po '(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst)?\.sig)')
 	echo "$_PKGS" |\
 		xargs repoctl update \
 		\

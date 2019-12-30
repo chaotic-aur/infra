@@ -85,15 +85,15 @@ mesa_setup() {
 
 	echo '[build-tkg] applied mesa customization'
 	
-	export TARGET_MECHA='mesatkg'
-	export TARGET_EXTRAPKGS='multilib-devel'
+	export TARGET_MECHA='mesa-tkg'
+	export TARGET_EXTRAPKGS='multilib-devel ccache'
 }
 
 # - LLVM
 llvm_setup() {
 	echo '[build-tkg] applied llvm customization'
 	
-	export TARGET_MECHA='llvmtkg'
+	export TARGET_MECHA='llvm-tkg'
 	export TARGET_EXTRAPKGS='multilib-devel ccache'
 }
 
@@ -101,7 +101,7 @@ llvm_setup() {
 # Helpers
 #
 wine_makepkg() {
-	export TARGET_UPPER='wine'
+	export TARGET_UPPER='wine-tkg'
 	export TARGET_NUKE=0
 	export TARGET_EXTRAPKGS='ccache mingw-w64-gcc'
         ~/chaotic-makepkg \
@@ -190,8 +190,7 @@ if [ -z "$TKG_NOLLVM" ]; then
 	llvm_setup
 	~/chaotic-makepkg --nocheck --noconfirm -C 2>&1 | tee "$TKGLOGS/llvm-git.log"
 	~/chaotic-add
-	unset TARGET_MECHA
-	unset TARGET_EXTRAPKGS
+	unset TARGET_MECHA TARGET_EXTRAPKGS
 	cd ..
 fi
 
@@ -202,8 +201,7 @@ if [ -z "$TKG_NOMESA" ]; then
 	mesa_setup
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
 	~/chaotic-add
-	unset TARGET_MECHA
-	unset TARGET_EXTRAPKGS
+	unset TARGET_MECHA TARGET_EXTRAPKGS
 	cd ..
 fi
 

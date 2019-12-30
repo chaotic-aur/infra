@@ -3,7 +3,7 @@ cd /srv/http/chaotic-aur/x86_64 || exit
 
 DUPLICATED=$(
   ls |\
-    grep -Po "^(.*)(?=(?:(?:-[^-]*){3}\.pkg\.tar(?>\.xz)?)$)" |\
+    grep -Po "^(.*)(?=(?:(?:-[^-]*){3}\.pkg\.tar(?>\.xz|\.zst)?)$)" |\
     uniq -d
 )
 

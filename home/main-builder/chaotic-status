@@ -45,7 +45,7 @@ echo '<!-- MAIN REPO ' $(echo "$MAIN_ACCESS" | wc -l) ' || MIRROR ' $(echo "$MIR
 
 PKGS_IP_COUNT=$(
 	echo "$UNIQ_ACCESS" |\
-	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+		grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
 	sort -u |\
 	awk '{print $2}' |\
 	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)'
@@ -54,7 +54,7 @@ PKGS_IP_COUNT=$(
 echo '<h3>Top ' $NUM_DOWN ' most downloaded (per unique users):</h3>'
 echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
 echo "$UNIQ_ACCESS" |\
-	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
 	sed 's/wine-tkg-.*-git/wine-tkg-*/g;s/linux-tkg-...-[^-]*/linux-tkg-*/g;s/linux..-tkg-.../linux-tkg-*/g' |\
 	sort -u |\
 	awk '{print $2}' |\
@@ -67,7 +67,7 @@ echo '</table>' '* For TkG packages check <a href="#tkg">here</a>.<br/>'
 echo '<h3>Top 10 users (per unique downloaded packages):</h3>'
 echo '<table border="1"><tr><td>Packages</td><td>IP</td><td>Country</td></tr>'
 echo "$UNIQ_ACCESS" |\
-	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
 	sort -u |\
 	awk '!/:/{print $1}' |\
 	sort | uniq -c | sort -nr |\
@@ -89,10 +89,10 @@ echo '</code><br/>'
 echo '<h3>Last 15 updates:</h3>'
 echo '<ul>'
 cd /srv/http/chaotic-aur/x86_64
-find . -type f -name "*.pkg.tar.xz" \
+find . -type f -name "*.pkg.tar.*" \
 	-printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
 	sort | tail -n $NUM_UPDT | awk '{print $2}' |\
-	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.xz)' |\
+	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
 	awk '{print "\t"$0}' | tac |\
 	sed 's/$/<\/code><\/li>/;s/^/<li><code>/' 
 echo '</ul>'

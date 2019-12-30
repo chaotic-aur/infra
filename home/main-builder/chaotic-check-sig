@@ -2,7 +2,7 @@
 cd /srv/http/chaotic-aur/x86_64 || exit
 
 echo '[!] Missing sig:'
-for pkg in *.pkg.tar{,.xz}
+for pkg in *.pkg.tar{,.xz,.zst}
 do
 	if [ ! -f "${pkg}.sig" ]; then echo "$pkg"; fi
 done
