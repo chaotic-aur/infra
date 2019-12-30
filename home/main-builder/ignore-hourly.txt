@@ -199,7 +199,6 @@ wine-tkg-staging-fsync-vkd3d-faudio-git
 wine-tkg-staging-fsync-vkd3d-faudio-opt-git
 wine-tkg-staging-fsync-vkd3d-git
 wine-tkg-staging-fsync-vkd3d-opt-git
-wingpanel-standalone-git
 wireguard-dkms-git
 wireguard-tools-git
 xamarin-android-git

@@ -22,12 +22,12 @@ single_build() {
 	rm -rf "$1"
 }
 
-
-for _PKG_POS in {'-minimal'}'-git'; do
+_PKG_POS='-minimal-git'
+#for _PKG_POS in {,'-minimal'}'-git'; do
 	for _PKG_PRE in '' 'lib32-'; do
 		repoctl down "${_PKG_PRE}llvm${_PKG_POS}"
 	done
-done
+#done
 
 ~/chaotic-batchbuild
 
@@ -37,7 +37,7 @@ mv ./*.log "$LOGDIR/"
 
 echo '[build-llvm] Cleaning dirty'
 cd ..
-rm -rf "$BUIL_DDIR"
+rm -rf "$BUILD_DIR"
 
 echo '[build-llvm] Remove successful packages from logs'
 cd "$LOGDIR"
