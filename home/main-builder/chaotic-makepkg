@@ -89,7 +89,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * CHROOT
 	MECHA_NAME="${TARGET_MECHA:-pkg$(echo "$_PKGNAME_HEAD" | sha256sum | cut -c1-11)}"
 	TARGET_UPPER="${TARGET_UPPER:-$MECHA_NAME}"
-	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK -D $CHROOT/$TARGET_UPPER/root"
+	TARGET_RUN="sudo systemd-nspawn -M $MECHA_NAME  -u $BUILD_USER --capability=CAP_IPC_LOCK,CAP_SYS_NICE -D $CHROOT/$TARGET_UPPER/root"
 	TARGET_WIZARD="$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/wizard.sh"
 	function target_run() {
 		echo "$@" | tee -a "$TARGET_WIZARD"
