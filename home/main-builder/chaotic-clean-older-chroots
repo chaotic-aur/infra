@@ -2,14 +2,15 @@
 cd /tmp/chaotic-chroot || exit
 
 _PKGS=$(~/chaotic-check-older-chroots | grep -Po 'pkg[^ ]+$')
-_ROOTS=$(echo $_PKGS | sed 's/$/\/root/')
+_ROOTS=$(echo "$_PKGS" | sed 's/$/\/root/g')
 
 [ -z "$_PKGS" ] && exit
 
+echo 'Unmounting'
 echo $_ROOTS | xargs sudo umount -Rv
+_CHECK=$(echo "$_ROOTS" | xargs sudo umount -Rv)
 
-_CHECK=$(echo $_ROOTS | xargs sudo umount -Rv)
+[ -z `echo "$_CHECK" | grep -P '.*(?<!not found|unmounted)$'` ] || exit
 
-[ -z `echo $_CHECK | grep -P '.*(?<!not found|unmounted)$'` ] || exit
-
-echo $_PKGS | xargs sudo rm --one-file-system -rf
+echo 'Deleting'
+echo "$_PKGS" | xargs sudo rm --one-file-system -rf

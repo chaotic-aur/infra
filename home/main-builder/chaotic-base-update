@@ -17,5 +17,6 @@ if [[ -d "$CHROOT/$BASE" ]]; then
 	$BASE_RUN pacman -Syu --noconfirm
 	sudo umount "$CHROOT/$BASE/var/cache/pacman/pkg"
 	cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "$CHROOT/$BASE/home/$BUILD_USER/.gnupg"
+	cp -a "/home/$BUILD_USER/.gitconfig" "$CHROOT/$BASE/home/$BUILD_USER/"
 	rm "$CHROOT/$BASE.lock"
 fi

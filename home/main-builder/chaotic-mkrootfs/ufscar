@@ -92,7 +92,7 @@ sudo arch-chroot . pacman -Syu --noconfirm
 sudo arch-chroot . pacman -S --noconfirm --needed \
 	base-devel multilib-devel git \
 	sudo yay networkmanager pulseaudio-alsa \
-	grub efibootmgr os-prober \
+	syslinux efibootmgr \
 	ntfs-3g dosfstools mtools exfat-utils unrar p7zip \
 	nano neovim-drop-in openssh htop \
 	gvfs-mtp plasma sddm kdebase packagekit-qt5 \
@@ -100,9 +100,10 @@ sudo arch-chroot . pacman -S --noconfirm --needed \
 	intel-ucode {,lib32-}libva-intel-driver xf86-video-intel \
 	xorg-server {,lib32-}vulkan-intel intel-media-driver \
 	firefox google-chrome mpv wine-staging \
-	wps-office wps-office-mui-pt-br ttf-wps-fonts \
+	wps-office wps-office-mui-pt-br ttf-wps-fonts wps-office-extension-portuguese-brazilian-dictionary \
 	quartus-130 libpng12 scilab-bin \
-	firefox-ublock-origin firefox-extension-plasma-integration
+	firefox-ublock-origin firefox-extension-plasma-integration \
+	xorg-server-xvfb
 sudo arch-chroot . pacman -Rsn --noconfirm konqueror
 sudo pacman -r . -U ~/'.ufscar/matlab-ufscar-9.7.0.0-0-x86_64.pkg.tar.xz' --noconfirm
 
@@ -112,6 +113,8 @@ sudo systemctl --root=. enable sddm
 # create main user
 sudo arch-chroot . useradd -m -g wheel -G users -s /bin/bash archer
 sudo arch-chroot . passwd -d archer
+sudo arch-chroot . groupadd plugdev
+sudo arch-chroot . usermod -aG plugdev archer
 echo '%wheel ALL=(ALL) ALL' | sudo tee -a ./etc/sudoers > /dev/null
 
 # add license server
@@ -157,6 +160,44 @@ name=breeze-dark
 EOF
 sudo chmod 644 ./etc/xdg/plasmarc
 
+# Remove Suspend / Hibernate / Reboot / Logoff
+cat <<EOF | sudo tee ./etc/polkit-1/rules.d/55-inhibit-causevm.rules > /dev/null
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.login1.suspend" ||
+        action.id == "org.freedesktop.login1.suspend-multiple-sessions" ||
+    	action.id == "org.freedesktop.login1.hibernate" ||
+        action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
+    	action.id == "org.freedesktop.login1.reboot" ||
+        action.id == "org.freedesktop.login1.reboot-multiple-sessions")
+    {
+        return polkit.Result.NO;
+    }
+});
+EOF
+
+# I don't like "Área de Trabalho"
+sudo mkdir -p ./home/archer/{.config,Desktop,Downloads,Documents,Music,Pictures,Videos}
+sudo arch-chroot . mkinitcpio -Pv
+cat <<EOF | sudo tee ./home/archer/.config/user-dirs.dirs > /dev/null
+XDG_DESKTOP_DIR="$HOME/Desktop"
+XDG_DOWNLOAD_DIR="$HOME/Downloads"
+XDG_TEMPLATES_DIR="$HOME/Templates"
+XDG_PUBLICSHARE_DIR="$HOME/Public"
+XDG_DOCUMENTS_DIR="$HOME/Documents"
+XDG_MUSIC_DIR="$HOME/Music"
+XDG_PICTURES_DIR="$HOME/Pictures"
+XDG_VIDEOS_DIR="$HOME/Videos"
+EOF
+echo 'en_US' | sudo tee ./home/archer/.config/user-dirs.locale > /dev/null
+sudo arch-chroot . chown -R archer:users /home/archer
+
+# Run it once so the real first run is faster later
+echo '[@] Running Plasma'
+sudo arch-chroot -u archer:users . xvfb-run -a -n 95 /usr/bin/startkde &
+sleep 300
+echo '[@] Killing Plasma'
+killall startkde
+
 # clean caches
 yes | sudo pacman -r . -Scc
 
@@ -165,9 +206,12 @@ sudo sed -i'' 's/^MODULES=(/MODULES=(virtio virtio_scsi virtio_blk virtio_pci vi
 sudo arch-chroot . mkinitcpio -Pv
 
 # grub
-sudo sed -i'' 's/^GRUB_TIMEOUT=.*$/GRUB_TIMEOUT=0/g' ./etc/default/grub
-sudo arch-chroot . grub-install --target=i386-pc /dev/loop9
-sudo arch-chroot . grub-mkconfig -o /boot/grub/grub.cfg
+#sudo sed -i'' 's/^GRUB_TIMEOUT=.*$/GRUB_TIMEOUT=0/g' ./etc/default/grub
+#sudo arch-chroot . grub-install --target=i386-pc /dev/loop9
+#sudo arch-chroot . grub-mkconfig -o /boot/grub/grub.cfg
+
+# syslinux
+sudo syslinux-install_update -i -a -m -c .
 
 # move rootfs to a tar.xz
 [ "$BASE_BUILD_BASE_TAR" == '1' ] && sudo tar -cJf ../"${BASE_BUILD_NAME}.tar.xz" .
@@ -187,7 +231,10 @@ sudo rm "$BASE_BUILD_IMAGE"
 echo 'Signing'
 gpg --detach-sign --use-agent --no-armor "./${BASE_BUILD_NAME}.qcow2"
 
+echo 'Torrenting'
+mktorrent -w "http://lonewolf.pedrohlc.com/chaotic-aur/rootfs/${BASE_BUILD_NAME}.qcow2" -a 'udp://lonewolf.pedrohlc.com:23069' "./${BASE_BUILD_NAME}.qcow2"
+
 echo 'Deploying'
-cp ./"${BASE_BUILD_NAME}.qcow2"{,.sig} "$BASE_BUILD_DEST"
+cp ./"${BASE_BUILD_NAME}.qcow2"{,.sig,.torrent} "$BASE_BUILD_DEST"
 
 echo '[chaotic-mkrootfs] Finishing creating ' "${BASE_BUILD_NAME}.qcow2"

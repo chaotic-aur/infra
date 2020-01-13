@@ -16,10 +16,12 @@ if [[ "$_NEW_SIGS" != "" ]]
 then
 	export _PKGS=$(echo "$_NEW_SIGS" |\
 		grep -Po '(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst)?\.sig)')
+	#	grep -Po '.*(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst)?(?=\.sig)')
 	echo "$_PKGS" |\
 		xargs repoctl update \
 		\
 		&& update_checkpoint
+		# xargs repo-add chaotic-aur.db.tar.gz
 	date +'%s' > /media/http1/lastupdate
 fi
 cat chaotic-aur.db.tar.gz | tar -tvz | grep -e "^d" | awk '{print $6}' > ../pkgs.txt

@@ -89,10 +89,10 @@ echo '</code><br/>'
 echo '<h3>Last 15 updates:</h3>'
 echo '<ul>'
 cd /srv/http/chaotic-aur/x86_64
-find . -type f -name "*.pkg.tar.*" \
+find . -type f -name "*.pkg.tar.*.sig" \
 	-printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
 	sort | tail -n $NUM_UPDT | awk '{print $2}' |\
-	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
+	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.(?:xz|zst)\.sig)' |\
 	awk '{print "\t"$0}' | tac |\
 	sed 's/$/<\/code><\/li>/;s/^/<li><code>/' 
 echo '</ul>'
@@ -123,6 +123,7 @@ echo '<table border="1"><tr><td>pkgname</td><td>pkgver</td><td>pkgrel</td></tr>'
 cat ../pkgs.txt |\
 	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<tr><td><code>\1<\/code><\/td><td><code>\2<\/code><\/td><td><code>\3<\/code><\/td><\/tr>/'
 echo '</table>'
+
 
 echo '<h3>Important status</h3>'
 echo '<h4>Finite Resources</h4>'

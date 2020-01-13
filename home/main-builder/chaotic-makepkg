@@ -76,6 +76,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$BASE_USR_RUN mkdir -p "/home/$BUILD_USER/"{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs,.gnupg}
 		$BASE_USR_RUN chmod 700 "/home/$BUILD_USER/.gnupg"
 		cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$BASE/home/$BUILD_USER/.gnupg"
+		cp -a "/home/$BUILD_USER/.gitconfig" "./$BASE/home/$BUILD_USER/"
 
 		# Finish
 		popd
@@ -212,10 +213,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# NSS-HG for Firefox Nightlies
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^nss-hg')" ]]; then
-		echo "$WTMK I like my fox's toys very update!"
-		target_run sudo pacman -S --needed --noconfirm nspr-hg
-	fi
+	#if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^nss-hg')" ]]; then
+	#	echo "$WTMK I like my fox's toys very update!"
+	#	target_run sudo pacman -S --needed --noconfirm nspr-hg
+	#fi
 
 	# * Tired of things not getting fixed in AUR & ArchLinux
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^featherpad-git$')" ]]; then
