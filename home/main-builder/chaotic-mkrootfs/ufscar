@@ -1,21 +1,43 @@
 #!/usr/bin/env bash
+#==============================================================================
+# Prepare UFSCAR's ArchLinux generic lab image
+#==============================================================================
+# Created and mantained by PedroHLC <root@pedrohlc.com>
+# Last Update: 2020-01-17 13:00
+#------------------------------------------------------------------------------
+
+
+#==============================================================================
+# Pre-setup preparations
+#==============================================================================
+# Set script options
+#------------------------------------------------------------------------------
 set -o errexit
 
-# constraints
-[[ "$(whoami)" != 'main-builder' ]] && echo 'Oh Who Are You?' && exit
+#------------------------------------------------------------------------------
+# Verify constraints
+#------------------------------------------------------------------------------
+[[ "$(whoami)" == 'root' ]] && echo 'Not expected to be built using root' && exit -1
 
-# constants & settings
-[ -z "$BASE_BUILD_DIR" ] && source ~/'chaotic-mkrootfs/env-default'
+#------------------------------------------------------------------------------
+# Define constants & settings
+#------------------------------------------------------------------------------
+readonly BASE_BUILD_DIR='/tmp/chaotic-rootfs'
+readonly BASE_BUILD_ARCH='x86_64'
 readonly BASE_BUILD_ID="${BASE_BUILD_ID:-$(date '+%Y%m%d%H%M%S')}"
 readonly BASE_BUILD_NAME="${BASE_BUILD_NAME:-ufscar-base-${BASE_BUILD_ID}-$BASE_BUILD_ARCH}"
 readonly BASE_BUILD_IMAGE="${BASE_BUILD_NAME}.img"
 readonly BASE_BUILD_DEST='/srv/http/chaotic-aur/rootfs/'
 
-# create the directory
+#------------------------------------------------------------------------------
+# Prepare build directory
+#------------------------------------------------------------------------------
 mkdir -p "$BASE_BUILD_DIR"
 cd "$BASE_BUILD_DIR"
 
-# create root env
+#==============================================================================
+# Create and mount a virtual raw disk
+#==============================================================================
 truncate -s 100G "$BASE_BUILD_IMAGE"
 sudo losetup /dev/loop9 "$BASE_BUILD_IMAGE"
 sudo parted /dev/loop9 mktable msdos
@@ -26,25 +48,33 @@ sudo mkdir "$BASE_BUILD_NAME"
 sudo mount -t ext4 /dev/loop9p1 "$BASE_BUILD_NAME"
 pushd "$BASE_BUILD_NAME"
 
-# install base
+#==============================================================================
+# Prepare filesystem and initial settings before chrooting
+#==============================================================================
+# Install base package
+#------------------------------------------------------------------------------
 sudo pacstrap -GM . base
 
-# set locale
+#------------------------------------------------------------------------------
+# Set locale
+#------------------------------------------------------------------------------
 pushd ./etc
 sudo rm localtime || echo 'There was no localtime'
 sudo ln -s ../usr/share/zoneinfo/America/Sao_Paulo ./localtime
 popd
-sudo arch-chroot . hwclock --systohc
 
-echo 'en_US.UTF-8 UTF-8' | sudo tee -a ./etc/locale.gen > /dev/null
-echo 'pt_BR.UTF-8 UTF-8' | sudo tee -a ./etc/locale.gen > /dev/null
-sudo arch-chroot . locale-gen
+cat <<EOF | sudo cp /dev/stdin ./etc/locale.gen
+en_US.UTF-8 UTF-8
+pt_BR.UTF-8 UTF-8
+EOF
 
 echo 'LANG=pt_BR.UTF-8' | sudo cp /dev/stdin ./etc/locale.conf
 echo 'KEYMAP=br-abnt2' | sudo cp /dev/stdin ./etc/vconsole.conf
 sudo chmod 644 ./etc/locale.conf
 
-# set hostname and hosts
+#------------------------------------------------------------------------------
+# Set hostname and update it in hosts
+#------------------------------------------------------------------------------
 echo 'ufscar-pc' | sudo cp /dev/stdin ./etc/hostname
 
 cat <<EOF | sudo tee -a ./etc/hosts > /dev/null
@@ -53,8 +83,10 @@ cat <<EOF | sudo tee -a ./etc/hosts > /dev/null
 127.0.1.1	ufscar-pc.localdomain	ufscar
 EOF
 
-# add some servers
-cat <<EOF | sudo tee ./etc/pacman.d/mirrorlist > /dev/null
+#------------------------------------------------------------------------------
+# Set only brazilian servers in mirrorlist
+#------------------------------------------------------------------------------
+cat <<EOF | sudo cp /dev/stdin ./etc/pacman.d/mirrorlist
 Server = http://mirror.ufscar.br/archlinux/\$repo/os/\$arch
 Server = http://archlinux.c3sl.ufpr.br/\$repo/os/\$arch
 Server = http://www.caco.ic.unicamp.br/archlinux/\$repo/os/\$arch
@@ -65,19 +97,10 @@ Server = http://archlinux.pop-es.rnp.br/\$repo/os/\$arch
 Server = http://mirror.ufam.edu.br/archlinux/\$repo/os/\$arch
 Server = http://br.mirror.archlinux-br.org/\$repo/os/\$arch
 EOF
-sudo arch-chroot . pacman-key --init
-sudo arch-chroot . pacman-key --populate archlinux
-sudo arch-chroot . pacman -Syu --noconfirm
 
-# change kernel
-sudo arch-chroot . pacman -S linux-zen linux-zen-headers --noconfirm
-
-# root password
-sudo arch-chroot . passwd -d root
-
-# add chaotic-aur
-sudo arch-chroot . pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB
-sudo arch-chroot . pacman-key --lsign-key 3056513887B78AEB 
+#------------------------------------------------------------------------------
+# Add [chaotic-aur] to pacman.conf
+#------------------------------------------------------------------------------
 cat <<EOF | sudo tee -a ./etc/pacman.conf > /dev/null
 [multilib]
 Include = /etc/pacman.d/mirrorlist
@@ -86,41 +109,109 @@ Include = /etc/pacman.d/mirrorlist
 Server = https://lonewolf.pedrohlc.com/\$repo/\$arch
 Server = http://chaotic.bangl.de/\$repo/\$arch
 EOF
-sudo arch-chroot . pacman -Syu --noconfirm
 
-# essentials
-sudo arch-chroot . pacman -S --noconfirm --needed \
-	base-devel multilib-devel git \
+#------------------------------------------------------------------------------
+# Add Virtio SCSI modules to init
+#------------------------------------------------------------------------------
+sudo sed -i'' 's/^MODULES=(/MODULES=(virtio virtio_scsi virtio_blk virtio_pci virtio_net /' ./etc/mkinitcpio.conf
+
+#------------------------------------------------------------------------------
+# Add a swapfile
+#------------------------------------------------------------------------------
+sudo truncate -s 0 ./swapfile
+sudo chattr +C ./swapfile
+sudo fallocate -l 512M ./swapfile
+sudo chmod 600 ./swapfile
+sudo mkswap /swapfile
+
+#------------------------------------------------------------------------------
+# Generate fstab
+#------------------------------------------------------------------------------
+genfstab -U /mnt | awk '!/swap/' | echo '/swapfile none swap defaults 0 0' | sudo tee -a ./etc/fstab > /dev/null
+
+#==============================================================================
+# Enter chroot and complete installation
+#==============================================================================
+sudo arch-chroot . /usr/bin/bash <<EOF
+#!/usr/bin/bash
+set -o errexit
+
+# Set BIOS time mode and generate locale files
+hwclock --systohc
+locale-gen
+
+# Initiate keyring and add [chaotic-aur] keys
+pacman-key --init
+pacman-key --populate archlinux
+pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB
+pacman-key --lsign-key 3056513887B78AEB 
+
+# Install desired packages
+pacman -Syu --noconfirm
+pacman -S linux-zen linux-zen-headers --noconfirm
+pacman -S --noconfirm --needed \
+	base-devel multilib-devel git man \
 	sudo yay networkmanager pulseaudio-alsa \
+	\
 	syslinux efibootmgr \
-	ntfs-3g dosfstools mtools exfat-utils unrar p7zip \
-	nano neovim-drop-in openssh htop \
-	gvfs-mtp plasma sddm kdebase packagekit-qt5 \
-	{,lib32-}mesa {,lib32-}libva-mesa-driver {,lib32-}vulkan-icd-loader \
-	intel-ucode {,lib32-}libva-intel-driver xf86-video-intel \
+	ntfs-3g dosfstools mtools exfat-utils un{rar,zip} p7zip \
+	gvfs-mtp android-udev-git wget curl \
+	\
+	nano neovim-drop-in openssh \
+	\
+	plasma sddm kdebase packagekit-qt5 \
+	\
+	{,lib32-}mesa {,lib32-}libva-{mesa,intel}-driver {,lib32-}vulkan-icd-loader \
+	intel-ucode xf86-video-intel \
 	xorg-server {,lib32-}vulkan-intel intel-media-driver \
-	firefox google-chrome mpv wine-staging \
+	\
+	firefox google-chrome mpv wine-staging xarchiver \
 	wps-office wps-office-mui-pt-br ttf-wps-fonts wps-office-extension-portuguese-brazilian-dictionary \
 	quartus-130 libpng12 scilab-bin \
 	firefox-ublock-origin firefox-extension-plasma-integration \
-	xorg-server-xvfb
-sudo arch-chroot . pacman -Rsn --noconfirm konqueror
+	\
+	gnu-free-fonts \
+	ttf-{dejavu,droid,fira-{code,mono,sans}} \
+	ttf-{liberation,ms-fonts,ubuntu-font-family,wps-fonts}
+pacman -Rsn --noconfirm konqueror
+
+# Create main user
+useradd -m -g wheel -G users -s /bin/bash archer
+passwd -d root
+passwd -d archer
+groupadd plugdev
+usermod -aG plugdev archer
+
+# Update modules in initramfs
+mkinitcpio -Pv
+EOF
+
+#------------------------------------------------------------------------------
+# Add matlab which package is local
+#------------------------------------------------------------------------------
 sudo pacman -r . -U ~/'.ufscar/matlab-ufscar-9.7.0.0-0-x86_64.pkg.tar.xz' --noconfirm
 
+#==============================================================================
+# With files now in place, change more settings
+#==============================================================================
+# Enable services
+#------------------------------------------------------------------------------
 sudo systemctl --root=. enable NetworkManager
 sudo systemctl --root=. enable sddm
 
-# create main user
-sudo arch-chroot . useradd -m -g wheel -G users -s /bin/bash archer
-sudo arch-chroot . passwd -d archer
-sudo arch-chroot . groupadd plugdev
-sudo arch-chroot . usermod -aG plugdev archer
+#------------------------------------------------------------------------------
+# Add all real users to sudoers
+#------------------------------------------------------------------------------
 echo '%wheel ALL=(ALL) ALL' | sudo tee -a ./etc/sudoers > /dev/null
 
-# add license server
+#------------------------------------------------------------------------------
+# Add UFSCAR's license server
+#------------------------------------------------------------------------------
 echo 'export LM_LICENSE_FILE=1800@licencas.ufscar.br' | sudo tee ./etc/profile.d/ufscar.sh > /dev/null
 
+#------------------------------------------------------------------------------
 # KDE autologin
+#------------------------------------------------------------------------------
 sudo mkdir ./etc/sddm.conf.d
 sudo chmod 755 ./etc/sddm.conf.d
 cat <<EOF | sudo tee -a ./etc/sddm.conf.d/00-ufscar.conf > /dev/null
@@ -133,7 +224,9 @@ Current=breeze
 EOF
 sudo chmod 600 ./etc/sddm.conf.d/00-ufscar.conf
 
+#------------------------------------------------------------------------------
 # KDE keyboard
+#------------------------------------------------------------------------------
 cat <<EOF | sudo tee -a ./etc/xdg/kxkbrc > /dev/null
 [Layout]
 LayoutList=br
@@ -143,7 +236,9 @@ Use=true
 EOF
 sudo chmod 644 ./etc/xdg/kxkbrc
 
+#------------------------------------------------------------------------------
 # KDE locale
+#------------------------------------------------------------------------------
 cat <<EOF | sudo tee -a ./etc/xdg/plasma-localerc > /dev/null
 [Formats]
 LANG=pt_BR.UTF-8
@@ -153,88 +248,106 @@ LANGUAGE=pt_BR
 EOF
 sudo chmod 644 ./etc/xdg/plasma-localerc
 
+#------------------------------------------------------------------------------
 # KDE theme
+#------------------------------------------------------------------------------
 cat <<EOF | sudo tee -a ./etc/xdg/plasmarc > /dev/null
 [Theme]
 name=breeze-dark
 EOF
 sudo chmod 644 ./etc/xdg/plasmarc
 
-# Remove Suspend / Hibernate / Reboot / Logoff
+#------------------------------------------------------------------------------
+# Remove Suspend / Hibernate
+#------------------------------------------------------------------------------
 cat <<EOF | sudo tee ./etc/polkit-1/rules.d/55-inhibit-causevm.rules > /dev/null
 polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.login1.suspend" ||
         action.id == "org.freedesktop.login1.suspend-multiple-sessions" ||
     	action.id == "org.freedesktop.login1.hibernate" ||
-        action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
-    	action.id == "org.freedesktop.login1.reboot" ||
-        action.id == "org.freedesktop.login1.reboot-multiple-sessions")
+        action.id == "org.freedesktop.login1.hibernate-multiple-sessions")
     {
         return polkit.Result.NO;
     }
 });
+
 EOF
 
-# I don't like "Área de Trabalho"
-sudo mkdir -p ./home/archer/{.config,Desktop,Downloads,Documents,Music,Pictures,Videos}
-sudo arch-chroot . mkinitcpio -Pv
+#------------------------------------------------------------------------------
+# I don't like "Área de Trabalho", so set home directories to be in english
+#------------------------------------------------------------------------------
+sudo mkdir -p ./home/archer/{.config/plasma-workspace/shutdown,Desktop,Downloads,Documents,Music,Pictures,Videos}
 cat <<EOF | sudo tee ./home/archer/.config/user-dirs.dirs > /dev/null
-XDG_DESKTOP_DIR="$HOME/Desktop"
-XDG_DOWNLOAD_DIR="$HOME/Downloads"
-XDG_TEMPLATES_DIR="$HOME/Templates"
-XDG_PUBLICSHARE_DIR="$HOME/Public"
-XDG_DOCUMENTS_DIR="$HOME/Documents"
-XDG_MUSIC_DIR="$HOME/Music"
-XDG_PICTURES_DIR="$HOME/Pictures"
-XDG_VIDEOS_DIR="$HOME/Videos"
+XDG_DESKTOP_DIR="\$HOME/Desktop"
+XDG_DOWNLOAD_DIR="\$HOME/Downloads"
+XDG_TEMPLATES_DIR="\$HOME/Templates"
+XDG_PUBLICSHARE_DIR="\$HOME/Public"
+XDG_DOCUMENTS_DIR="\$HOME/Documents"
+XDG_MUSIC_DIR="\$HOME/Music"
+XDG_PICTURES_DIR="\$HOME/Pictures"
+XDG_VIDEOS_DIR="\$HOME/Videos"
 EOF
 echo 'en_US' | sudo tee ./home/archer/.config/user-dirs.locale > /dev/null
+
+#------------------------------------------------------------------------------
+# Poweroff on Logout/Reboot
+#------------------------------------------------------------------------------
+cat <<EOF | sudo tee ./home/archer/.config/plasma-workspace/shutdown/quitvm.sh
+#!/usr/bin/env bash
+poweroff -f
+EOF
+sudo chmod +x ./home/archer/.config/plasma-workspace/shutdown/quitvm.sh
+
+#------------------------------------------------------------------------------
+# Fix things written as root
+#------------------------------------------------------------------------------
 sudo arch-chroot . chown -R archer:users /home/archer
 
-# Run it once so the real first run is faster later
-echo '[@] Running Plasma'
-sudo arch-chroot -u archer:users . xvfb-run -a -n 95 /usr/bin/startkde &
-sleep 300
-echo '[@] Killing Plasma'
-killall startkde
-
-# clean caches
+#==============================================================================
+# Finish install
+#==============================================================================
+# Clean pacman cache
+#------------------------------------------------------------------------------
 yes | sudo pacman -r . -Scc
 
-# Virtio SCSI
-sudo sed -i'' 's/^MODULES=(/MODULES=(virtio virtio_scsi virtio_blk virtio_pci virtio_net /' ./etc/mkinitcpio.conf
-sudo arch-chroot . mkinitcpio -Pv
-
-# grub
-#sudo sed -i'' 's/^GRUB_TIMEOUT=.*$/GRUB_TIMEOUT=0/g' ./etc/default/grub
-#sudo arch-chroot . grub-install --target=i386-pc /dev/loop9
-#sudo arch-chroot . grub-mkconfig -o /boot/grub/grub.cfg
-
-# syslinux
+#------------------------------------------------------------------------------
+# Install Syslinux
+#------------------------------------------------------------------------------
 sudo syslinux-install_update -i -a -m -c .
+sudo sed -i'' 's/-linux/-linux-zen/g;s/TIMEOUT.*$//g;s/UI.*$//g;s/MENU.*$//g;s/sda3/sda1/g' ./boot/syslinux/syslinux.cfg
 
-# move rootfs to a tar.xz
-[ "$BASE_BUILD_BASE_TAR" == '1' ] && sudo tar -cJf ../"${BASE_BUILD_NAME}.tar.xz" .
-
-# we no longer need extracted rootfs
+#------------------------------------------------------------------------------
+# Umount rootfs
+#------------------------------------------------------------------------------
 popd
 sudo umount -Rv "$BASE_BUILD_NAME"
 sudo sync
 sudo losetup -d /dev/loop9
-sudo rm -rf "$BASE_BUILD_NAME/"
+sudo rmdir "$BASE_BUILD_NAME"
 
-# convert image
-echo 'Converting image, this can take a while...'
+#------------------------------------------------------------------------------
+# Run the system once, so it starts faster later
+#------------------------------------------------------------------------------
+echo '[@] Running system once, this will take 6 minutes'
+(sleep 300; echo; echo system_powerdown) | qemu-system-x86_64 -m 3G -enable-kvm "$BASE_BUILD_IMAGE" -vnc :13 -monitor stdio -serial none > /dev/null
+
+#------------------------------------------------------------------------------
+# Convert image to QCOW2, deletes original
+#------------------------------------------------------------------------------
+echo '[@] Converting image, this can take a while...'
 qemu-img convert -W -m 16 -f raw -O qcow2 -c "$BASE_BUILD_IMAGE" "${BASE_BUILD_NAME}.qcow2"
 sudo rm "$BASE_BUILD_IMAGE"
 
-echo 'Signing'
+#------------------------------------------------------------------------------
+# Sign file, creates a torrent file, and deploy them all to the final directory
+#------------------------------------------------------------------------------
+echo '[@] Signing'
 gpg --detach-sign --use-agent --no-armor "./${BASE_BUILD_NAME}.qcow2"
 
-echo 'Torrenting'
+echo '[@] Torrenting'
 mktorrent -w "http://lonewolf.pedrohlc.com/chaotic-aur/rootfs/${BASE_BUILD_NAME}.qcow2" -a 'udp://lonewolf.pedrohlc.com:23069' "./${BASE_BUILD_NAME}.qcow2"
 
-echo 'Deploying'
-cp ./"${BASE_BUILD_NAME}.qcow2"{,.sig,.torrent} "$BASE_BUILD_DEST"
+echo '[@] Deploying'
+cp -v ./"${BASE_BUILD_NAME}.qcow2"{,.sig,.torrent} "$BASE_BUILD_DEST"
 
-echo '[chaotic-mkrootfs] Finishing creating ' "${BASE_BUILD_NAME}.qcow2"
+echo '[@] Finishing creating ' "${BASE_BUILD_NAME}.qcow2"
