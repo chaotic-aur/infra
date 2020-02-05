@@ -3,7 +3,7 @@
 # repo is the full path to the repository that will be managed by repoctl.
 # The packages that belong to the repository are assumed to lie in the
 # same folder.
-repo = "/srv/http/chaotic-aur/x86_64/chaotic-aur.db.tar.gz"
+repo = "/srv/http/chaotic-aur/x86_64/chaotic-aur.db.tar.zst"
 
 # add_params is the set of parameters that will be passed to repo-add
 # when it is called. Specify one time for each parameter.

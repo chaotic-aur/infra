@@ -213,10 +213,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# NSS-HG for Firefox Nightlies
-	#if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^nss-hg')" ]]; then
-	#	echo "$WTMK I like my fox's toys very update!"
-	#	target_run sudo pacman -S --needed --noconfirm nspr-hg
-	#fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^nss-hg')" ]]; then
+		echo "$WTMK I like my fox's toys very update!"
+		target_run sudo pacman -S --needed --noconfirm nspr-hg
+	fi
 
 	# * Tired of things not getting fixed in AUR & ArchLinux
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^featherpad-git$')" ]]; then
@@ -275,6 +275,10 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK plymouth-kcm detected, treating..."
 		target_run sudo pacman -S --needed --noconfirm perl-list-moreutils perl-xml-parser
 	fi
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P 'llvm-minimal-git$')" ]]; then
+		echo "$WTMK llvm-minimal-git detected, treating..."
+		export TARGET_ARGS="--nocheck $TARGET_ARGS"
+	fi
 
 	# * People who think they're smart
 	if [[ ! -z "$(grep -P '^PKGEXT=' PKGBUILD)" ]]; then
@@ -303,11 +307,11 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$TARGET_USEX" ]]; then
 		echo "$WTMK X was required, treating..."
 		target_run sudo pacman -S --needed --noconfirm xorg-server-xvfb
-		target_run xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s --noprogressbar $@
+		target_run xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s --noprogressbar $TARGET_ARGS $@
 
 	# * Makepkg
 	else
-		target_run /usr/local/bin/internal-makepkg -s --noprogressbar $@
+		target_run /usr/local/bin/internal-makepkg -s --noprogressbar $TARGET_ARGS $@
 	fi
 	
 	# Spawn contaienr and do everything
@@ -331,7 +335,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ "$TARGET_NUKE" == '1' ]]; then
 		echo "$WTMK Nuking..."
 		sudo umount -Rv "$CHROOT/$TARGET_UPPER/root" && \
-		sudo rm -rf "$CHROOT/$TARGET_UPPER" || \
+		sudo rm --one-file-system -rf "$CHROOT/$TARGET_UPPER" || \
 		echo "$WTMK Unable to nuke!"
 	else
 		sudo umount -R "$CHROOT/$TARGET_UPPER/root"

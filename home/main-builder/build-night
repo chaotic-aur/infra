@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-~/build-cubocore
+#~/build-cubocore # now on AUR
 ~/build-wishbuilds
 ~/build-mangos
 ~/chaotic-clean-archive

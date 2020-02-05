@@ -18,7 +18,7 @@ _WINE_VARIATIONS=(
 
 # - NVIDIA
 _NVIDIA_VARIATIONS=(
-	'regular 3'
+	'regular 2'
 	'vulkandev 1'
 )
 
@@ -68,7 +68,7 @@ nvidia_setup() {
 	" customization.cfg
 
 	sed -i'' "
-	s/read \-p \"What driver version do you want\?.*$/export CONDITION=$2/g
+	s/read \-p \".*What driver version do you want\?.*$/export CONDITION=$2/g
 	" PKGBUILD
 
 	export TARGET_EXTRAPKGS='linux-headers'

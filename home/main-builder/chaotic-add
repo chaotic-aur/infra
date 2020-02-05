@@ -8,7 +8,7 @@ function update_checkpoint() {
 cd /srv/http/chaotic-aur/x86_64
 if [[ ! -f "$HOME/last-add" ]]
 then
-	touch -d "$(date -R -r ./chaotic-aur.db.tar.gz)" ~/last-add
+	touch -d "$(date -R -r ./chaotic-aur.db.tar.zst)" ~/last-add
 fi
 export _RUN_TIME="$(date -R)"
 export _NEW_SIGS="$(find *.sig -newer ~/last-add)"
@@ -21,9 +21,9 @@ then
 		xargs repoctl update \
 		\
 		&& update_checkpoint
-		# xargs repo-add chaotic-aur.db.tar.gz
+		# xargs repo-add chaotic-aur.db.tar.zst
 	date +'%s' > /media/http1/lastupdate
 fi
-cat chaotic-aur.db.tar.gz | tar -tvz | grep -e "^d" | awk '{print $6}' > ../pkgs.txt
+cat chaotic-aur.db.tar.zst | tar -tv --zstd | grep -e "^d" | awk '{print $6}' > ../pkgs.txt
 
 ~/chaotic-clean-sig --quiet

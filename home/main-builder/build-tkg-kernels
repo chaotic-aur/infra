@@ -8,7 +8,7 @@ readonly _TARGET_DIR='TkG.kernels'
 
 # (version)
 readonly _LINUX_LTS='419'
-readonly _LINUX_STABLE='54'
+readonly _LINUX_STABLE='55'
 readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
