@@ -5,6 +5,7 @@ NUM_DOWN=25
 NUM_USERS=10
 NUM_UPDT=15
 IP_CENSOR='s/([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/\1.XXX.YYY.\4/g'
+MIRROR_LOG="/home/paran0id/logs/nginx_access.log"
 
 # Special me
 if [[ ! -z "$CHAOTIC_SUPER" ]]; then
@@ -15,11 +16,13 @@ fi
 
 # Code
 
-cd /var/log/httpd
-[ -z "$NOT_MAIN" ] && MAIN_ACCESS=$(cat ./access* | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
-MIRROR_LOG="/home/paran0id/logs/nginx_access.log"
 TODAY="$(date --date='-1 month' +'%d\/%b')"
-[ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo awk "/.* \[${TODAY}\//{y=1}y" "$MIRROR_LOG" | awk '{print $1" "$7}' | awk '!/^(::1|localhost|127\.0\.0\.1)/')
+_LOG_CLEANER="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
+_LOG_CLEANER_HEAD="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
+
+cd /var/log/httpd
+[ -z "$NOT_MAIN" ] && MAIN_ACCESS=$(ls ./access* | sort -r | xargs awk "$_LOG_CLEANER")
+[ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo awk "$_LOG_CLEANER" "$MIRROR_LOG")
 
 UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" |\
 	sed 's/vk-winelib/vk-mingw/g' |\
@@ -30,13 +33,11 @@ echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintaine
 
 echo '<h3>About numbers source</h3><ul>'
 echo '<li>Data aquired from main repo logs, between <code>'
-find . -type f -name "access*" -printf "%TY%Tm%Td%TH%TM%TS %p\n" |\
-	sort | head -n 1 | awk '{print $2}' |\
-	xargs head -n 1 | grep -Po '(?<=\[)([^\]])*'
+ls ./access* | sort -r | xargs awk "${_LOG_CLEANER_HEAD}" | grep -Po '(?<=\[)([^\]])*'
 echo '</code> and <code>'
 tail -n 1 access_log | grep -Po '(?<=\[)([^\]])*'
 echo '</code></li>' '<li>Data aquired from @BangL'"'"'s mirror logs, between <code>'
-sudo awk "/.* \[${TODAY}\//{y=1}y" "$MIRROR_LOG" | head -n 1 | grep -Po '(?<=\[)([^\]])*'
+sudo awk "${_LOG_CLEANER_HEAD}" "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
 echo '</code> and <code>'
 sudo tail -n 1 "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
 echo '</code></li>' '</ul>'

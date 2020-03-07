@@ -1,3 +1,4 @@
+angular-cli
 clang-analyzer-git
 clang-analyzer-svn
 clang-compiler-rt-git
@@ -14,6 +15,8 @@ dxvk-wine64-git
 ffmpeg-full
 firefox-hg
 firefox-wayland-hg
+gobuster-git
+keybase-bash-completion-git
 kplasmafoxhelper
 lib32-clang-git
 lib32-clang-svn
@@ -133,6 +136,7 @@ lone_wolf-lib32-llvm-libs-git
 lone_wolf-llvm-git
 lone_wolf-llvm-libs-git
 lone_wolf-ocaml-git
+mangohud
 manjarowish-dark-kde-settings
 manjarowish-light-kde-settings
 manjarowish-lxqt-kwin-dark-coreapps-settings
@@ -157,6 +161,7 @@ retdec-git
 rpcs3-git
 spirv-tools-tkg-git
 systemtap-git
+ungoogled-chromium
 vlc-git
 vulkan-headers-git
 vulkan-headers-tkg-git
@@ -164,8 +169,8 @@ vulkan-mesa-layer-mango
 wayfire-git
 wayfire-plugins-extra-git
 wcm-git
-wf-shell-git
 wf-config-git
+wf-shell-git
 wine-tkg-fsync-faudio-git
 wine-tkg-fsync-faudio-opt-git
 wine-tkg-fsync-git

@@ -4,6 +4,8 @@ ALIEN_NAME="${ALIEN_NAME:-aarch64}"
 ALIEN_BIND="${ALIEN_BIND:-/usr/bin/qemu-aarch64-static}"
 ALIEN_OUT="${ALIEN_OUT:-aur/aarch64}"
 
+ALPINE_MIRROR="${ALPINE_MIRROR:-http://dl-cdn.alpinelinux.org/alpine/edge}"
+
 WTMK='[chaotic-makealien]'
 NEWLINE=$'\n'
 if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
@@ -88,6 +90,12 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 			$BASE_RUN /usr/sbin/adduser -D -u $(id -u $BUILD_USER) -h /home/$BUILD_USER -G abuild -s /bin/ash $BUILD_USER
 			$BASE_USR_RUN /bin/mkdir -p "/home/$BUILD_USER/"{pkgwork,pkgdest,pkgsrc,makepkglogs}
 			echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
+			cp -ar "/home/$BUILD_USER/.abuild" "./$BASE/home/$BUILD_USER/.abuild"
+			echo -e "${ALPINE_MIRROR}/main\n${ALPINE_MIRROR}/community" | sudo tee "./$BASE/etc/apk/repositories"
+			echo "https://lonewolf.pedrohlc.com/chaotic-aur/alpine/main-builder" | sudo tee -a "./$BASE/etc/apk/repositories"
+			sudo cp "/etc/resolv.conf" "./$BASE/etc/"
+			sudo cp "/home/$BUILD_USER/.abuild"/*.pub "./$BASE/etc/apk/keys/"
+			$BASE_RUN /sbin/apk update
 		fi
 
 		popd
@@ -184,8 +192,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	if [ "$IS_IT_ALPINE" == '1' ]; then
-		target_run cd /home/$BUILD_USER/pkgwork
-		target_run /usr/bin/abuild -P /home/$BUILD_USER/pkgdest -r
+		target_run cd "/home/$BUILD_USER/pkgwork"
+		target_run /usr/bin/abuild -r -P "/home/$BUILD_USER/pkgdest" -s "/home/$BUILD_USER/pkgsrc" $@
 	fi
 	
 	# Spawn contaienr and do everything
@@ -197,10 +205,14 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# Push artifacts to dest
 	sudo umount -Rv "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"
 	pushd "$CHROOT/$TARGET_UPPER/dest.up"
-		for f in ./*; do
-			gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor "$f"
-		done
-		mv ./* "$REPO_PKGDEST/"
+		if [ "$IS_IT_ARCH" == '1' ]; then
+			for f in ./*; do
+				gpg --detach-sign --use-agent -u "$CHAOTIC_KEY" --no-armor "$f"
+			done
+			mv ./* "$REPO_PKGDEST/"
+		else
+			cp -r ./* "$REPO_PKGDEST/"
+		fi
 	popd
 
 	# * Nuke

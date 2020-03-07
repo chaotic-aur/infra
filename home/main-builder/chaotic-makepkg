@@ -142,7 +142,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm subversion
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-bzr$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm bzr
+		target_run sudo pacman -S --needed --noconfirm breezy
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm mercurial

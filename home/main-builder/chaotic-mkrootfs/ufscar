@@ -3,7 +3,7 @@
 # Prepare UFSCAR's ArchLinux generic lab image
 #==============================================================================
 # Created and mantained by PedroHLC <root@pedrohlc.com>
-# Last Update: 2020-01-17 13:00
+# Last Update: 2020-03-07 15:10
 #------------------------------------------------------------------------------
 
 
@@ -22,31 +22,36 @@ set -o errexit
 #------------------------------------------------------------------------------
 # Define constants & settings
 #------------------------------------------------------------------------------
-readonly BASE_BUILD_DIR='/tmp/chaotic-rootfs'
-readonly BASE_BUILD_ARCH='x86_64'
-readonly BASE_BUILD_ID="${BASE_BUILD_ID:-$(date '+%Y%m%d%H%M%S')}"
-readonly BASE_BUILD_NAME="${BASE_BUILD_NAME:-ufscar-base-${BASE_BUILD_ID}-$BASE_BUILD_ARCH}"
-readonly BASE_BUILD_IMAGE="${BASE_BUILD_NAME}.img"
-readonly BASE_BUILD_DEST='/srv/http/chaotic-aur/rootfs/'
+readonly _TARGET_ARCH='x86_64'
+readonly _TARGET_FLAVOR='generic'
+readonly _ARTIFACT_STAMP="$(date '+%y.%m')"
+readonly _ARTIFACT_BASENAME="ufscar-${_TARGET_FLAVOR}-${_ARTIFACT_STAMP}-$_TARGET_ARCH"
+readonly _ARTIFACT_FNAME="${_ARTIFACT_BASENAME}.qcow2"
+readonly _ARTIFACT_DEST='/srv/http/chaotic-aur/rootfs/.ufscar/'
+readonly _HTTP_DEST='http://lonewolf.pedrohlc.com/chaotic-aur/rootfs/.ufscar/'
+readonly _BT_TRACKER='udp://lonewolf.pedrohlc.com:23069'
+readonly _BT_LOCAL_TRACKER='udp://192.168.0.1:6969'
+readonly _WORK_DIR='/tmp/chaotic-rootfs'
+readonly _WORK_FNAME="${_ARTIFACT_BASENAME}.img"
 
 #------------------------------------------------------------------------------
 # Prepare build directory
 #------------------------------------------------------------------------------
-mkdir -p "$BASE_BUILD_DIR"
-cd "$BASE_BUILD_DIR"
+mkdir -p "$_WORK_DIR"
+cd "$_WORK_DIR"
 
 #==============================================================================
 # Create and mount a virtual raw disk
 #==============================================================================
-truncate -s 100G "$BASE_BUILD_IMAGE"
-sudo losetup /dev/loop9 "$BASE_BUILD_IMAGE"
+truncate -s 100G "$_WORK_FNAME"
+sudo losetup /dev/loop9 "$_WORK_FNAME"
 sudo parted /dev/loop9 mktable msdos
 sudo parted /dev/loop9 mkpart primary ext4 1M '100%'
 sudo partprobe /dev/loop9
 sudo mkfs.ext4 -q /dev/loop9p1
-sudo mkdir "$BASE_BUILD_NAME"
-sudo mount -t ext4 /dev/loop9p1 "$BASE_BUILD_NAME"
-pushd "$BASE_BUILD_NAME"
+sudo mkdir "$_ARTIFACT_BASENAME"
+sudo mount -t ext4 /dev/loop9p1 "$_ARTIFACT_BASENAME"
+pushd "$_ARTIFACT_BASENAME"
 
 #==============================================================================
 # Prepare filesystem and initial settings before chrooting
@@ -108,6 +113,9 @@ Include = /etc/pacman.d/mirrorlist
 [chaotic-aur]
 Server = https://lonewolf.pedrohlc.com/\$repo/\$arch
 Server = http://chaotic.bangl.de/\$repo/\$arch
+
+[sublime-text]
+Server = https://download.sublimetext.com/arch/stable/\$arch
 EOF
 
 #------------------------------------------------------------------------------
@@ -142,6 +150,8 @@ locale-gen
 # Initiate keyring and add [chaotic-aur] keys
 pacman-key --init
 pacman-key --populate archlinux
+pacman-key --keyserver hkps://hkps.pool.sks-keyservers.net -r ADAE6AD28A8F901A
+pacman-key --lsign-key 1EDDE2CDFC025D17F6DA9EC0ADAE6AD28A8F901A
 pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB
 pacman-key --lsign-key 3056513887B78AEB 
 
@@ -171,7 +181,9 @@ pacman -S --noconfirm --needed \
 	\
 	gnu-free-fonts \
 	ttf-{dejavu,droid,fira-{code,mono,sans}} \
-	ttf-{liberation,ms-fonts,ubuntu-font-family,wps-fonts}
+	ttf-{liberation,ms-fonts,ubuntu-font-family,wps-fonts} \
+	\
+	rstudio-desktop bluespec iverilog verilator gtkwave sublime-text thonny
 pacman -Rsn --noconfirm konqueror
 
 # Create main user
@@ -317,38 +329,54 @@ yes | sudo pacman -r . -Scc
 sudo syslinux-install_update -i -a -m -c .
 sudo sed -i'' 's/-linux/-linux-zen/g;s/TIMEOUT.*$//g;s/UI.*$//g;s/MENU.*$//g;s/sda3/sda1/g' ./boot/syslinux/syslinux.cfg
 
+
+#------------------------------------------------------------------------------
+# Fix WPS Office PT-BR Spell checking
+#------------------------------------------------------------------------------
+sudo sed -i'' '2iexport LANG=en_US.UTF-8' ./usr/bin/wps ./usr/bin/wpp
+
+#------------------------------------------------------------------------------
+# Recovery sparse space
+#------------------------------------------------------------------------------
+echo '[@] Converting image, this can take a while...'
+sudo fstrim -v .
+
 #------------------------------------------------------------------------------
 # Umount rootfs
 #------------------------------------------------------------------------------
 popd
-sudo umount -Rv "$BASE_BUILD_NAME"
+sudo umount -Rv "$_ARTIFACT_BASENAME"
 sudo sync
+
+#------------------------------------------------------------------------------
+# Umount disk image
+#------------------------------------------------------------------------------
 sudo losetup -d /dev/loop9
-sudo rmdir "$BASE_BUILD_NAME"
+sudo rmdir "$_ARTIFACT_BASENAME"
 
 #------------------------------------------------------------------------------
 # Run the system once, so it starts faster later
 #------------------------------------------------------------------------------
-echo '[@] Running system once, this will take 6 minutes'
-(sleep 300; echo; echo system_powerdown) | qemu-system-x86_64 -m 3G -enable-kvm "$BASE_BUILD_IMAGE" -vnc :13 -monitor stdio -serial none > /dev/null
+#echo '[@] Running system once, this will take 6 minutes'
+#(sleep 300; echo; echo system_powerdown) | qemu-system-x86_64 -m 3G -enable-kvm "$_WORK_FNAME" -vnc :13 -monitor stdio -serial none > /dev/null
 
 #------------------------------------------------------------------------------
 # Convert image to QCOW2, deletes original
 #------------------------------------------------------------------------------
 echo '[@] Converting image, this can take a while...'
-qemu-img convert -W -m 16 -f raw -O qcow2 -c "$BASE_BUILD_IMAGE" "${BASE_BUILD_NAME}.qcow2"
-sudo rm "$BASE_BUILD_IMAGE"
+qemu-img convert -W -m 16 -f raw -O qcow2 -c "$_WORK_FNAME" "${_ARTIFACT_FNAME}"
+sudo rm "$_WORK_FNAME"
 
 #------------------------------------------------------------------------------
 # Sign file, creates a torrent file, and deploy them all to the final directory
 #------------------------------------------------------------------------------
 echo '[@] Signing'
-gpg --detach-sign --use-agent --no-armor "./${BASE_BUILD_NAME}.qcow2"
+gpg --detach-sign --use-agent --no-armor "./${_ARTIFACT_FNAME}"
 
 echo '[@] Torrenting'
-mktorrent -w "http://lonewolf.pedrohlc.com/chaotic-aur/rootfs/${BASE_BUILD_NAME}.qcow2" -a 'udp://lonewolf.pedrohlc.com:23069' "./${BASE_BUILD_NAME}.qcow2"
+mktorrent -w "${_HTTP_DEST}/${_ARTIFACT_FNAME}" -a "${_BT_LOCAL_TRACKER}" -a "${_BT_TRACKER}" "./${_ARTIFACT_FNAME}"
 
 echo '[@] Deploying'
-cp -v ./"${BASE_BUILD_NAME}.qcow2"{,.sig,.torrent} "$BASE_BUILD_DEST"
+cp -v ./"${_ARTIFACT_FNAME}"{,.sig,.torrent} "$_ARTIFACT_DEST"
 
-echo '[@] Finishing creating ' "${BASE_BUILD_NAME}.qcow2"
+echo '[@] Finishing creating ' "${_ARTIFACT_FNAME}"
