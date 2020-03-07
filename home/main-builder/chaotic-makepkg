@@ -145,7 +145,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm breezy
 	fi
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm mercurial
+		target_run sudo pacman -S --needed --noconfirm mercurial-python3 #mercurial
 	fi
 
 	# * Read options

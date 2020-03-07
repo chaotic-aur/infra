@@ -2,28 +2,36 @@
 function update_checkpoint() {
 	if [ $(date -d "$_RUN_TIME" +'%s') -ge $(date -r ~/last-add +'%s') ]; then
 		touch -d "$_RUN_TIME" ~/last-add
+		date +'%s' > /media/http1/lastupdate
+		echo '[chaotic-add] Checkpoints updated'
 	fi
 }
 
+function update_pkglist_dump() {
+	tar -tv --zstd -f chaotic-aur.db.tar.zst | awk '/^d/{print $6}' > ../pkgs.txt
+	echo "[chaotic-add] Database\'s package list dumped again"
+}
+
 cd /srv/http/chaotic-aur/x86_64
+
 if [[ ! -f "$HOME/last-add" ]]
 then
 	touch -d "$(date -R -r ./chaotic-aur.db.tar.zst)" ~/last-add
 fi
 export _RUN_TIME="$(date -R)"
+
+echo '[chaotic-add] Searching new packages'
 export _NEW_SIGS="$(find *.sig -newer ~/last-add)"
 if [[ "$_NEW_SIGS" != "" ]]
 then
 	export _PKGS=$(echo "$_NEW_SIGS" |\
 		grep -Po '(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst)?\.sig)')
-	#	grep -Po '.*(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst)?(?=\.sig)')
+	
+	echo '[chaotic-add] Adding new packages'
 	echo "$_PKGS" |\
 		xargs repoctl update \
 		\
-		&& update_checkpoint
-		# xargs repo-add chaotic-aur.db.tar.zst
-	date +'%s' > /media/http1/lastupdate
+		&& update_checkpoint && \
+		update_pkglist_dump
 fi
-cat chaotic-aur.db.tar.zst | tar -tv --zstd | grep -e "^d" | awk '{print $6}' > ../pkgs.txt
 
-~/chaotic-clean-sig --quiet
