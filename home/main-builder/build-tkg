@@ -227,14 +227,14 @@ if [ -z "$TKG_NOSPIRV" ]; then
 fi
 
 # - proton
-if [ -z "$TKG_NOPROTON" ]; then
-	cd proton-tkg || exit
-	proton_setup
-	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/proton.log"
-	~/chaotic-add
-	unset TARGET_EXTRAPKGS
-	cd ..
-fi
+#if [ -z "$TKG_NOPROTON" ]; then
+#	cd proton-tkg || exit
+#	proton_setup
+#	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/proton.log"
+#	~/chaotic-add
+#	unset TARGET_EXTRAPKGS
+#	cd ..
+#fi
 
 #
 # Clean

@@ -3,10 +3,11 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>Chaotic-AUR automated building repo for AUR packages</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 	</head>
 
-	<body>
+	<body><div class="container">
 		<h1>Chaotic-AUR</h1>
 		<p>Automated building repo for <a target="_blank" href="https://aur.archlinux.org">AUR</a> packages</p>
 
@@ -57,8 +58,16 @@
 			sudo pacman-key --lsign-key 3056513887B78AEB
 		</code>
 		<!--p>In case this keyserver fails, try this: <code>hkps://hkps.pool.sks-keyservers.net</code> or <code>hkp://p80.pool.sks-keyservers.net:80</code></p-->
+		<br/><br/>
 
-		<p>If you need to omit one package update to use only locally built ones (e.g: with native optimizations), <a href="https://www.archlinux.org/pacman/pacman.conf.5.html" target="_blank">you can</a> add '<code>IgnorePkg = ...</code>' to repo's section in <code>/etc/pacman.conf</code></p>
+		<h2>Recommendations:</h2>
+		<ul>
+			<li>If you're using other third parties repositories, I recommend you to put chaotic-aur <strong>before</strong> them on <code>/etc/pacman.conf</code>. We update most packages hourly and follow AUR's PKGBUILDs, that makes this repository more suitable to be the first option when downloading packages.</li>
+			<li>If you need to omit one package update to use locally built ones (e.g: with native optimizations), <a href="https://www.archlinux.org/pacman/pacman.conf.5.html" target="_blank">you can</a> add '<code>IgnorePkg = ...</code>' to repo's section in <code>/etc/pacman.conf</code></li>
+			<li>You can pick the repository from which you download a package, like this: <code>pacman -S chaotic-aur/dxvk-mingw-git</code>. Some AUR's helpers support it too, e.g: <code>yay -S aur/firefox-hg</code>
+			<li>You may want to use powerpill, so you download from all mirrors simultaneously. I recommend doing updates this way: <code>sudo pacman -Sy &#x26;&#x26; sudo powerpill -Su &#x26;&#x26; yay -Su</code></li>	
+		</ul>
+
 
 		<h2>Work-in-progress</h2>
 		<p>There are experimental packages for <a href="https://lonewolf.pedrohlc.com/chaotic-aur/aarch64/?C=M;O=D">aarch64</a>, <a href="https://lonewolf.pedrohlc.com/chaotic-aur/alpine/v3.11/x86_64/?C=M;O=D">Alpine</a> and <a href="https://lonewolf.pedrohlc.com/chaotic-aur/artix-x86_64/?C=M;O=D">Artix</a>. Please contact me for requesting packages and/or updates.</p>
@@ -74,5 +83,5 @@
 		<br/>
 		<strong>Last modified:</strong>
 		<code>2020-01-03 14:52</code>
-	</body>
+	</div></body>
 </html>

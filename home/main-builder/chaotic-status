@@ -28,7 +28,7 @@ UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" |\
 	sed 's/vk-winelib/vk-mingw/g' |\
 	sort -u)
 
-echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="font-family: sans-serif;">'
+echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"></head><body style="font-family: sans-serif;"><div class="container">'
 echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintainer&#x27;s notes.</p><h2>Ranks, Numbers and Packages</h2>'
 
 echo '<h3>About numbers source</h3><ul>'
@@ -40,9 +40,9 @@ echo '</code></li>' '<li>Data aquired from @BangL'"'"'s mirror logs, between <co
 sudo awk "${_LOG_CLEANER_HEAD}" "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
 echo '</code> and <code>'
 sudo tail -n 1 "$MIRROR_LOG" | grep -Po '(?<=\[)([^\]])*'
-echo '</code></li>' '</ul>'
+echo '</code></li>' '</ul>' '<hr/>'
 
-echo '<!-- MAIN REPO ' $(echo "$MAIN_ACCESS" | wc -l) ' || MIRROR ' $(echo "$MIRROR_ACCESS" | wc -l) ' -->' 
+#echo '<!-- MAIN REPO ' $(echo "$MAIN_ACCESS" | wc -l) ' || MIRROR ' $(echo "$MIRROR_ACCESS" | wc -l) ' -->' 
 
 PKGS_IP_COUNT=$(
 	echo "$UNIQ_ACCESS" |\
@@ -53,7 +53,7 @@ PKGS_IP_COUNT=$(
 )
 
 echo '<h3>Top ' $NUM_DOWN ' most downloaded (per unique users):</h3>'
-echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
+echo '<div class="row"><div class="border bg-dark text-white col-lg-1">Users</div><div class="border bg-dark text-white col-lg">Package</div></div>'
 echo "$UNIQ_ACCESS" |\
 	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
 	sed 's/wine-tkg-.*-git/wine-tkg-*/g;s/linux-tkg-...-[^-]*/linux-tkg-*/g;s/linux..-tkg-.../linux-tkg-*/g' |\
@@ -62,11 +62,11 @@ echo "$UNIQ_ACCESS" |\
 	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)' |\
 	sort | uniq -c | sort -nr |\
 	head -n $NUM_DOWN |\
-	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
-echo '</table>' '* For TkG packages check <a href="#tkg">here</a>.<br/>'
+	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<div class="row"><div class="border bg-light col-lg-1">\1<\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><\/div>/g'
+echo '* For TkG packages check <a href="#tkg">here</a>.<br/><hr/>'
 
 echo '<h3>Top 10 users (per unique downloaded packages):</h3>'
-echo '<table border="1"><tr><td>Packages</td><td>IP</td><td>Country</td></tr>'
+echo '<div class="row"><div class="border bg-dark text-white col-lg-1">Packages</div><div class="border bg-dark text-white col-lg-2">IP</div><div class="border bg-dark text-white col-lg">Country</div></div>'
 echo "$UNIQ_ACCESS" |\
 	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
 	sort -u |\
@@ -77,15 +77,15 @@ echo "$UNIQ_ACCESS" |\
 	bash |\
 	sed -r "$IP_CENSOR" |\
 	sed 's/GeoIP[^:]*: .., //g' |\
-	sed -r 's/^\ *([^\ ]*)\ ([^\ ]*)\ (.*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><td>\3<\/td><\/tr>/g'
-echo '</table><br/>(IPv4 only)'
+	sed -r 's/^\ *([^\ ]*)\ ([^\ ]*)\ (.*)$/<div class="row"><div class="border bg-light col-lg-1">\1<\/div><div class="border bg-light col-lg-2"><code>\2<\/code><\/div><div class="border bg-light col-lg">\3<\/div><\/div>/g'
+echo '<br/>(IPv4 only)'
 echo '<code>Users total: '
 echo "$UNIQ_ACCESS" |\
 	grep 'chaotic-aur\.db\.sig' |\
 	awk '{print $1}' |\
 	sort -u | wc -l |\
 	sed 's/$/<br>/' 
-echo '</code><br/>'
+echo '</code><hr/>'
 
 echo '<h3>Last 15 updates:</h3>'
 echo '<ul>'
@@ -96,35 +96,35 @@ find . -type f -name "*.pkg.tar.*.sig" \
 	grep -Po '(?<=\.\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar\.(?:xz|zst)\.sig)' |\
 	awk '{print "\t"$0}' | tac |\
 	sed 's/$/<\/code><\/li>/;s/^/<li><code>/' 
-echo '</ul>'
+echo '</ul><hr/>'
 PKGS_TOTAL=$(wc -l < ../pkgs.txt)
 
 echo '<h3>Packages:</h3>'
-echo "<code>Total: ${PKGS_TOTAL}"
-echo '</code><br/><code>GIT/SVN/HG/BZR: '
+echo '<ul>' "<li>Total: <code>${PKGS_TOTAL}"
+echo '</code></li><li>GIT/SVN/HG/BZR: <code>'
 grep -Pe '-(git|svn|hg|bzr)-' ../pkgs.txt | wc -l
-echo '</code><br/><code>Failing (hourly): '
+echo '</code></li></li>Failing (hourly): <code>'
 echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 2)
-echo '</code><br/><code>Failing (daily): '
+echo '</code></li><li>Failing (daily): <code>'
 echo $(expr $(ls -1 ../makepkglogs/_daily/*.log | wc -l) - 2)
-echo '</code><br/><code>Failing (TkG): '
+echo '</code></li><li>Failing (TkG): <code>'
 if [ "$(systemctl is-active build-sunset.service)" == 'active' ]; then
 	echo 'Building now...'
 else
 	echo $(ls -1 ../makepkglogs/_daily/tkg/*.log 2>&- | wc -l)
 fi
-echo '</code><br/><code>systemd-nspawn fu**ing us: '
+echo '</code></li><li>systemd-nspawn fu**ing us: '
 grep -l 'scope already exists' ../makepkglogs/*.log | wc -l
-echo '</code><br/><code>wrongly terminated containers: '
+echo '</code></li><li>wrongly terminated containers: '
 grep -l 'Found an older chroot' ../makepkglogs/*.log | wc -l
-echo '</code><br/>'
+echo '</code></li></ul>'
 
 echo '<h4>Versions:</h4>'
-echo '<table border="1"><tr><td>pkgname</td><td>pkgver</td><td>pkgrel</td></tr>'
+echo '<div class="row"><div class="border bg-dark text-white col-lg-4">pkgname</div><div class="border bg-dark text-white col-lg">pkgver</div><div class="border bg-dark text-white col-lg-1">pkgrel</div></div>'
 cat ../pkgs.txt |\
-	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<tr><td><code>\1<\/code><\/td><td><code>\2<\/code><\/td><td><code>\3<\/code><\/td><\/tr>/'
-echo '</table>'
+	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<div class="row"><div class="border bg-light col-lg"><code>\1<\/code><\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><div class="border bg-light col-lg"><code>\3<\/code><\/div><\/div>/'
 
+echo '<hr/>'
 
 echo '<h3>Important status</h3>'
 echo '<h4>Finite Resources</h4>'
@@ -132,21 +132,21 @@ _DEF_IFS=$IFS
 IFS=$'\n'
 _AVAIL=($(df --output=avail -h /tmp / /media/http2 /media/http1 | tail -n 4))
 IFS=$_DEF_IFS
-echo '<table border="1"><tr><td>Resource</td><td>Free</td></tr>'
-echo "<tr><td>source cache<br/>(repos, artifacts, etc)</td><td>${_AVAIL[0]}</td></tr>"
-echo "<tr><td>pacman cache<br/>(dependencies binaries)</td><td>${_AVAIL[0]}</td></tr>"
-echo "<tr><td>repo output<br/>(binaries, archive)</td><td>${_AVAIL[3]}</td></tr>"
-echo "<tr><td>system</td><td>${_AVAIL[1]}</td></tr>"
-echo '</table>'
+echo '<div class="row"><div class="border bg-dark text-white col-lg-1">Free</div><div class="border bg-dark text-white col-lg">Resource</div></div>'
+echo "<div class=\"row\"><div class=\"border bg-light col-lg-1\">${_AVAIL[0]}</div><div class=\"border bg-light col-lg\">source cache (pkgsrc artifacts)</div></div>"
+echo "<div class=\"row\"><div class=\"border bg-light col-lg-1\">${_AVAIL[0]}</div><div class=\"border bg-light col-lg\">pacman cache (dependencies packages)</div></div>"
+echo "<div class=\"row\"><div class=\"border bg-light col-lg-1\">${_AVAIL[3]}</div><div class=\"border bg-light col-lg\">repo output (compiled packages and archive)</div></div>"
+echo "<div class=\"row\"><div class=\"border bg-light col-lg-1\">${_AVAIL[1]}</div><div class=\"border bg-light col-lg\">system</div></div>"
 
+echo '<hr/>'
 
 echo '<h3 id="tkg">TkG most downloaded (per unique users):</h3>'
-echo '<table border="1"><tr><td>Users</td><td>Package</td></tr>'
+echo '<div class="row"><div class="border bg-dark text-white col-lg-1">Users</div><div class="border bg-dark text-white col-lg">Package</div></div>'
 echo "$PKGS_IP_COUNT" |\
 	grep -P '\-tkg(\-|$)' |\
 	sed -r 's/linux(420|50|51|52)-tkg/linux-tkg/g;s/-faudio//g' |\
 	sort | uniq -c | sort -nr |\
-	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<tr><td>\1<\/td><td><code>\2<\/code><\/td><\/tr>/g'
-echo '</table><br/>'
+	sed -r 's/([^\ ]*)\ ([^\ ]*)$/<div class="row"><div class="border bg-light col-lg-1">\1<\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><\/div>/g'
+echo '<br/>'
 
-echo '</body></html>'
+echo '</div></body></html>'

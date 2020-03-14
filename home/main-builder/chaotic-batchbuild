@@ -6,7 +6,7 @@ echo "$WTMK Limited at $CNUM jobs."
 
 limit_build() {
 	while [ `jobs -rp | wc -l` -ge $CNUM ]; do
-		sleep 3
+		sleep 1
 	done
 }
 

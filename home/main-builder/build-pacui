@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/pacui
+cd /tmp
+
+git clone https://github.com/excalibur1234/pacui.git pacui
+cd ./pacui || exit
+
+mkdir pacui-stable pacui-git
+mv PKGBUILD pacui-stable/
+mv PKGBUILD-git pacui-git/PKGBUILD
+
+~/chaotic-batchbuild pacui-stable pacui-git
+
+mkdir -p "$LDIR"
+mv *.log "$LDIR/"
+
+cd /tmp && rm -rf ./pacui
+cd "$LDIR" && ~/chaotic-clean-logs

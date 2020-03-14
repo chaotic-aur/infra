@@ -9,7 +9,7 @@ function update_checkpoint() {
 
 function update_pkglist_dump() {
 	tar -tv --zstd -f chaotic-aur.db.tar.zst | awk '/^d/{print $6}' > ../pkgs.txt
-	echo "[chaotic-add] Database\'s package list dumped again"
+	echo "[chaotic-add] Database's package list dumped again"
 }
 
 cd /srv/http/chaotic-aur/x86_64

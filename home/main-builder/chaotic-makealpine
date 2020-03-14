@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+export ALIEN_NAME='alpine'
+export BASE_PKGS='alpine-base alpine-sdk'
+export IS_IT_ARCH=0
+export IS_IT_ALPINE=1
+export DONT_USE_SYSTEMD="HELLYEAH"
+export ALPINE_MIRROR="http://dl-cdn.alpinelinux.org/alpine/v3.11"
+export ALIEN_PACSTRAP="apk.static add -X ${ALPINE_MIRROR}/main/ -U --allow-untrusted --initdb --root"
+export ALIEN_BIND='none'
+export ALIEN_OUT='aur/alpine'
+exec ~/chaotic-makealien $@

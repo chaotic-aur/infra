@@ -3,7 +3,7 @@
 # Prepare UFSCAR's ArchLinux generic lab image
 #==============================================================================
 # Created and mantained by PedroHLC <root@pedrohlc.com>
-# Last Update: 2020-03-07 15:10
+# Last Update: 2020-03-09 10:00
 #------------------------------------------------------------------------------
 
 
@@ -183,8 +183,9 @@ pacman -S --noconfirm --needed \
 	ttf-{dejavu,droid,fira-{code,mono,sans}} \
 	ttf-{liberation,ms-fonts,ubuntu-font-family,wps-fonts} \
 	\
-	rstudio-desktop bluespec iverilog verilator gtkwave sublime-text thonny
-pacman -Rsn --noconfirm konqueror
+	rstudio-desktop bluespec iverilog verilator gtkwave sublime-text thonny \
+	jupyter{-notebook,_console} python-{matplotlib,numpy,scipy}
+pacman -Rsn --noconfirm konqueror kate
 
 # Create main user
 useradd -m -g wheel -G users -s /bin/bash archer
@@ -357,8 +358,8 @@ sudo rmdir "$_ARTIFACT_BASENAME"
 #------------------------------------------------------------------------------
 # Run the system once, so it starts faster later
 #------------------------------------------------------------------------------
-#echo '[@] Running system once, this will take 6 minutes'
-#(sleep 300; echo; echo system_powerdown) | qemu-system-x86_64 -m 3G -enable-kvm "$_WORK_FNAME" -vnc :13 -monitor stdio -serial none > /dev/null
+echo '[@] Running system once, this will take 6 minutes'
+(sleep 360; echo; echo quit) | qemu-system-x86_64 -m 8G -enable-kvm "$_WORK_FNAME" -vnc :13 -monitor stdio -serial none > /dev/null
 
 #------------------------------------------------------------------------------
 # Convert image to QCOW2, deletes original
