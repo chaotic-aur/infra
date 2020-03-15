@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #~/build-cubocore # now on AUR
 ~/build-wishbuilds
-~/build-mangos
+#~/build-mangos
 ~/build-pacui
 ~/chaotic-clean-archive
 

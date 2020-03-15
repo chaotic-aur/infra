@@ -23,6 +23,7 @@ lib32-llvm-libs-minimal-git
 lib32-llvm-libs-svn
 lib32-llvm-minimal-git
 lib32-llvm-svn
+lib32-mangohud-git
 lib32-mesa-tkg-git
 lib32-nvidia-dev-utils-tkg
 lib32-nvidia-utils-tkg
@@ -127,6 +128,7 @@ llvm-ocaml-git
 llvm-ocaml-svn
 llvm-svn
 mangohud
+mangohud-git
 mesa-tkg-git
 mingw-w64-gcc-win32
 nvidia-dev-dkms-tkg
