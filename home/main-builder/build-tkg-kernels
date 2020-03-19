@@ -94,7 +94,7 @@ for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
 		kernel_setup $_VAR_SCHED $_VAR_MARCH
 		_VAR=($_VAR_SCHED)
 		~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux-${_VAR[0]}-${_VAR_MARCH}.log"
-		~/chaotic-add
+		~/chaotic-add || echo 'OK'
 		unset TARGET_EXTRAPKGS
 	done
 done
@@ -108,7 +108,7 @@ for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
 	kernel_setup $_VAR_SCHED 'generic' 'lts'
 	_VAR=($_VAR_SCHED)
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/linux-lts-${_VAR[0]}.log"
-	~/chaotic-add
+	~/chaotic-add || echo 'OK'
 	unset TARGET_EXTRAPKGS
 done
 popd

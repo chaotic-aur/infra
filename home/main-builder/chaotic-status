@@ -122,7 +122,7 @@ echo '</code></li></ul>'
 echo '<h4>Versions:</h4>'
 echo '<div class="row"><div class="border bg-dark text-white col-lg-4">pkgname</div><div class="border bg-dark text-white col-lg">pkgver</div><div class="border bg-dark text-white col-lg-1">pkgrel</div></div>'
 cat ../pkgs.txt |\
-	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<div class="row"><div class="border bg-light col-lg"><code>\1<\/code><\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><div class="border bg-light col-lg"><code>\3<\/code><\/div><\/div>/'
+	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<div class="row"><div class="border bg-light col-lg-4"><code>\1<\/code><\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><div class="border bg-light col-lg-1"><code>\3<\/code><\/div><\/div>/'
 
 echo '<hr/>'
 
