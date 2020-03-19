@@ -45,7 +45,9 @@ wine_setup() {
 		s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
 		s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$2\"/g
 		s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
-		s/_childwindow_fix=\"[^\"]*\"/_childwindow_fix=\"true\"/g
+		s/_proton_fs_hack=\"[^\"]*\"/_proton_fs_hack=\"true\"/g
+		s/_FS_bypass_compositor=\"[^\"]*\"/_FS_bypass_compositor=\"true\"/g
+		s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
 		s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 		" customization.cfg
 
@@ -103,6 +105,8 @@ proton_setup() {
 
 	sed -i'' "
 	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
+	s/_proton_winetricks=\"[^\"]*\"/_proton_winetricks=\"false\"/g
+	s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 	" proton-tkg.cfg
 	
