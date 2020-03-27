@@ -137,9 +137,11 @@ proton_setup() {
 	s/_proton_winetricks=\"[^\"]*\"/_proton_winetricks=\"false\"/g
 	s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
-	" proton-tkg-profiles/same-external-config.cfg > customization.cfg
+	" proton-tkg-profiles/sample-external-config.cfg > customization.cfg
 	echo '' > proton-tkg-profiles/advanced-customization.cfg
 	
+	export TARGET_UPPER='wine-tkg'
+	export TARGET_NUKE=0
 	export TARGET_EXTRAPKGS='ccache mingw-w64-gcc'
 }
 
@@ -188,7 +190,6 @@ if [ -z "$TKG_NOWINE" ]; then
 
 	unset TARGET_UPPER TARGET_NUKE TARGET_EXTRAPKGS
 	popd
-	git_cleanup
 fi
 
 # - NVIDIA
@@ -246,11 +247,17 @@ fi
 
 # - proton
 if [ -z "$TKG_NOPROTON" ]; then
+	git_cleanup
+	
+	pushd wine-tkg-git
+	wine_setup 'true' 'true'
+	popd
+
 	pushd proton-tkg
 	proton_setup
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/proton.log"
 	~/chaotic-add || echo 'OK'
-	unset TARGET_EXTRAPKGS
+	unset TARGET_UPPER TARGET_NUKE TARGET_EXTRAPKGS
 	popd
 fi
 
