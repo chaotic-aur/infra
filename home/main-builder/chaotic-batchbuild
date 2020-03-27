@@ -11,12 +11,17 @@ limit_build() {
 }
 
 one_build() {
-	cd "./$1";
-	set -o pipefail
-	~/chaotic-makepkg -cC --noconfirm $MAKEPKG_ARGS  2>&1 | tee ../$1.log && cd ..  && rm --one-file-system -rf "./$1" || cd ..
-	set +o pipefail
-	echo "$WTMK Leaving: $1"
-	~/chaotic-add 2>&1 | tee -a _add.log
+	_build_failure=''
+	pushd "./$1"
+		set -o pipefail
+		~/chaotic-makepkg -cC --noconfirm $MAKEPKG_ARGS 2>&1 | tee ../$1.log || _build_failure=$?
+		set +o pipefail
+		echo "$WTMK Leaving: $1"
+	popd
+	if [ -z "$_build_failure" ]; then
+		rm --one-file-system -rf "./$1"
+		~/chaotic-add 2>&1 | tee -a _add.log
+	fi
 }
 
 for dir in ${@:-*}; do

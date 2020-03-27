@@ -1,4 +1,6 @@
 #!/usr/bin/env sh
+echo "Pedro, please refactorate this!"
+exit
 
 # * Defaults
 CHROOT='/tmp/chaotic-chroot'

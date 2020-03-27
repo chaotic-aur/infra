@@ -19,6 +19,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	TARGET_NUKE=${TARGET_NUKE:-1}
 	PKGCACHE_DIR="$CHROOT/pacman-cache"
 	SRCCACHE_DIR="$CHROOT/source-cache"
+	CCACHE_DIR="$CHROOT/ccache-cache"
 	REPO_PKGDEST='/srv/http/chaotic-aur/x86_64'
 	CHAOTIC_KEY='3056513887B78AEB'
 
@@ -34,6 +35,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# so I'll assume this folder contains the package name :P
 	_PKGNAME_HEAD="${PWD##*/}"
 	SRCCACHE_DIR="$SRCCACHE_DIR/$_PKGNAME_HEAD"
+	CCACHE_DIR="$CCACHE_DIR/$_PKGNAME_HEAD"
 	
 	# * Threats those who use sqlite-replication
 	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^dqlite(-git)?$')" ]]; then
@@ -99,7 +101,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * CHROOT Upperdir
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"
-		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CHROOT/$TARGET_UPPER/"{up,work,root,dest.{up,work}}
+		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CCACHE_DIR" \
+			"$CHROOT/$TARGET_UPPER/"{up,work,root,dest.{up,work}}
 		pushd "$CHROOT/$TARGET_UPPER"
 
 		echo "$_PKGNAME_HEAD" > debug.txt
@@ -113,7 +116,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 		# Other mounts
 		sudo mount --bind "$TARGET" "${_HOME}/pkgwork"
-		sudo mount --bind "/home/$BUILD_USER/.ccache" "${_HOME}/.ccache"
+		sudo mount --bind "$CCACHE_DIR" "${_HOME}/.ccache"
 		sudo mount --bind "$SRCCACHE_DIR" "${_HOME}/pkgsrc"
 		sudo mount --bind "$PKGCACHE_DIR" "./root/var/cache/pacman/pkg"
 		sudo mount overlay -t overlay -olowerdir=$REPO_PKGDEST,upperdir=./dest.up,workdir=./dest.work "${_HOME}/pkgdest"
@@ -292,6 +295,13 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		target_run sudo pacman -S --needed --noconfirm multilib-devel
 	fi
 
+	# * Live long the king of frogs
+	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^proton-tkg$')" ]]; then
+		echo "$WTMK Let's do it the TkG's way"
+		cp -r ../wine-tkg-git "$CHROOT/$TARGET_UPPER/${_HOME}/"
+		
+	fi
+
 	# * User cases
 	if [[ ! -z "$TARGET_REMPKGS" ]]; then
 		target_run sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
@@ -307,21 +317,21 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	if [[ ! -z "$TARGET_USEX" ]]; then
 		echo "$WTMK X was required, treating..."
 		target_run sudo pacman -S --needed --noconfirm xorg-server-xvfb
-		target_run xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s --noprogressbar $TARGET_ARGS $@
+		target_run exec xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s --noprogressbar $TARGET_ARGS $@
 
 	# * Makepkg
 	else
-		target_run /usr/local/bin/internal-makepkg -s --noprogressbar $TARGET_ARGS $@
+		target_run exec /usr/local/bin/internal-makepkg -s --noprogressbar $TARGET_ARGS $@
 	fi
 	
 	# Spawn contaienr and do everything
+	_build_failed=''
 	echo "$WTMK Finally spawning it:"
-	$TARGET_RUN "/home/$BUILD_USER/wizard.sh"
-	RESULT="$?"
+	$TARGET_RUN "/home/$BUILD_USER/wizard.sh" || _build_failed="$?"
 	
 	# * Deploy
 	# Push artifacts to dest
-	if [ -z "$CHAOTIC_DONT_PUBLISH" ]; then
+	if [ -z "$CHAOTIC_DONT_PUBLISH" ] && [ -z "$_build_failed" ]; then
 		sudo umount -Rv "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/pkgdest"
 		pushd "$CHROOT/$TARGET_UPPER/dest.up"
 			for f in ./*; do
@@ -347,7 +357,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 
 	# Don't even know if this works...
-	exit $RESULT
+	exit $_build_failed
 else
 	exec makepkg $@
 fi

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -o errexit
 
 # CONFIG
 readonly TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg/kernels'
@@ -7,7 +6,7 @@ readonly _TARGET_DIR='TkG.kernels'
 
 
 # (version)
-readonly _LINUX_LTS='419'
+readonly _LINUX_LTS='54'
 readonly _LINUX_STABLE='55'
 readonly _LINUX_SCHED=(
 	'pds 0'
@@ -27,6 +26,7 @@ readonly _LINUX_MARCH=('generic'
 #
 # Change building settings to automate
 #
+export TARGET_NUKE=0
 
 # - Linux
 kernel_setup() {
@@ -80,15 +80,15 @@ kernel_setup() {
 # Clone TKG
 #
 mkdir -p "$TKGLOGS"
-cd /tmp
-git clone https://github.com/Tk-Glitch/PKGBUILDS.git "$_TARGET_DIR"
-cd "$_TARGET_DIR"
+cd /tmp || exit
+git clone https://github.com/Tk-Glitch/PKGBUILDS.git "$_TARGET_DIR" | tee "$TKGLOGS/_down.log"
+cd "$_TARGET_DIR" || exit
 
 #
 # Build
 #
 
-pushd "linux${_LINUX_STABLE}-tkg"
+pushd "linux${_LINUX_STABLE}-tkg" || exit
 for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
 	for _VAR_MARCH in "${_LINUX_MARCH[@]}"; do
 		kernel_setup $_VAR_SCHED $_VAR_MARCH
@@ -98,12 +98,12 @@ for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
 		unset TARGET_EXTRAPKGS
 	done
 done
-popd
+popd || exit
 
 #
 # LTS
 #
-pushd "linux${_LINUX_LTS}-tkg"
+pushd "linux${_LINUX_LTS}-tkg" || exit
 for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
 	kernel_setup $_VAR_SCHED 'generic' 'lts'
 	_VAR=($_VAR_SCHED)
@@ -111,17 +111,17 @@ for _VAR_SCHED in "${_LINUX_SCHED[@]}"; do
 	~/chaotic-add || echo 'OK'
 	unset TARGET_EXTRAPKGS
 done
-popd
+popd || exit
 
 
 #
 # Clean
 #
 echo '[build-tkg] Nuking everything'
-cd /tmp
-sudo rm -rf "$_TARGET_DIR"
+cd /tmp || exit
+sudo rm --one-file-system -rf "$_TARGET_DIR"
 
 
 # - Logs
-cd "$TKGLOGS"
+cd "$TKGLOGS" || exit
 #~/chaotic-clean-logs

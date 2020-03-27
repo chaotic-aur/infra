@@ -23,14 +23,12 @@ lib32-llvm-libs-minimal-git
 lib32-llvm-libs-svn
 lib32-llvm-minimal-git
 lib32-llvm-svn
-lib32-mangohud-git
 lib32-mesa-tkg-git
 lib32-nvidia-dev-utils-tkg
 lib32-nvidia-utils-tkg
 lib32-opencl-nvidia-dev-tkg
 lib32-opencl-nvidia-tkg
 lib32-spirv-tools-tkg-git
-lib32-vulkan-mesa-layer-mango
 linux-lts-tkg-bmq
 linux-lts-tkg-bmq-headers
 linux-lts-tkg-muqss
@@ -127,8 +125,6 @@ llvm-minimal-git
 llvm-ocaml-git
 llvm-ocaml-svn
 llvm-svn
-mangohud
-mangohud-git
 mesa-tkg-git
 mingw-w64-gcc-win32
 nvidia-dev-dkms-tkg
@@ -144,6 +140,7 @@ opencl-nvidia-tkg
 pacui
 pacui-git
 plasmafox
+proton-tkg-git
 retdec-git
 rpcs3-git
 spirv-tools-tkg-git
@@ -152,7 +149,6 @@ ungoogled-chromium
 vlc-git
 vulkan-headers-git
 vulkan-headers-tkg-git
-vulkan-mesa-layer-mango
 wayfire-git
 wayfire-plugins-extra-git
 wcm-git

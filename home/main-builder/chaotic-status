@@ -106,7 +106,7 @@ grep -Pe '-(git|svn|hg|bzr)-' ../pkgs.txt | wc -l
 echo '</code></li></li>Failing (hourly): <code>'
 echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 2)
 echo '</code></li><li>Failing (daily): <code>'
-echo $(expr $(ls -1 ../makepkglogs/_daily/*.log | wc -l) - 2)
+echo $(expr $(ls -1 ../makepkglogs/_daily/*.log | wc -l) - 1)
 echo '</code></li><li>Failing (TkG): <code>'
 if [ "$(systemctl is-active build-sunset.service)" == 'active' ]; then
 	echo 'Building now...'

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -o errexit
 
 # CONFIG
 readonly TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
@@ -31,31 +30,61 @@ wine_setup() {
 	git checkout customization.cfg PKGBUILD
 
 	if [ 'lol' == "$1" ]; then
-		cp ~/chaotic-chroot/lol.customization.cfg ./customization.cfg
-		export _PKGNAME='wine-tkg-git-leagueoflegends'
+		_use_staging='true'
+		_use_vkd3d='false'
 	else
-		local _USE_DXVKGI='true'
-		if [ "$2" == 'true' ]; then
-			_USE_DXVKGI='false'
-		fi
-
-		sed -i'' "
-		s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
-		s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
-		s/_use_staging=\"[^\"]*\"/_use_staging=\"$1\"/g
-		s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"$2\"/g
-		s/_dxvk_dxgi=\"[^\"]*\"/_dxvk_dxgi=\"$_USE_DXVKGI\"/g
-		s/_proton_fs_hack=\"[^\"]*\"/_proton_fs_hack=\"true\"/g
-		s/_FS_bypass_compositor=\"[^\"]*\"/_FS_bypass_compositor=\"true\"/g
-		s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
-		s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
-		" customization.cfg
-
-		local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
-		export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
+		_use_staging=$1
+		_use_vkd3d=$2
 	fi
 
+	echo "[build-tkg] Building customization"
+	sed "
+	s/_NUKR=\"[^\"]*\"/_NUKR=\"false\"/g
+	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
+	s/_use_staging=\"[^\"]*\"/_use_staging=\"${_use_staging}\"/g
+	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"${_use_vkd3d}\"/g
+	s/_proton_fs_hack=\"[^\"]*\"/_proton_fs_hack=\"true\"/g
+	s/_FS_bypass_compositor=\"[^\"]*\"/_FS_bypass_compositor=\"true\"/g
+	s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
+	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
+	" wine-tkg-profiles/sample-external-config.cfg > customization.cfg
+
+	echo '' > wine-tkg-profiles/advanced-customization.cfg
+
+	if [ 'lol' == "$1" ]; then
+		echo "[build-tkg] Lol FIX"
+		sed -i'' "
+		s/_lol920_fix=\"[^\"]*\"/_lol920_fix=\"true\"/g
+		" customization.cfg
+		
+		export _PKGNAME='wine-tkg-git-leagueoflegends'
+		export _OPT_PKGNAME="${_PKGNAME/%-git*/-git-leagueoflegends-opt}"
+	else
+		local _SRCINFO=$(makepkg -o --noprepare --printsrcinfo)
+		export _PKGNAME=$(echo "$_SRCINFO" | grep -Po '(?<=pkgname = )(.*)$')
+		export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
+	fi
+	
+	export TARGET_UPPER='wine-tkg'
+	export TARGET_NUKE=0
+	export TARGET_EXTRAPKGS='ccache mingw-w64-gcc'
+
 	echo "[build-tkg] customization set to: ${_PKGNAME}"
+}
+
+wine-opt_setup() {
+		sed -i'' "
+		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
+		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
+		" customization.cfg
+
+		if [ "$VARIATION" == 'lol' ]; then
+			sed -i'' "
+			s/_PKGNAME_OVERRIDE=\"[^\"]*\"/_PKGNAME_OVERRIDE=\"leagueoflegends-opt\"/g
+			" customization.cfg
+		fi
+
+		echo "[build-tkg] customization set to: ${_OPT_PKGNAME}"
 }
 
 # - NVIDIA
@@ -103,12 +132,13 @@ llvm_setup() {
 proton_setup() {
 	git checkout proton-tkg.cfg PKGBUILD
 
-	sed -i'' "
+	sed "
 	s/_NOINITIALPROMPT=\"[^\"]*\"/_NOINITIALPROMPT=\"true\"/g
 	s/_proton_winetricks=\"[^\"]*\"/_proton_winetricks=\"false\"/g
 	s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
-	" proton-tkg.cfg
+	" proton-tkg-profiles/same-external-config.cfg > customization.cfg
+	echo '' > proton-tkg-profiles/advanced-customization.cfg
 	
 	export TARGET_EXTRAPKGS='ccache mingw-w64-gcc'
 }
@@ -116,21 +146,18 @@ proton_setup() {
 #
 # Helpers
 #
-wine_makepkg() {
-	export TARGET_UPPER='wine-tkg'
-	export TARGET_NUKE=0
-	export TARGET_EXTRAPKGS='ccache mingw-w64-gcc'
-        ~/chaotic-makepkg \
-		--noconfirm $@
-	~/chaotic-add
+git_cleanup() {
+	git reset --hard HEAD
+	git clean -dfx
+	git pull -ff
 }
 
 #
 # Clone TKG
 #
-cd /tmp || exit
+cd /tmp
 git clone https://github.com/Tk-Glitch/PKGBUILDS.git "$BLDTART"
-cd "$BLDTART"
+pushd "$BLDTART"
 
 #
 # Build
@@ -139,113 +166,100 @@ mkdir -p "$TKGLOGS"
 
 # - Wine
 if [ -z "$TKG_NOWINE" ]; then
-	cd wine-tkg-git || exit
+	pushd wine-tkg-git
 	for VARIATION in "${_WINE_VARIATIONS[@]}"
 	do
-		git reset --hard HEAD
-		git clean -dfx
+		git_cleanup
 
 		wine_setup $VARIATION
-		rm -rf ./src
+		
+		# Build wine
+		~/chaotic-makepkg -sC --noconfirm 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
+		~/chaotic-add || echo 'OKAY'
 
-		wine_makepkg -sC 2>&1 | tee "$TKGLOGS/$_PKGNAME.log"
-
-		sed -i'' "
-		s/_EXTERNAL_INSTALL=\"[^\"]*\"/_EXTERNAL_INSTALL=\"true\"/g
-		s/_EXTERNAL_INSTALL_TYPE=\"[^\"]*\"/_EXTERNAL_INSTALL_TYPE=\"opt\"/g
-		" customization.cfg
-
-		if [ "$VARIATION" == 'lol' ]; then
-			export _OPT_PKGNAME="${_PKGNAME/%-git*/-git-leagueoflegends-opt}"
-			sed -i'' "
-			s/_PKGNAME_OVERRIDE=\"[^\"]*\"/_PKGNAME_OVERRIDE=\"leagueoflegends-opt\"/g
-			" customization.cfg
-		else
-			export _OPT_PKGNAME="${_PKGNAME/%-git/-opt-git}"
-		fi
-
-		echo "[build-tkg] customization set to: ${_OPT_PKGNAME}"
-
+		# Build wine-opt
+		wine-opt_setup
 		ln -srf "src/${_PKGNAME}-32-build" "src/${_OPT_PKGNAME}-32-build"
 		ln -srf "src/${_PKGNAME}-64-build" "src/${_OPT_PKGNAME}-64-build"
 
-		wine_makepkg -Rc 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
+		~/chaotic-makepkg -Rc --noconfirm 2>&1 | tee "$TKGLOGS/$_OPT_PKGNAME.log"
+		~/chaotic-add || echo 'OKAY'
 	done
 
-	git checkout customization.cfg PKGBUILD
 	unset TARGET_UPPER TARGET_NUKE TARGET_EXTRAPKGS
-	cd ..
+	popd
+	git_cleanup
 fi
 
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
-	cd nvidia-all || exit
+	pushd nvidia-all
 	for VARIATION in "${_NVIDIA_VARIATIONS[@]}"; do
 		nvidia_setup $VARIATION
 		_VAR=($VARIATION)
 		~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/nvidia-${_VAR[0]}.log"
-		~/chaotic-add
+		~/chaotic-add || echo 'OK'
 		unset TARGET_EXTRAPKGS
 	done
-	cd ..
+	popd
 fi
 
 # - vulkan-headers
 if [ -z "$TKG_NOVK" ]; then
-	cd vulkan-headers-git || exit
+	pushd vulkan-headers-git
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/vulkan-headers-git.log"
-	~/chaotic-add
+	~/chaotic-add || echo 'OK'
 	unset TARGET_EXTRAPKGS
-	cd ..
+	popd
 fi
 
 # - llvm
 if [ -z "$TKG_NOLLVM" ]; then
 	ln -s llvm-git llvm-tkg-git
-	cd llvm-tkg-git || exit
+	pushd llvm-tkg-git
 	llvm_setup
 	~/chaotic-makepkg --nocheck --noconfirm -C 2>&1 | tee "$TKGLOGS/llvm-git.log"
-	~/chaotic-add
+	~/chaotic-add || echo 'OK'
 	unset TARGET_MECHA TARGET_EXTRAPKGS
-	cd ..
+	popd
 fi
 
 # - mesa
 if [ -z "$TKG_NOMESA" ]; then
 	ln -s mesa-git mesa-tkg-git
-	cd mesa-tkg-git || exit
+	pushd mesa-tkg-git
 	mesa_setup
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
-	~/chaotic-add
+	~/chaotic-add || echo 'OK'
 	unset TARGET_MECHA TARGET_EXTRAPKGS
-	cd ..
+	popd
 fi
 
 # - spirv
 if [ -z "$TKG_NOSPIRV" ]; then
 	ln -s spirv-tools-git spirv-tools-tkg-git
-	cd spirv-tools-tkg-git || exit
+	pushd spirv-tools-tkg-git
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/spirv-tools-git.log"
-	~/chaotic-add
-	cd ..
+	~/chaotic-add || echo 'OK'
+	popd
 fi
 
 # - proton
-#if [ -z "$TKG_NOPROTON" ]; then
-#	cd proton-tkg || exit
-#	proton_setup
-#	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/proton.log"
-#	~/chaotic-add
-#	unset TARGET_EXTRAPKGS
-#	cd ..
-#fi
+if [ -z "$TKG_NOPROTON" ]; then
+	pushd proton-tkg
+	proton_setup
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/proton.log"
+	~/chaotic-add || echo 'OK'
+	unset TARGET_EXTRAPKGS
+	popd
+fi
 
 #
 # Clean
 #
 echo '[build-tkg] Nuking everything'
-cd /tmp || exit
-sudo rm -rf "$BLDTART"
+popd || cd /tmp
+sudo rm --one-file-system -rf "$BLDTART"
 
 
 # - Logs
