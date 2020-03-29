@@ -151,20 +151,15 @@ proton_setup() {
 git_cleanup() {
 	git reset --hard
 	git clean -dfx
-	#git submodule foreach --recursive git reset --hard
-	#git submodule foreach --recursive git clean -dfx
 	git pull -ff
-	#git submodule update
 }
 
 #
 # Clone TKG
 #
-cd /tmp
-git clone https://github.com/Tk-Glitch/PKGBUILDS.git "$BLDTART"
-pushd "$BLDTART"
-git submodule init
-git submodule update
+cd /tmp || exit
+mkdir "$BLDTART"
+cd "$BLDTART" || exit
 
 #
 # Build
@@ -173,6 +168,7 @@ mkdir -p "$TKGLOGS"
 
 # - Wine
 if [ -z "$TKG_NOWINE" ]; then
+	git clone 'https://github.com/Frogging-Family/wine-tkg-git.git'
 	pushd wine-tkg-git/wine-tkg-git
 	for VARIATION in "${_WINE_VARIATIONS[@]}"
 	do
@@ -199,6 +195,8 @@ fi
 
 # - NVIDIA
 if [ -z "$TKG_NONV" ]; then
+	git clone https://github.com/Frogging-Family/nvidia-all.git
+
 	pushd nvidia-all
 	for VARIATION in "${_NVIDIA_VARIATIONS[@]}"; do
 		nvidia_setup $VARIATION
@@ -212,6 +210,8 @@ fi
 
 # - vulkan-headers
 if [ -z "$TKG_NOVK" ]; then
+	git clone 'https://github.com/Frogging-Family/vulkan-headers-git.git'
+
 	pushd vulkan-headers-git
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/vulkan-headers-git.log"
 	~/chaotic-add || echo 'OK'
@@ -221,7 +221,8 @@ fi
 
 # - llvm
 if [ -z "$TKG_NOLLVM" ]; then
-	ln -s llvm-git llvm-tkg-git
+	git clone 'https://github.com/Frogging-Family/llvm-git.git' llvm-tkg-git
+
 	pushd llvm-tkg-git
 	llvm_setup
 	~/chaotic-makepkg --nocheck --noconfirm -C 2>&1 | tee "$TKGLOGS/llvm-git.log"
@@ -232,7 +233,8 @@ fi
 
 # - mesa
 if [ -z "$TKG_NOMESA" ]; then
-	ln -s mesa-git mesa-tkg-git
+	git clone 'https://github.com/Frogging-Family/mesa-git.git' mesa-tkg-git
+
 	pushd mesa-tkg-git
 	mesa_setup
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/mesa-git.log"
@@ -243,7 +245,8 @@ fi
 
 # - spirv
 if [ -z "$TKG_NOSPIRV" ]; then
-	ln -s spirv-tools-git spirv-tools-tkg-git
+	git clone 'https://github.com/Frogging-Family/spirv-tools-git.git' spirv-tools-tkg-git
+
 	pushd spirv-tools-tkg-git
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/spirv-tools-git.log"
 	~/chaotic-add || echo 'OK'
@@ -252,6 +255,8 @@ fi
 
 # - proton
 if [ -z "$TKG_NOPROTON" ]; then
+	[ -d wine-tkg-git ] || git clone 'https://github.com/Frogging-Family/wine-tkg-git.git'
+
 	pushd wine-tkg-git
 	git_cleanup
 	
@@ -273,7 +278,7 @@ fi
 # Clean
 #
 echo '[build-tkg] Nuking everything'
-popd || cd /tmp
+cd /tmp || exit
 sudo rm --one-file-system -rf "$BLDTART"
 
 
