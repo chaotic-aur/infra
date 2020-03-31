@@ -1,0 +1,9 @@
+[Unit]
+Description=MY NEXT GPU WILL BE AMD
+
+[Timer]
+OnCalendar=*-*-* *:00:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

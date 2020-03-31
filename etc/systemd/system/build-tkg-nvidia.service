@@ -1,0 +1,11 @@
+[Unit]
+Description=I HATE NVIDIA TOO
+
+[Service]
+User=main-builder
+Group=sudo
+WorkingDirectory=/home/main-builder
+ExecStart=/home/main-builder/build-tkg-nvidia
+
+[Install]
+WantedBy=multi-user.target

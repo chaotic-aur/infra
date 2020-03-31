@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+export TKG_NOWINE=1
+export TKG_NOPROTON=1
+export TKG_NOMESA=1
+export TKG_NOLLVM=1
+export TKG_NOSPIRV=1
+
+~/build-tkg
