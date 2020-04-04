@@ -3,6 +3,8 @@
 # CONFIG
 readonly TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
 BLDTART="TkG.common.$(date '+%Y%m%d%H%M%S')"
+export TKG_NONV=1
+
 
 # - Wine
 

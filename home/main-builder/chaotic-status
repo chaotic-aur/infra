@@ -20,6 +20,9 @@ TODAY="$(date --date='-1 month' +'%d\/%b')"
 _LOG_CLEANER="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
 _LOG_CLEANER_HEAD="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
 
+#_LOG_CLEANER="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
+#_LOG_CLEANER_HEAD="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
+
 cd /var/log/httpd
 [ -z "$NOT_MAIN" ] && MAIN_ACCESS=$(ls ./access* | sort -r | xargs awk "$_LOG_CLEANER")
 [ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo awk "$_LOG_CLEANER" "$MIRROR_LOG")
@@ -122,7 +125,7 @@ echo '</code></li></ul>'
 echo '<h4>Versions:</h4>'
 echo '<div class="row"><div class="border bg-dark text-white col-lg-4">pkgname</div><div class="border bg-dark text-white col-lg">pkgver</div><div class="border bg-dark text-white col-lg-1">pkgrel</div></div>'
 cat ../pkgs.txt |\
-	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<div class="row"><div class="border bg-light col-lg-4"><code>\1<\/code><\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><div class="border bg-light col-lg-1"><code>\3<\/code><\/div><\/div>/'
+	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<div class="row"><div class="border bg-light col-lg-4"><a href="https:\/\/archlinux.pkgs.org\/rolling\/chaotic-aur-x86_64\/\1-\2-\3-x86_64.pkg.tar.zst.html"><code>\1<\/code><\/a><\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><div class="border bg-light col-lg-1"><code>\3<\/code><\/div><\/div>/'
 
 echo '<hr/>'
 
@@ -142,6 +145,7 @@ echo '<hr/>'
 
 echo '<h3 id="tkg">TkG most downloaded (per unique users):</h3>'
 echo '<div class="row"><div class="border bg-dark text-white col-lg-1">Users</div><div class="border bg-dark text-white col-lg">Package</div></div>'
+# TODO: Get file extension and (any) architecture for pkgs.org links
 echo "$PKGS_IP_COUNT" |\
 	grep -P '\-tkg(\-|$)' |\
 	sed -r 's/linux(420|50|51|52)-tkg/linux-tkg/g;s/-faudio//g' |\

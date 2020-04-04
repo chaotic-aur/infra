@@ -7,7 +7,7 @@ readonly _TARGET_DIR='TkG.kernels'
 
 # (version)
 readonly _LINUX_LTS='54'
-readonly _LINUX_STABLE='55'
+readonly _LINUX_STABLE='56'
 readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
@@ -81,7 +81,7 @@ kernel_setup() {
 #
 mkdir -p "$TKGLOGS"
 cd /tmp || exit
-git clone https://github.com/Tk-Glitch/PKGBUILDS.git "$_TARGET_DIR" | tee "$TKGLOGS/_down.log"
+git clone 'https://github.com/Frogging-Family/linux-tkg.git' "$_TARGET_DIR" | tee "$TKGLOGS/_down.log"
 cd "$_TARGET_DIR" || exit
 
 #

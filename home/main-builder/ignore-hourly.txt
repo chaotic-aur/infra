@@ -1,4 +1,5 @@
 angular-cli
+brave
 clang-analyzer-git
 clang-analyzer-svn
 clang-compiler-rt-git

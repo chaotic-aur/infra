@@ -1,8 +1,27 @@
-#!/usr/bin/env sh
-export TKG_NOWINE=1
-export TKG_NOPROTON=1
-export TKG_NOMESA=1
-export TKG_NOLLVM=1
-export TKG_NOSPIRV=1
+#!/bin/bash
+export TARGET_NUKE=0
+export TARGET_UPPER='chaotic-nvidia'
+export TARGET_EXTRAPKGS='core/linux-headers core/linux-lts-headers'
 
-~/build-tkg
+cd /tmp || exit
+BLDTART="chaotic-nvidia.$(date '+%Y%m%d%H%M%S')"
+
+exec > >(tee ./"$BLDTART.log") 2>&1
+
+git clone 'git@github.com:PedroHLC/chaotic-nvidia-tkg.git' "$BLDTART"
+
+cd "$BLDTART" || exit
+
+git remote add upstream 'git@github.com:Frogging-Family/nvidia-all.git'
+git fetch upstream
+git rebase upstream/master
+
+~/chaotic-makepkg --noconfirm
+~/chaotic-add
+
+touch tkg.dev
+~/chaotic-makepkg
+~/chaotic-add
+
+cd /tmp || exit
+rm -rf --one-file-system "$BLDTART"
