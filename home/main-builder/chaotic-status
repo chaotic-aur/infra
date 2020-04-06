@@ -20,10 +20,15 @@ TODAY="$(date --date='-1 month' +'%d\/%b')"
 _LOG_CLEANER="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
 _LOG_CLEANER_HEAD="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
 
-#_LOG_CLEANER="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
-#_LOG_CLEANER_HEAD="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
-
 cd /var/log/httpd
+
+BIGBANG="$(ls ./access* | sort -r | xargs awk "${_LOG_CLEANER_HEAD}" | grep -Po '(?<=\[)([^\]])*')"
+if [ -z "$BIGBANG" ]; then
+	_LOG_CLEANER="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
+	_LOG_CLEANER_HEAD="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
+	BIGBANG="$(ls ./access* | sort -r | xargs awk "${_LOG_CLEANER_HEAD}" | grep -Po '(?<=\[)([^\]])*')"
+fi
+
 [ -z "$NOT_MAIN" ] && MAIN_ACCESS=$(ls ./access* | sort -r | xargs awk "$_LOG_CLEANER")
 [ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo awk "$_LOG_CLEANER" "$MIRROR_LOG")
 
