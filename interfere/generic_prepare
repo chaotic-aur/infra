@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# * CHROOT Update
+target_run sudo pacman -Syu --noconfirm
+
+# * Treats VCs
+if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-git$')" ]]; then
+	target_run sudo pacman -S --needed --noconfirm git
+fi
+if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-svn$')" ]]; then
+	target_run sudo pacman -S --needed --noconfirm subversion
+fi
+if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-bzr$')" ]]; then
+	target_run sudo pacman -S --needed --noconfirm breezy
+fi
+if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
+	target_run sudo pacman -S --needed --noconfirm mercurial-python3 #mercurial
+fi
+
+# * Read options
+if [[ ! -z `grep -Po "^options=\\([a-z! \"']*(?<!!)ccache[ '\"\\)]" PKGBUILD` ]]; then
+	target_run sudo pacman -S --needed --noconfirm ccache
+fi
+
+# * People who think they're smart
+if [[ ! -z "$(grep -P '^PKGEXT=' PKGBUILD)" ]]; then
+	echo "$WTMK If you never try you'll never fail!"
+	sed -i'' 's/^PKGEXT=.*$//g' PKGBUILD
+fi
+
+# * Treats multilib
+if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32\-')" ]]; then
+	echo "$WTMK lib32-* detected, treating..."
+	target_run sudo pacman -S --needed --noconfirm multilib-devel
+fi
+
+# * User cases
+if [[ ! -z "$TARGET_REMPKGS" ]]; then
+	target_run sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
+fi
+if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
+	target_run sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
+fi
+if [[ ! -z "$TARGET_ENV" ]]; then
+	echo "$TARGET_ENV" | tee -a "$TARGET_WIZARD"
+fi

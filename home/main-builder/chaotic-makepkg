@@ -133,186 +133,19 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK Found an older chroot, please clean it: $TARGET_UPPER"
 		exit 69
 	fi
-	
-	# * CHROOT Update
-	target_run sudo pacman -Syu --noconfirm
 
-	# * Treats VCs
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-git$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-svn$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm subversion
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-bzr$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm breezy
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '\-hg$')" ]]; then
-		target_run sudo pacman -S --needed --noconfirm mercurial-python3 #mercurial
-	fi
-
-	# * Read options
-	if [[ ! -z `grep -Po "^options=\\([a-z! \"']*(?<!!)ccache[ '\"\\)]" PKGBUILD` ]]; then
-		target_run sudo pacman -S --needed --noconfirm ccache
-	fi
-
-	# * Unreal Engine
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^unreal-engine$')" ]]; then
-		echo "$WTMK pantheon-core-git detected, treating..."
-		cp -ar "/home/$BUILD_USER/.ssh" "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/"
-		target_run sudo pacman -S --needed --noconfirm openssh
+	# * When interference is required, apply!
+	source '/interfere/generic_prepare'
+	_INTERFERE="/interfer/${_PKGNAME_HEAD}"
+	if [[ -d "${_INTERFERE}" ]]; then
+		[[ -f "${_INTERFERE}/prepare" ]] && \
+			source "${_INTERFERE}/prepare"
+		[[ -f "${_INTERFERE}/PKGBUILD.prepend" ]] && \
+			echo "$(<"${_INTERFERE}/PKGBUILD.prepend")$(<PKGBUILD)" > PKGBUILD
+		[[ -f "${_INTERFERE}/PKGBUILD.apend" ]] && \
+			echo "$(<"${_INTERFERE}/PKGBUILD.apend")" >> PKGBUILD
 	fi
 	
-	# * Pantheon GIT
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(pantheon-(core|desktop)|gala-stable)-git$')" ]]; then
-		echo "$WTMK pantheon-core-git/gala-stable detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm polkit-consolekit gsettings-desktop-schemas-ubuntu
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^((pantheon|lightdm-pantheon|wingpanel|switchboard|gala)\-.*git|eidete-bzr)$')" ]]; then
-		if [[ ! -z "$(grep 'granite' PKGBUILD)" ]]; then
-			echo "$WTMK pantheon-*-git detected, treating..."
-			target_run sudo pacman -S --needed --noconfirm granite-git
-		fi
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-(polkit-agent|files)-git$')" ]]; then
-		echo "$WTMK pantheon-*-git without cmake detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm cmake
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^pantheon-dpms-helper-git$')" ]]; then
-		echo "$WTMK pantheon-dpms-helper-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm gnome-settings-daemon-elementary
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wingpanel-indicator-ayatana(-git)?$')" ]]; then
-		echo "$WTMK wingpanel-indicator-ayatana detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm gtk3-ubuntu
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(switchboard\-.+|pantheon-applications-menu)\-git$')" ]]; then
-		echo "$WTMK switchboad-*-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm switchboard-git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wingpanel\-.*\-git|pantheon-applications-menu-git$')" ]]; then
-		echo "$WTMK wingpanel-*-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm wingpanel-git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(libindicator|ido)-ubuntu$')" ]]; then
-		echo "$WTMK ido-ubuntu detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm python3 gtk3-ubuntu
-	fi
-
-	# * @Lone_Wolf's Mesa
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?mesa(-aco)?-git$')" ]]; then
-		echo "$WTMK E ai meu chapa!"
-		export TARGET_ENV="export MESA_WHICH_LLVM=1${NEWLINE}${TARGET_ENV}"
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32-mesa-git$')" ]]; then
-		echo "$WTMK snoop05 wanted!"
-		sed -i'' 's/,iris /,iris,zink /g;s/makedepends=\(/makedepends=(vulkan-headers /g;s/^depends=\(/depends=(lib32-vulkan-icd-loader /g' PKGBUILD
-	fi
-	
-	# * Linux-Clear
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^linux-clear')" ]]; then
-		echo "$WTMK Galera estranha!"
-		sed -i'' 's/^_subarch=.*$/_subarch='"$(grep Generic-x86-64 PKGBUILD | awk -F '.' '{print $1}' | awk '{print $2}')"'/g' PKGBUILD
-	fi
-
-	# NSS-HG for Firefox Nightlies
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^nss-hg')" ]]; then
-		echo "$WTMK I like my fox's toys very update!"
-		target_run sudo pacman -S --needed --noconfirm nspr-hg
-	fi
-
-	# * Tired of things not getting fixed in AUR & ArchLinux
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^featherpad-git$')" ]]; then
-		echo "$WTMK feather-pad-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm hunspell
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(lib32-)?vkd3d-git$')" ]]; then
-		echo "$WTMK vkd3d-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm vulkan-headers-git spirv-headers-git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^qps-git$')" ]]; then
-		echo "$WTMK qps-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm lxqt-build-tools
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^msbuild(\-git)?$')" ]]; then
-		echo "$WTMK msbuild detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm nuget-nightly dotnet-{host,sdk,runtime}-preview 
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32-gamemode$')" ]]; then
-		echo "$WTMK lib32-gamemode detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm lib32-dbus
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^mingw-w64-gcc$')" ]]; then
-		echo "$WTMK mingw gcc detected, treating..."
-		sed -i'' 's/\--disable-dw2-exceptions/--disable-sjlj-exceptions --with-dwarf2/g' PKGBUILD
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^mono-git$')" ]]; then
-		echo "$WTMK mono-git detected, treating..."
-		sed -i'' 's/# go-oo build:/return/g' PKGBUILD
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lxqt-sudo-git$')" ]]; then
-		echo "$WTMK lxqt-sudo-git detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm lxqt-build-tools-git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wolfenstein3d$')" ]]; then
-		echo "$WTMK wolfenstein3d detected, treating..."
-		target_run export SDL_VIDEODRIVER=dummy
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^(wcm|wf-shell)-git$')" ]]; then
-		echo "$WTMK wayfire detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm wayfire-git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^wf-shell-git$')" ]]; then
-		echo "$WTMK wayfire shell detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm gtk-layer-shell-git libpulse
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^jitsi-nightly$')" ]]; then
-		echo "$WTMK jitsi-nightly detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm git
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^plymouth-kcm$')" ]]; then
-		echo "$WTMK plymouth-kcm detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm kdelibs4support
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lmms-git$')" ]]; then
-		echo "$WTMK plymouth-kcm detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm perl-list-moreutils perl-xml-parser
-	fi
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P 'llvm-minimal-git$')" ]]; then
-		echo "$WTMK llvm-minimal-git detected, treating..."
-		export TARGET_ARGS="--nocheck $TARGET_ARGS"
-	fi
-
-	# * People who think they're smart
-	if [[ ! -z "$(grep -P '^PKGEXT=' PKGBUILD)" ]]; then
-		echo "$WTMK If you never try you'll never fail!"
-		sed -i'' 's/^PKGEXT=.*$//g' PKGBUILD
-	fi
-
-	# * Treats multilib
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^lib32\-')" ]]; then
-		echo "$WTMK lib32-* detected, treating..."
-		target_run sudo pacman -S --needed --noconfirm multilib-devel
-	fi
-
-	# * Live long the king of frogs
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^proton-tkg$')" ]]; then
-		echo "$WTMK Let's do it the TkG's way"
-		cp -r ../wine-tkg-git "$CHROOT/$TARGET_UPPER/${_HOME}/"
-		
-	fi
-
-	# * User cases
-	if [[ ! -z "$TARGET_REMPKGS" ]]; then
-		target_run sudo pacman -Rdd --noconfirm $TARGET_REMPKGS
-	fi
-	if [[ ! -z "$TARGET_EXTRAPKGS" ]]; then
-		target_run sudo pacman -S --needed --noconfirm $TARGET_EXTRAPKGS
-	fi
-	if [[ ! -z "$TARGET_ENV" ]]; then
-		echo "$TARGET_ENV" | tee -a "$TARGET_WIZARD"
-	fi
-
 	# * Sometimes X is stil required...
 	if [[ ! -z "$TARGET_USEX" ]]; then
 		echo "$WTMK X was required, treating..."
