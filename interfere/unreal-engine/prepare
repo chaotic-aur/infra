@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+cp -ar "/home/$BUILD_USER/.ssh" "$CHROOT/$TARGET_UPPER/root/home/$BUILD_USER/"

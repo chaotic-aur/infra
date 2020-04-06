@@ -141,9 +141,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		[[ -f "${_INTERFERE}/prepare" ]] && \
 			source "${_INTERFERE}/prepare"
 		[[ -f "${_INTERFERE}/PKGBUILD.prepend" ]] && \
-			echo "$(<"${_INTERFERE}/PKGBUILD.prepend")$(<PKGBUILD)" > PKGBUILD
-		[[ -f "${_INTERFERE}/PKGBUILD.apend" ]] && \
-			echo "$(<"${_INTERFERE}/PKGBUILD.apend")" >> PKGBUILD
+			sed -i -e "1${_INTERFERE}/PKGBUILD.prepend" -e '1{h;d}' -e '2{x;G}' PKGBUILD
+		[[ -f "${_INTERFERE}/PKGBUILD.append" ]] && \
+			cat "${_INTERFERE}/PKGBUILD.append" >> PKGBUILD
 	fi
 	
 	# * Sometimes X is stil required...
