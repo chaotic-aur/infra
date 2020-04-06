@@ -1,0 +1,2 @@
+depends+=(lib32-vulkan-icd-loader)
+makedepends+=(vulkan-headers)

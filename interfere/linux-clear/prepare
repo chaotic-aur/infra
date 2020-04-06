@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+sed -i'' 's/^_subarch=.*$/_subarch='"$(grep Generic-x86-64 PKGBUILD | awk -F '.' '{print $1}' | awk '{print $2}')"'/g' PKGBUILD
