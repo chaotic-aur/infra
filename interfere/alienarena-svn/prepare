@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+sed -i'' 's/libxxf86dga/xorgproto/g' alienarena-svn

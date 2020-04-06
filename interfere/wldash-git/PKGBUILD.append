@@ -1,0 +1,1 @@
+depends+=(alsa-lib libpulse)

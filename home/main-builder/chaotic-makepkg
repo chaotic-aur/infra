@@ -136,8 +136,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 
 	# * When interference is required, apply!
 	source '/interfere/generic_prepare'
-	_INTERFERE="/interfer/${_PKGNAME_HEAD}"
+	_INTERFERE="/interfere/${_PKGNAME_HEAD}"
 	if [[ -d "${_INTERFERE}" ]]; then
+		echo "$WTMK Found interfere path"
 		[[ -f "${_INTERFERE}/prepare" ]] && \
 			source "${_INTERFERE}/prepare"
 		[[ -f "${_INTERFERE}/PKGBUILD.prepend" ]] && \
