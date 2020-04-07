@@ -5,8 +5,9 @@ export TARGET_EXTRAPKGS='core/linux-headers core/linux-lts-headers'
 
 cd /tmp || exit
 BLDTART="chaotic-nvidia.$(date '+%Y%m%d%H%M%S')"
+LOGF='/srv/http/chaotic-aur/makepkglogs/_daily/tkg/chaotic-nvidia.log'
 
-exec > >(tee ./"$BLDTART.log") 2>&1
+exec > >(tee "${LOGF}") 2>&1
 
 git clone 'git@github.com:PedroHLC/chaotic-nvidia-tkg.git' "$BLDTART"
 

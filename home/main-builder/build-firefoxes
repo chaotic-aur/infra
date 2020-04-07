@@ -8,7 +8,7 @@ mkdir -p "$BUILDDIR"
 cd "$BUILDDIR" || exit
 
 # Download our beloved firefox
-repoctl down firefox-wayland-hg
+repoctl down firefox-wayland-hg waterfox-current-git
 
 # Librewish likes this forks
 git clone https://github.com/torvic9/plasmafox.git

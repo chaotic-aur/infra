@@ -150,11 +150,7 @@ ungoogled-chromium
 vlc-git
 vulkan-headers-git
 vulkan-headers-tkg-git
-wayfire-git
-wayfire-plugins-extra-git
-wcm-git
-wf-config-git
-wf-shell-git
+waterfox-current-git
 wine-tkg-fsync-faudio-git
 wine-tkg-fsync-faudio-opt-git
 wine-tkg-fsync-git
