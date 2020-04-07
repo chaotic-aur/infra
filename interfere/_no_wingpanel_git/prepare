@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+sed -i'' 's/granite-git/granite/g;s/wingpanel-git/wingpanel/g' PKGBUILD
