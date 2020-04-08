@@ -1,2 +1,0 @@
-depends+=(liblxqt-git)
-makedepends+=(lxqt-build-tools)
