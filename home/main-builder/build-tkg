@@ -47,6 +47,8 @@ wine_setup() {
 	s/_use_vkd3d=\"[^\"]*\"/_use_vkd3d=\"${_use_vkd3d}\"/g
 	s/_proton_fs_hack=\"[^\"]*\"/_proton_fs_hack=\"true\"/g
 	s/_FS_bypass_compositor=\"[^\"]*\"/_FS_bypass_compositor=\"true\"/g
+	s/_win10_default=\"[^\"]*\"/_win10_default=\"true\"/g
+	s/_protonify=\"[^\"]*\"/_protonify=\"true\"/g
 	s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 	" wine-tkg-profiles/sample-external-config.cfg > customization.cfg
