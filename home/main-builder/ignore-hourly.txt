@@ -1,5 +1,6 @@
 angular-cli
 brave
+chromium-ozone
 clang-analyzer-git
 clang-analyzer-svn
 clang-compiler-rt-git
@@ -14,6 +15,7 @@ ffmpeg-full
 firefox-hg
 firefox-wayland-hg
 gobuster-git
+gzdoom-git
 keybase-bash-completion-git
 kplasmafoxhelper
 lib32-clang-git

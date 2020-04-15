@@ -257,6 +257,16 @@ if [ -z "$TKG_NOSPIRV" ]; then
 	popd
 fi
 
+# - gamescope
+if [ -z "$TKG_NOSCOPE" ]; then
+	git clone 'https://github.com/Frogging-Family/gamescope-git.git' gamescope-tkg-git
+
+	pushd gamescope-tkg-git
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/gamescope-git.log"
+	~/chaotic-add || echo 'OK'
+	popd
+fi
+
 # - proton
 if [ -z "$TKG_NOPROTON" ]; then
 	[ -d wine-tkg-git ] || git clone 'https://github.com/Frogging-Family/wine-tkg-git.git'
