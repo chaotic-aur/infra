@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# This is not a real solution, but I'll have to refactor it really soon anyway
+sudo chmod 777 "$CHROOT/$TARGET_UPPER/${_HOME}/.."

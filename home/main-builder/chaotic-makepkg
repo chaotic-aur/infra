@@ -141,8 +141,13 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		echo "$WTMK Found interfere path"
 		[[ -f "${_INTERFERE}/prepare" ]] && \
 			source "${_INTERFERE}/prepare"
-		[[ -f "${_INTERFERE}/PKGBUILD.prepend" ]] && \
-			sed -i -e "1${_INTERFERE}/PKGBUILD.prepend" -e '1{h;d}' -e '2{x;G}' PKGBUILD
+		if [[ -f "${_INTERFERE}/PKGBUILD.prepend" ]]; then
+			# The worst one, but KISS and easier to maintain
+			_prepend="$(cat "${_INTERFERE}/PKGBUILD.prepend")"
+			_pkgbuild="$(cat PKGBUILD)"
+			echo "$_prepend" > PKGBUILD
+			echo "$_pkgbuild" >> PKGBUILD
+		fi
 		[[ -f "${_INTERFERE}/PKGBUILD.append" ]] && \
 			cat "${_INTERFERE}/PKGBUILD.append" >> PKGBUILD
 	fi
@@ -186,7 +191,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 	if [[ "$BASE_NUKE" == '1' ]]; then
 		echo "$WTMK Nuking BASE..."
-		sudo rm -rf "$CHROOT/$BASE" || \
+		sudo rm --one-file-system -rf "$CHROOT/$BASE" || \
 	echo "$WTMK Unable to nuke!"
 	fi
 

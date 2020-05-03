@@ -140,6 +140,10 @@ nvidia-utils-tkg
 ocaml-minimal-git
 opencl-nvidia-dev-tkg
 opencl-nvidia-tkg
+openxr-headers-git
+openxr-layers-git
+openxr-loader-git
+openxr-utils-git
 pacui
 pacui-git
 plasmafox

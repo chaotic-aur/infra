@@ -1,1 +1,1 @@
-export MESA_WHICH_LLV=1
+export MESA_WHICH_LLVM=1

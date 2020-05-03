@@ -59,6 +59,7 @@ wine_setup() {
 		echo "[build-tkg] Lol FIX"
 		sed -i'' "
 		s/_lol920_fix=\"[^\"]*\"/_lol920_fix=\"true\"/g
+		s/_PKGNAME_OVERRIDE=\"[^\"]*\"/_PKGNAME_OVERRIDE=\"leagueoflegends\"/g
 		" customization.cfg
 		
 		export _PKGNAME='wine-tkg-git-leagueoflegends'
