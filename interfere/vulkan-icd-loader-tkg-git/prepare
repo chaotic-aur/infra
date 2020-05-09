@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+sed -i'' 's/vulkan-headers /vulkan-headers-tkg-git /g' PKGBUILD

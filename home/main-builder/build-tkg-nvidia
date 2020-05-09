@@ -21,7 +21,7 @@ git rebase upstream/master
 ~/chaotic-add
 
 touch tkg.dev
-~/chaotic-makepkg
+~/chaotic-makepkg --noconfirm
 ~/chaotic-add
 
 cd /tmp || exit

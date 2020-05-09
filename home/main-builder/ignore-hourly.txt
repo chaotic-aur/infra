@@ -11,6 +11,7 @@ clang-svn
 clang-tools-extra-git
 clang-tools-extra-svn
 compiler-rt-minimal-git
+ffmpeg-amd-full-git
 ffmpeg-full
 firefox-hg
 firefox-wayland-hg
@@ -140,13 +141,10 @@ nvidia-utils-tkg
 ocaml-minimal-git
 opencl-nvidia-dev-tkg
 opencl-nvidia-tkg
-openxr-headers-git
-openxr-layers-git
-openxr-loader-git
-openxr-utils-git
 pacui
 pacui-git
 plasmafox
+popcorntime-git
 proton-tkg-git
 retdec-git
 rpcs3-git

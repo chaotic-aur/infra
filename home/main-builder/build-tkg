@@ -268,6 +268,16 @@ if [ -z "$TKG_NOSCOPE" ]; then
 	popd
 fi
 
+# - vulkan loader
+if [ -z "$TKG_NOICD" ]; then
+	git clone 'https://github.com/Frogging-Family/vulkan-icd-loader-git.git' vulkan-icd-loader-tkg-git
+
+	pushd vulkan-icd-loader-tkg-git
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/vulkan-icd-loader-git.log"
+	~/chaotic-add || echo 'OK'
+	popd
+fi
+
 # - proton
 if [ -z "$TKG_NOPROTON" ]; then
 	[ -d wine-tkg-git ] || git clone 'https://github.com/Frogging-Family/wine-tkg-git.git'
