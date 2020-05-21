@@ -8,7 +8,7 @@ mkdir -p "$BUILDDIR"
 cd "$BUILDDIR" || exit
 
 # batchb build all these bad guys
-repoctl down vlc-git rpcs3-git wireguard-dkms-git ffmpeg-full ffmpeg-amd-full-git retdec-git ungoogled-chromium chromium-ozone brave
+repoctl down vlc-git rpcs3-git wireguard-dkms-git ffmpeg-full ffmpeg-amd-full-git retdec-git ungoogled-chromium{,-git} chromium-ozone brave jellyfin-git
 ~/chaotic-batchbuild
 
 # Build both xamarin variations

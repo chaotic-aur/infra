@@ -17,6 +17,7 @@ firefox-hg
 firefox-wayland-hg
 gobuster-git
 gzdoom-git
+jellyfin-git
 keybase-bash-completion-git
 kplasmafoxhelper
 lib32-clang-git
@@ -149,8 +150,8 @@ proton-tkg-git
 retdec-git
 rpcs3-git
 spirv-tools-tkg-git
-systemtap-git
 ungoogled-chromium
+ungoogled-chromium-git
 vlc-git
 vulkan-headers-git
 vulkan-headers-tkg-git

@@ -3,7 +3,7 @@
 # We need to know when things are stuck
 function freeze-notify() {
 	sleep 10800
-	telegram-send '[BOT ALERT] Last hourly build started 3h ago'
+	telegram-send --silent '[BOT ALERT] Last hourly build started 3h ago (@pedrohlc, @Librewish)'
 }
 freeze-notify &
 export FREEZE_NOTIFIER=$!
@@ -23,6 +23,9 @@ cd /tmp
 BUILDDIR="hourly.$(date '+%Y%m%d%H%M%S')"
 mkdir -p "$BUILDDIR" || kill-me-properly
 cd "$BUILDDIR" || kill-me-properly
+
+# Random problematic guy
+repoctl down libpdfium-nojs
 
 # Download the ones which detects version(*1)
 echo '[build-hourly] Downloading found updates'

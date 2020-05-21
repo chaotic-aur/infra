@@ -72,7 +72,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		$BASE_RUN locale-gen
 
 		# Build User
-		$BASE_RUN useradd -u $(id -u $BUILD_USER) -m -G users -s /bin/bash $BUILD_USER
+		$BASE_RUN useradd -Uu $(id -u $BUILD_USER) -m -s /bin/bash $BUILD_USER
 		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
 		
 		$BASE_USR_RUN mkdir -p "/home/$BUILD_USER/"{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs,.gnupg}
@@ -167,6 +167,9 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	_build_failed=''
 	echo "$WTMK Finally spawning it:"
 	$TARGET_RUN "/home/$BUILD_USER/wizard.sh" || _build_failed="$?"
+
+	# * Special options on failure
+	[[ -n "$_build_failed" ]] && [[ -f "$_INTERFERE/on-failure.sh" ]] && source "$_INTERFERE/on-failure.sh"
 	
 	# * Deploy
 	# Push artifacts to dest

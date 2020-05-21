@@ -1,0 +1,1 @@
+[[ "$pkgver" == '2.4.11' ]] && pkgrel=$(expr $pkgrel + 1)
