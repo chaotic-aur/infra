@@ -1,1 +1,0 @@
-depends+=(perl-list-moreutils perl-xml-parser)

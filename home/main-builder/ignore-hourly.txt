@@ -1,4 +1,3 @@
-angular-cli
 brave
 chromium-ozone
 clang-analyzer-git
@@ -15,6 +14,7 @@ ffmpeg-amd-full-git
 ffmpeg-full
 firefox-hg
 firefox-wayland-hg
+gamescope-git
 gobuster-git
 gzdoom-git
 jellyfin-git
@@ -131,6 +131,7 @@ llvm-ocaml-git
 llvm-ocaml-svn
 llvm-svn
 mesa-tkg-git
+mingw-w64-binutils
 mingw-w64-gcc-win32
 nvidia-dev-dkms-tkg
 nvidia-dev-egl-wayland-tkg

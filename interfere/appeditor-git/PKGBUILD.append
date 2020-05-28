@@ -1,5 +1,0 @@
-prepare() {
-    cd "$srcdir/${pkgname%-git}"
-    sed -i 's/unowned string _path = info.get_string/string _path = info.get_string/g' \
-        src/DesktopApp.vala
-}

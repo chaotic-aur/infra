@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 export HOME="/home/$(whoami)"
 export LANG='en_US.UTF-8'
 export USER="$(whoami)"

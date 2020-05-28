@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-sed -i'' 's/# go-oo build:/return/g' PKGBUILD

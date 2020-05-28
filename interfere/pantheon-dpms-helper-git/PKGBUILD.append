@@ -1,1 +1,0 @@
-depends+=(gnome-settings-daemon-elementary)

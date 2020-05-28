@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-sed -i'' 's/granite-git/granite/g;s/gala-git/gala/g' PKGBUILD

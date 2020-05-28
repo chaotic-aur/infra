@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-sed -i'' 's/\--disable-dw2-exceptions/--disable-sjlj-exceptions --with-dwarf2/g' PKGBUILD

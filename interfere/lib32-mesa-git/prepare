@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-sed -i'' 's/,iris /,iris,zink /g' PKGBUILD

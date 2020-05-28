@@ -1,1 +1,0 @@
-depends+=(nuget-nightly dotnet-{host,sdk,runtime}-preview )

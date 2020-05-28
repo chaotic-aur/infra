@@ -12,8 +12,8 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	BUILD_USER='main-builder'
 	CHROOT='/tmp/chaotic-chroot'
 	CHSRC="$HOME/chaotic-chroot"
-	BASE='base-root'
-	BASE_PKGS='base-devel'
+	BASE="${CHAOTIC_BASE:-base-root}"
+	BASE_PKGS='base base-devel'
 	BASE_NUKE=0
 	TARGET="$PWD"
 	TARGET_NUKE=${TARGET_NUKE:-1}

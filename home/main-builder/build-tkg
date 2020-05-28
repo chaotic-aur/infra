@@ -51,6 +51,7 @@ wine_setup() {
 	s/_protonify=\"[^\"]*\"/_protonify=\"true\"/g
 	s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
+	s/_hotfixes_no_confirm=\"[^\"]*\"/_hotfixes_no_confirm=\"true\"/g
 	" wine-tkg-profiles/sample-external-config.cfg > customization.cfg
 
 	echo '' > wine-tkg-profiles/advanced-customization.cfg
@@ -142,6 +143,7 @@ proton_setup() {
 	s/_proton_winetricks=\"[^\"]*\"/_proton_winetricks=\"false\"/g
 	s/_community_patches=\"[^\"]*\"/_community_patches=\"amdags.mypatch\"/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
+	s/_hotfixes_no_confirm=\"[^\"]*\"/_hotfixes_no_confirm=\"true\"/g
 	" proton-tkg-profiles/sample-external-config.cfg > proton-tkg.cfg
 	echo '' > proton-tkg-profiles/advanced-customization.cfg
 	
@@ -274,6 +276,16 @@ if [ -z "$TKG_NOICD" ]; then
 
 	pushd vulkan-icd-loader-tkg-git
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/vulkan-icd-loader-git.log"
+	~/chaotic-add || echo 'OK'
+	popd
+fi
+
+# - amdvlk
+if [ -z "$TKG_NOAMD" ]; then
+	git clone 'https://github.com/Frogging-Family/amdvlk-opt.git' amdvlk-tkg-opt
+
+	pushd amdvlk-tkg-opt
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/amdvlk-opt.log"
 	~/chaotic-add || echo 'OK'
 	popd
 fi

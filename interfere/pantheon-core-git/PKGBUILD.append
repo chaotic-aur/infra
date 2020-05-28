@@ -1,1 +1,0 @@
-depends+=(polkit-consolekit gsettings-desktop-schemas-ubuntu)
