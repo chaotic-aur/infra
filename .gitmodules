@@ -1,0 +1,3 @@
+[submodule "interfere"]
+	path = interfere
+	url = https://github.com/chaotic-aur/interfere.git
