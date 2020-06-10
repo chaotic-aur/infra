@@ -9,13 +9,13 @@ LOGF='/srv/http/chaotic-aur/makepkglogs/_daily/tkg/chaotic-nvidia.log'
 
 exec > >(tee "${LOGF}") 2>&1
 
-git clone 'git@github.com:PedroHLC/chaotic-nvidia-tkg.git' "$BLDTART"
+git clone 'git@github.com:chaotic-aur/nvidia-tkg.git' "$BLDTART"
 
 cd "$BLDTART" || exit
 
-git remote add upstream 'git@github.com:Frogging-Family/nvidia-all.git'
-git fetch upstream
-git rebase upstream/master
+#git remote add upstream 'git@github.com:Frogging-Family/nvidia-all.git'
+#git fetch upstream
+#git rebase upstream/master
 
 ~/chaotic-makepkg --noconfirm
 ~/chaotic-add

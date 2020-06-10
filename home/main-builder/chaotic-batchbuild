@@ -4,6 +4,8 @@ CNUM="${CHAOTIC_CNUM:-$(expr $(nproc) / 2)}"
 
 echo "$WTMK Limited at $CNUM jobs."
 
+unset TARGET_INTERACTIVE
+
 limit_build() {
 	while [ `jobs -rp | wc -l` -ge $CNUM ]; do
 		sleep 1

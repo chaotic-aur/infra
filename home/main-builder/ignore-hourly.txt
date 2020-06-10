@@ -1,3 +1,4 @@
+baidupcs-go-git
 brave
 chromium-ozone
 clang-analyzer-git
@@ -16,6 +17,7 @@ firefox-hg
 firefox-wayland-hg
 gamescope-git
 gobuster-git
+godot-git
 gzdoom-git
 jellyfin-git
 keybase-bash-completion-git

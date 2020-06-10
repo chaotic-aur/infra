@@ -37,56 +37,58 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	SRCCACHE_DIR="$SRCCACHE_DIR/$_PKGNAME_HEAD"
 	CCACHE_DIR="$CCACHE_DIR/$_PKGNAME_HEAD"
 	
-	# * Threats those who use sqlite-replication
-	if [[ ! -z "$(echo "$_PKGNAME_HEAD" | grep -P '^dqlite(-git)?$')" ]]; then
-		export BASE='dqlite-root'
-		export BASE_PKGS="sqlite-replication ${BASE_PKGS}"
-		export BASE_NUKE=1
-	fi
+	# * Wait if someone is creting a lowdir
+	while [[ -f "$CHROOT/$BASE.lock" ]]; do
+		sleep 2
+	done
 
-	# * CHROOT Lowdir
-	BASE_RUN="sudo arch-chroot -u root $CHROOT/$BASE"
-	BASE_USR_RUN="sudo arch-chroot -u $BUILD_USER $CHROOT/$BASE"
-	#BASE_RUN="sudo systemd-nspawn -M $BASE -u root -D $CHROOT/$BASE"
-	if [[ ! -d "$CHROOT/$BASE" ]]; then
+
+	# * Create a new lowdir if none exists
+	TIMED_BASE="$BASE"
+	if [[ ! -e "$CHROOT/$BASE.latest"  ]]; then
+		TIMED_BASE="$BASE.$(date +%Y%m%d%H%M%S)"
+		BASE_RUN="sudo arch-chroot -u root $CHROOT/$TIMED_BASE"
+		BASE_USR_RUN="sudo arch-chroot -u $BUILD_USER $CHROOT/$TIMED_BASE"
+		
 		# Create infra
 		echo "$WTMK Bulding lowerdir..."
-		mkdir -p "$CHROOT/$BASE"
 		echo $$ > "$CHROOT/$BASE.lock"
+		mkdir -p "$CHROOT/$TIMED_BASE"
 		pushd "$CHROOT"
 
 		# Basic packages
-		sudo pacstrap -C "$CHSRC/pacman.conf" "./$BASE" $BASE_PKGS
+		sudo pacstrap -C "$CHSRC/pacman.conf" "./$TIMED_BASE" $BASE_PKGS
 
 		# Build settings
-		sudo cp "$CHSRC/makepkg.conf" "./$BASE/etc/makepkg.conf" 
-		sudo cp "$CHSRC/pacman.conf" "./$BASE/etc/pacman.conf" 
-		sudo mkdir -p "./$BASE/usr/local/bin/"
-		sudo cp "$CHSRC/internal-makepkg" "./$BASE/usr/local/bin/"
-		sudo cp "$CHSRC/x11-wrapper" "./$BASE/usr/local/bin/"
+		sudo cp "$CHSRC/makepkg.conf" "./$TIMED_BASE/etc/makepkg.conf" 
+		sudo cp "$CHSRC/pacman.conf" "./$TIMED_BASE/etc/pacman.conf" 
+		sudo mkdir -p "./$TIMED_BASE/usr/local/bin/"
+		sudo cp "$CHSRC/internal-makepkg" "./$TIMED_BASE/usr/local/bin/"
+		sudo cp "$CHSRC/x11-wrapper" "./$TIMED_BASE/usr/local/bin/"
 
 		# Minimum locale
-		echo 'en_US.UTF-8 UTF-8' | sudo tee "./$BASE/etc/locale.gen"
-		echo 'LANG=en_US.UTF-8' | sudo tee "./$BASE/etc/locale.conf"
-		sudo ln -rsf "./$BASE/usr/share/zoneinfo/America/Sao_Paulo" "./$BASE/etc/localtime"
+		echo 'en_US.UTF-8 UTF-8' | sudo tee "./$TIMED_BASE/etc/locale.gen"
+		echo 'LANG=en_US.UTF-8' | sudo tee "./$TIMED_BASE/etc/locale.conf"
+		sudo ln -rsf "./$TIMED_BASE/usr/share/zoneinfo/America/Sao_Paulo" "./$TIMED_BASE/etc/localtime"
 		$BASE_RUN locale-gen
 
 		# Build User
 		$BASE_RUN useradd -Uu $(id -u $BUILD_USER) -m -s /bin/bash $BUILD_USER
-		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$BASE/etc/sudoers"
+		echo "$BUILD_USER ALL=(ALL) NOPASSWD: ALL" | sudo tee -a "./$TIMED_BASE/etc/sudoers"
 		
 		$BASE_USR_RUN mkdir -p "/home/$BUILD_USER/"{pkgwork,.ccache,pkgdest,pkgsrc,makepkglogs,.gnupg}
 		$BASE_USR_RUN chmod 700 "/home/$BUILD_USER/.gnupg"
-		cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$BASE/home/$BUILD_USER/.gnupg"
-		cp -a "/home/$BUILD_USER/.gitconfig" "./$BASE/home/$BUILD_USER/"
+		cp -ar "/home/$BUILD_USER/.gnupg"/{pubring.kbx,tofu.db,trustdb.gpg,crls.d} "./$TIMED_BASE/home/$BUILD_USER/.gnupg"
+		cp -a "/home/$BUILD_USER/.gitconfig" "./$TIMED_BASE/home/$BUILD_USER/"
 
 		# Finish
+		ln -s "./$TIMED_BASE" "$BASE.latest"
 		popd
 		rm "$CHROOT/$BASE.lock"
 	else
-		while [[ -f "$CHROOT/$BASE.lock" ]] || [[ -f "$CHROOT/$BASE/var/lib/pacman/db.lck" ]]; do
-			sleep 1
-		done
+		pushd "$CHROOT"
+		TIMED_BASE=$(readlink "$BASE.latest")
+		popd
 	fi
 
 	# * CHROOT
@@ -101,14 +103,24 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	# * CHROOT Upperdir
 	if [[ ! -d "$CHROOT/$TARGET_UPPER/root/usr" ]]; then
 		echo "$WTMK Building chroot"
+		
+		# Directories
 		mkdir -p "$PKGCACHE_DIR" "$SRCCACHE_DIR" "$CCACHE_DIR" \
 			"$CHROOT/$TARGET_UPPER/"{up,work,root,dest.{up,work}}
 		pushd "$CHROOT/$TARGET_UPPER"
 
+		# Register some debugging info
 		echo "$_PKGNAME_HEAD" > debug.txt
 		date +'%Y-%m-%d %H:%M:%S' >> debug.txt
+
+		# Always use the same lowdir
+		if [[ -e base ]]; then
+			TIMED_BASE=$(cat base)
+		else
+			echo -n "$TIMED_BASE" > base
+		fi
 		
-		LOWER="$CHROOT/$BASE"
+		LOWER="$CHROOT/$TIMED_BASE"
 		_HOME="./root/home/$BUILD_USER"
 
 		# Minimal mount
@@ -151,9 +163,15 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		[[ -f "${_INTERFERE}/PKGBUILD.append" ]] && \
 			cat "${_INTERFERE}/PKGBUILD.append" >> PKGBUILD
 	fi
-	
+
+	# * Sometimes we need to analize things
+	if [[ "$TARGET_INTERACTIVE" == '1' ]]; then
+		target_run reset
+		target_run echo "When you want to build, run: exec internal-makepkg -s --noprogressbar $TARGET_ARGS $@"
+		target_run exec /usr/bin/bash --login
+
 	# * Sometimes X is stil required...
-	if [[ ! -z "$TARGET_USEX" ]]; then
+	elif [[ ! -z "$TARGET_USEX" ]]; then
 		echo "$WTMK X was required, treating..."
 		target_run sudo pacman -S --needed --noconfirm xorg-server-xvfb
 		target_run exec xvfb-run -a -n 97 /usr/local/bin/internal-makepkg -s --noprogressbar $TARGET_ARGS $@
@@ -194,7 +212,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 	fi
 	if [[ "$BASE_NUKE" == '1' ]]; then
 		echo "$WTMK Nuking BASE..."
-		sudo rm --one-file-system -rf "$CHROOT/$BASE" || \
+		sudo rm --one-file-system -rf "$CHROOT/$TIMED_BASE" || \
 	echo "$WTMK Unable to nuke!"
 	fi
 

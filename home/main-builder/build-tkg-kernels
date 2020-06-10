@@ -7,11 +7,11 @@ readonly _TARGET_DIR='TkG.kernels'
 
 # (version)
 readonly _LINUX_LTS='54'
-readonly _LINUX_STABLE='56'
+readonly _LINUX_STABLE='57'
 readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
-	'muqss 0'
+#	'muqss 0'
 )
 readonly _LINUX_MARCH=('generic'
     'atom' 'barcelona' 'bobcat' 'broadwell'

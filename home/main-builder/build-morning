@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+~/build-garuda
 ~/build-llvm
 ~/build-firefoxes
 exec ~/build-daily-etc

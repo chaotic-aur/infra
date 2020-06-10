@@ -3,7 +3,7 @@
 # We need to know when things are stuck
 function freeze-notify() {
 	sleep 10800
-	telegram-send --config ~/.config/telegram-send-group.conf '[BOT ALERT] Last hourly build started 3h ago (@pedrohlc)'
+	telegram-send --config ~/.config/telegram-send-group.conf 'Hey onyii-san, wast houwwy buiwd stawted thwee houws ago (@pedrohlc)'
 }
 freeze-notify &
 export FREEZE_NOTIFIER=$!

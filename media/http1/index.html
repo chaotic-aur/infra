@@ -5,36 +5,66 @@
 		<title>Chaotic-AUR automated building repo for AUR packages</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+		<meta property="og:title" content="Chaotic-AUR automated repo" />
+		<meta property="og:url" content="https://lonewolf.pedrohlc.com/chaotic-aur" />
+		<meta property="og:description" content="Helping you, so you don't have to worry about building and updating them!" />
 	</head>
 
 	<body><div class="container">
 		<h1>Chaotic-AUR</h1>
 		<p>Automated building repo for <a target="_blank" href="https://aur.archlinux.org">AUR</a> packages</p>
-		<p>For a list of packages and download statistic check <a href="https://lonewolf.pedrohlc.com/chaotic-aur/analytics.html">Ranks, Numbers, and Packages</a>, for news check the telegram channel <a target="_blank" href="https://t.me/s/lonewolf_builder">@lonewolf_builder</a>.
+		<p>For a list of packages and download statistics, check <a href="https://lonewolf.pedrohlc.com/chaotic-aur/analytics.html">Ranks, Numbers, and Packages</a>. For news, check the telegram channel <a target="_blank" href="https://t.me/s/lonewolf_builder">@lonewolf_builder</a>.
 
 		<h2>Disclaimer:</h2>
 		<p>This repo is generated on-demand from packages I use on my personal computer.<br/>
-		If you find any package license infringement, please notify me at <code>root[at]pedrohlc.com</code>, so I can remove and blacklist it.</p>
+		If you find any package license infringement, please notify me at <code>root[at]pedrohlc.com</code>. I'll then remove it and blacklist.</p>
+
+		<h2 id="howto">How to use it?</h2>
+		<p>Append to <code>/etc/pacman.conf</code>:</p>
+		<code>[chaotic-aur]<br/>
+			Server = http://lonewolf-builder.duckdns.org/$repo/x86_64<br/>
+			Server = http://chaotic.bangl.de/$repo/x86_64<br/>
+			Server = https://repo.kitsuna.net/x86_64<br/>
+		</code>
+		<br/>
+		<p>To check signature, add my key:</p>
+		<code>
+			sudo pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB<br/>
+			sudo pacman-key --lsign-key 3056513887B78AEB
+		</code>
+		<!--p>In case this keyserver fails, try this: <code>hkps://hkps.pool.sks-keyservers.net</code> or <code>hkp://p80.pool.sks-keyservers.net:80</code></p-->
+		<br/><br/>
+
+		<h2>Recommendations:</h2>
+		<ul>
+			<li id="note-repossorting">If you're using other third parties repositories, I recommend you to put chaotic-aur <strong>before</strong> them on <code>/etc/pacman.conf</code>. We update most packages hourly and follow AUR's PKGBUILDs, which makes this repository more suitable as the first option when downloading packages.</li>
+			<li id="note-ignorepkg">If you need to omit one package update to use locally built ones (e.g: with native optimizations), <a href="https://www.archlinux.org/pacman/pacman.conf.5.html" target="_blank">you can</a> add '<code>IgnorePkg = ...</code>' to repo's section in <code>/etc/pacman.conf</code></li>
+			<li id="note-nvidia">If you're going to use one kernel from this repository with <strong>NVIDIA drivers</strong>, you'd better <strong>not use official</strong> Nvidia drivers packages. And instead, use chaotic-aur ones (<code>chaotic-nvidia{,-dev}-dkms-tkg</code>). These packages are built with patches to support all kernels available in chaotic-aur and the ArchLinux's official repositories.</li>
+			<li>You can pick the repository from which you download a package, like this: <code>pacman -S chaotic-aur/dxvk-mingw-git</code>. Some AUR's helpers support it too, e.g: <code>yay -S aur/firefox-hg</code>
+			<li id="note-powerpill">You may want to use <a target="_blank" href="https://wiki.archlinux.org/index.php/Powerpill">powerpill</a>, so you download from all mirrors simultaneously. I recommend doing updates this way: <code>sudo pacman -Sy &#x26;&#x26; sudo powerpill -Su &#x26;&#x26; yay -Su</code></li>
+		</ul>
 
 		<h2>About:</h2>
-		<p>Most packages available in this repo are automatically built from the <a target="_blank" href="https://aur.archlinux.org">AUR sources</a>.</p>
+		<p>Most packages available in this repo, are automatically built from their respective <a target="_blank" href="https://aur.archlinux.org">AUR</a> source package. Exceptions:</p>
 		<ul>
 			<li><code>retdec-git</code>, <code>vlc-git</code>, <code>wireguard-dkms-git</code>, <code>rpcs3-git</code>, <code>ffmpeg-full</code>, <code>firefox-wayland-hg</code>, <code>llvm-*-git</code> are building in the morning (4 am at America/Sao_Paulo).</li>
 			<li><code>wine-tkg-git</code> variants are building in the sunset (7 pm at America/Sao_Paulo).</li>
 			<li>Other packages are building hourly.</li>
 			<li>Every package is building in a clean chroot.</li>
-			<li>This server is hosted at <a target="_blank" href="https://www2.ufscar.br/">UFSCar</a>'s datacenter.</li>
-			<li><a target="_blank" href="https://github.com/BangL">@BangL</a> provides a germany mirror at <a target="_blank" href="http://chaotic.bangl.de">http://chaotic.bangl.de</a></li>
-			<li><a target="_blank" href="https://github.com/lordkitsuna">@LordKitsuna</a> provides an american mirror at <a taget="_blank" href="https://repo.kitsuna.net">https://repo.kitsuna.net</a></li>
+			<li>This server is a node in <a target="_blank" href="https://www2.ufscar.br/">UFSCar</a>'s datacenter.</li>
+			<li><a target="_blank" href="https://github.com/BangL">@BangL</a> provides a Germany mirror at <a target="_blank" href="http://chaotic.bangl.de">http://chaotic.bangl.de</a></li>
+			<li><a target="_blank" href="https://github.com/lordkitsuna">@LordKitsuna</a> provides an American mirror at <a taget="_blank" href="https://repo.kitsuna.net">https://repo.kitsuna.net</a></li>
 		</ul>
 		<p>Feel free to create an issue for suggestions, flagging database corruptions and everything else:
 		<a target="_blank" href="https://github.com/PedroHLC/chaotic-aur/issues">Issues</a><br/>
-		Build bugs should be reported to source package's maintainers.</p>
+		Report build bugs to source package's maintainers.</p>
+		
 		<h3>Packages from outside AUR:</h3>
 		<ul>
 			<li><code>{wine,linux,mesa,nvidia,vulkan,spirv}-tkg</code> are from <a target="_blank" href="https://github.com/Tk-Glitch/PKGBUILDS">TK-Glitch's GitHub</a></li>
 			<li><code>plasmafox</code> and <code>kplasmafoxhelper</code> are from <a target="_blank" href="https://github.com/torvic9">Torvic9's GitHub</a></li>
-			<li><code>manjarowish-*</code>, wayfire and <code>mhwd-*</code> are from <a target="_blank" href="https://github.com/librewish/wishbuilds/tree/master/manjarowish">Librewish's GitHub</a></li>
+			<li><code>manjarowish-*</code>, wayfire, and <code>mhwd-*</code> are from <a target="_blank" href="https://github.com/librewish/wishbuilds/tree/master/manjarowish">Librewish's GitHub</a></li>
 			<li><code>pacui{,-git}</code> (which <a target="_blank" href="https://forum.manjaro.org/t/pacui-removed-from-aur/54716/2">you shouldn't use</a>) are from <a target="_blank" href="https://github.com/excalibur1234/pacui">excalibur1234's GitHub</a>.</li>
 
 			<!--li><code>mangohud</code> is from <a target="_blank" href="https://gitlab.com/flightlessmango/PKGBUILDS/blob/master/mangohud/PKGBUILD">FlightlessMango's GitHub</a>.</li-->
@@ -55,33 +85,9 @@
 			<li>Mirroring script: <a target="_blank" href="https://gist.github.com/BangL/86c2700e169994bc147ebf076fcb1888">Gist</a></li>
 		</ul>
 
-		<h2 id="howto">How to use it?</h2>
-		<p>Add to <code>/etc/pacman.conf</code>:</p>
-		<code>[chaotic-aur]<br/>
-			Server = http://lonewolf-builder.duckdns.org/$repo/x86_64<br/>
-			Server = http://chaotic.bangl.de/$repo/x86_64<br/>
-			Server = https://repo.kitsuna.net/x86_64<br/>
-		</code>
-
-		<p>For signature check, add my key:</p>
-		<code>
-			sudo pacman-key --keyserver keys.mozilla.org -r 3056513887B78AEB<br/>
-			sudo pacman-key --lsign-key 3056513887B78AEB
-		</code>
-		<!--p>In case this keyserver fails, try this: <code>hkps://hkps.pool.sks-keyservers.net</code> or <code>hkp://p80.pool.sks-keyservers.net:80</code></p-->
-		<br/><br/>
-
-		<h2>Recommendations:</h2>
-		<ul>
-			<li>If you're using other third parties repositories, I recommend you to put chaotic-aur <strong>before</strong> them on <code>/etc/pacman.conf</code>. We update most packages hourly and follow AUR's PKGBUILDs, that makes this repository more suitable to be the first option when downloading packages.</li>
-			<li>If you need to omit one package update to use locally built ones (e.g: with native optimizations), <a href="https://www.archlinux.org/pacman/pacman.conf.5.html" target="_blank">you can</a> add '<code>IgnorePkg = ...</code>' to repo's section in <code>/etc/pacman.conf</code></li>
-			<li>You can pick the repository from which you download a package, like this: <code>pacman -S chaotic-aur/dxvk-mingw-git</code>. Some AUR's helpers support it too, e.g: <code>yay -S aur/firefox-hg</code>
-			<li>You may want to use <a target="_blank" href="https://wiki.archlinux.org/index.php/Powerpill">powerpill</a>, so you download from all mirrors simultaneously. I recommend doing updates this way: <code>sudo pacman -Sy &#x26;&#x26; sudo powerpill -Su &#x26;&#x26; yay -Su</code></li>
-		</ul>
-
 
 		<h2>Work-in-progress</h2>
-		<p>There are experimental packages for <a href="https://lonewolf.pedrohlc.com/chaotic-aur/aarch64/?C=M;O=D">aarch64</a>, <a href="https://lonewolf.pedrohlc.com/chaotic-aur/alpine/v3.11/x86_64/?C=M;O=D">Alpine</a> and <a href="https://lonewolf.pedrohlc.com/chaotic-aur/artix-x86_64/?C=M;O=D">Artix</a>. Please contact me for requesting packages and/or updates.</p>
+		<p>There are experimental packages for <a href="https://lonewolf.pedrohlc.com/chaotic-aur/aarch64/?C=M;O=D">aarch64</a>, <a href="https://lonewolf.pedrohlc.com/chaotic-aur/alpine/v3.11/x86_64/?C=M;O=D">Alpine</a>, and <a href="https://lonewolf.pedrohlc.com/chaotic-aur/artix-x86_64/?C=M;O=D">Artix</a>. Please contact me to request packages and/or updates.</p>
 
 		<h2>Maintainer:</h2>
 		<code>
@@ -93,6 +99,6 @@
 		</code>
 		<br/>
 		<strong>Last modified:</strong>
-		<code>2020-05-05 8:25</code>
+		<code>2020-06-03 20:55 (GMT-3)</code>
 	</div></body>
 </html>
