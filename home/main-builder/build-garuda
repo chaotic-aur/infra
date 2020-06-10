@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+LDIR=/srv/http/chaotic-aur/makepkglogs/_daily/garuda
+
+cd /tmp
+
+
+
+git clone https://gitlab.com/garuda-linux/packages/pkgbuilds/garuda-pkgbuilds.git
+
+cd ./garuda-pkgbuilds/pkgbuilds || exit
+
+~/chaotic-batchbuild
+
+
+
+mkdir -p "$LDIR"
+
+mv *.log "$LDIR/"
+
+
+
+cd /tmp && rm --one-file-system -rf ./garuda-pkgbuilds
+
+cd "$LDIR" && ~/chaotic-clean-logs
+~/garuda-website
