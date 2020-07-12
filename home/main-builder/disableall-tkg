@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+export TKG_NONV=1
+export TKG_NOWINE=1
+export TKG_NONV=1
+export TKG_NOVK=1
+export TKG_NOLLVM=1
+export TKG_NOMESA=1
+export TKG_NOSPIRV=1
+export TKG_NOSCOPE=1
+export TKG_NOICD=1
+export TKG_NOAMD=1
+export TKG_NODX12=1
+export TKG_NOPROTON=1
+export TKG_NOFAUDIO=1
