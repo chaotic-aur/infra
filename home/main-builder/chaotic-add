@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+LOCK_FILE="/tmp/chaotic-add.lock"
+while [[ -f "$LOCK_FILE" ]]; do
+	sleep 2
+done
+touch "$LOCK_FILE"
+
 function update_checkpoint() {
 	if [ $(date -d "$_RUN_TIME" +'%s') -ge $(date -r ~/last-add +'%s') ]; then
 		touch -d "$_RUN_TIME" ~/last-add
@@ -35,3 +41,4 @@ then
 		update_pkglist_dump
 fi
 
+rm "$LOCK_FILE"

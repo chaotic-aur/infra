@@ -1,0 +1,11 @@
+[Unit]
+Description=Gotta catch them all
+
+[Service]
+User=main-builder
+Group=sudo
+WorkingDirectory=/home/main-builder
+ExecStart=/home/main-builder/build-tkg-kernels
+
+[Install]
+WantedBy=multi-user.target

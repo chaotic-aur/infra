@@ -26,7 +26,7 @@ mv ./*.log "$LOGDIR/"
 
 # Leave build dir
 cd ..
-rm -rf "$BUILDDIR"
+rm -rf --one-file-system "$BUILDDIR"
 
 # Remove logs about succesful builds
 cd "$LOGDIR"

@@ -26,7 +26,7 @@ mv ./*.log "$LOGDIR/"
 # Cleaning hour
 echo '[build-firefox] Nuking temp directories'
 cd ..
-rm -rf "$BUILDDIR"
+rm -rf --one-file-system "$BUILDDIR"
 
 echo '[build-firefox] Removing logs from compiled packages'
 cd "$LOGDIR"

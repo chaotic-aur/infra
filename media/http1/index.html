@@ -23,8 +23,11 @@
 		<h2 id="howto">How to use it?</h2>
 		<p>Append to <code>/etc/pacman.conf</code>:</p>
 		<code>[chaotic-aur]<br/>
+			# Brazil<br/>
 			Server = http://lonewolf-builder.duckdns.org/$repo/x86_64<br/>
+			# Germany<br/>
 			Server = http://chaotic.bangl.de/$repo/x86_64<br/>
+			# USA (Cloudflare proxy)<br/>
 			Server = https://repo.kitsuna.net/x86_64<br/>
 		</code>
 		<br/>
@@ -38,11 +41,15 @@
 
 		<h2>Recommendations:</h2>
 		<ul>
+			<li>In "pacman.conf", you can use <code>https://lonewolf.pedrohlc.com</code> instead/besides of <code>http://lonewolf-builder.duckdns.org</code>. It's the same server, but proxying through Cloudflare.</li>
+			<li>Always put the brazilian server first. It has the freshest package's database!</li>
 			<li id="note-repossorting">If you're using other third parties repositories, I recommend you to put chaotic-aur <strong>before</strong> them on <code>/etc/pacman.conf</code>. We update most packages hourly and follow AUR's PKGBUILDs, which makes this repository more suitable as the first option when downloading packages.</li>
 			<li id="note-ignorepkg">If you need to omit one package update to use locally built ones (e.g: with native optimizations), <a href="https://www.archlinux.org/pacman/pacman.conf.5.html" target="_blank">you can</a> add '<code>IgnorePkg = ...</code>' to repo's section in <code>/etc/pacman.conf</code></li>
 			<li id="note-nvidia">If you're going to use one kernel from this repository with <strong>NVIDIA drivers</strong>, you'd better <strong>not use official</strong> Nvidia drivers packages. And instead, use chaotic-aur ones (<code>chaotic-nvidia{,-dev}-dkms-tkg</code>). These packages are built with patches to support all kernels available in chaotic-aur and the ArchLinux's official repositories.</li>
 			<li>You can pick the repository from which you download a package, like this: <code>pacman -S chaotic-aur/dxvk-mingw-git</code>. Some AUR's helpers support it too, e.g: <code>yay -S aur/firefox-hg</code>
 			<li id="note-powerpill">You may want to use <a target="_blank" href="https://wiki.archlinux.org/index.php/Powerpill">powerpill</a>, so you download from all mirrors simultaneously. I recommend doing updates this way: <code>sudo pacman -Sy &#x26;&#x26; sudo powerpill -Su &#x26;&#x26; yay -Su</code></li>
+			<li>When using powerpill, insert all mirrors in your "pacman.conf".</li>
+			<li>You must have multilib repository enabled.</li>
 		</ul>
 
 		<h2>About:</h2>
@@ -62,9 +69,9 @@
 		
 		<h3>Packages from outside AUR:</h3>
 		<ul>
-			<li><code>{wine,linux,mesa,nvidia,vulkan,spirv}-tkg</code> are from <a target="_blank" href="https://github.com/Tk-Glitch/PKGBUILDS">TK-Glitch's GitHub</a></li>
+			<li><code>{wine,linux,mesa,nvidia,vulkan,spirv}-tkg</code> and <code>llvm-git</code> are from <a target="_blank" href="https://github.com/Tk-Glitch/PKGBUILDS">TK-Glitch's GitHub</a></li>
 			<li><code>plasmafox</code> and <code>kplasmafoxhelper</code> are from <a target="_blank" href="https://github.com/torvic9">Torvic9's GitHub</a></li>
-			<li><code>manjarowish-*</code>, wayfire, and <code>mhwd-*</code> are from <a target="_blank" href="https://github.com/librewish/wishbuilds/tree/master/manjarowish">Librewish's GitHub</a></li>
+			<li><code>manjarowish-*</code>, <code>garuda-*</code> and <code>mhwd-*</code> are from <a target="_blank" href="https://github.com/librewish/wishbuilds/tree/master/manjarowish">Librewish's GitHub</a></li>
 			<li><code>pacui{,-git}</code> (which <a target="_blank" href="https://forum.manjaro.org/t/pacui-removed-from-aur/54716/2">you shouldn't use</a>) are from <a target="_blank" href="https://github.com/excalibur1234/pacui">excalibur1234's GitHub</a>.</li>
 
 			<!--li><code>mangohud</code> is from <a target="_blank" href="https://gitlab.com/flightlessmango/PKGBUILDS/blob/master/mangohud/PKGBUILD">FlightlessMango's GitHub</a>.</li-->
@@ -73,7 +80,7 @@
 
 		<h2>Links:</h2>
 		<ul>
-			<li>Telegram channel with news and updates: <a target="_blank" href="https://t.me/s/lonewolf_builder">@lonewolf_builder</a></li>
+			<li>Telegram channel with news and updates: <a target="_blank" href="https://t.me/s/lonewolf_builder">@lonewolf_builder</a> (includes a discussion group)</li>
 			<li>Server's infra source code: <a target="_blank" href="https://github.com/PedroHLC/chaotic-aur">GitHub</a></li>
 			<li>Monthly statistics: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/analytics.html">Ranks, Numbers, and Packages</a></li>
 			<li>pkgs.org summary: <a href="https://archlinux.pkgs.org/rolling/chaotic-aur-x86_64/">pkgs.org</a></li>
@@ -83,6 +90,7 @@
 			<li>Packages sorted by last-updated: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/x86_64/?C=M;O=D">Directory entries</a></li>
 			<li>Short archive: <a href="https://lonewolf.pedrohlc.com/chaotic-aur/archive">Directory entries</a></li>
 			<li>Mirroring script: <a target="_blank" href="https://gist.github.com/BangL/86c2700e169994bc147ebf076fcb1888">Gist</a></li>
+			<li>Status page: <a target="_blank" href="https://status.pedrohlc.com">Monitors</a></li>
 		</ul>
 
 
@@ -99,6 +107,6 @@
 		</code>
 		<br/>
 		<strong>Last modified:</strong>
-		<code>2020-06-03 20:55 (GMT-3)</code>
+		<code>2020-07-02 13:35 (GMT-3)</code>
 	</div></body>
 </html>

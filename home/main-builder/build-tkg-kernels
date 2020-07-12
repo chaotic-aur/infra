@@ -11,15 +11,15 @@ readonly _LINUX_STABLE='57'
 readonly _LINUX_SCHED=(
 	'pds 0'
 	'bmq 1'
-#	'muqss 0'
+	'muqss 0'
 )
 readonly _LINUX_MARCH=('generic'
     'atom' 'barcelona' 'bobcat' 'broadwell'
-	'bulldozer' 'cannonlake' 'core2' 'excavator'
+	'bulldozer' 'cannonlake' 'core2'
 	'haswell' 'icelake' 'ivybridge' 'jaguar'
 	'k10' 'k8' 'k8sse3' 'mpsc' 'nehalem'
-	'piledriver' 'sandybridge' 'silvermont'
-	'skylake' 'skylakex' 'steamroller'
+	'sandybridge' 'silvermont'
+	'skylake' 'skylakex'
 	'westmere' 'zen' 'zen2'
 )
 
@@ -39,6 +39,11 @@ kernel_setup() {
 	fi
 	if [ "$4" == 'lts' ]; then
 		local _PKGBASE="linux-lts-tkg-$1"
+	fi
+
+	local _timer_freq=750
+	if [ "$1" == 'muqss' ]; then
+		local _timer_freq=100
 	fi
 
 	sed -i'' "
@@ -66,7 +71,7 @@ kernel_setup() {
 	s/_smt_nice=\"[^\"]*\"/_smt_nice=\"true\"/g
 	s/_random_trust_cpu=\"[^\"]*\"/_random_trust_cpu=\"true\"/g
 	s/_runqueue_sharing=\"[^\"]*\"/_runqueue_sharing=\"mc\"/g
-	s/_timer_freq=\"[^\"]*\"/_timer_freq=\"750\"/g
+	s/_timer_freq=\"[^\"]*\"/_timer_freq=\"$_timer_freq\"/g
 	s/_user_patches=\"[^\"]*\"/_user_patches=\"false\"/g
 	s/_custom_pkgbase=\"[^\"]*\"/_custom_pkgbase=\"$_PKGBASE\"/g
 	" customization.cfg

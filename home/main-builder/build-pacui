@@ -14,5 +14,5 @@ mv PKGBUILD-git pacui-git/PKGBUILD
 mkdir -p "$LDIR"
 mv *.log "$LDIR/"
 
-cd /tmp && rm -rf ./pacui
+cd /tmp && rm -rf --one-file-system ./pacui
 cd "$LDIR" && ~/chaotic-clean-logs

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 ~/build-garuda
-~/build-llvm
 ~/build-firefoxes
-exec ~/build-daily-etc
+~/build-daily-etc
+exec ~/build-schoina

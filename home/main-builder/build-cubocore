@@ -9,5 +9,5 @@ cd ./wiki/PKGBUILD-git || exit
 mkdir -p "$LDIR"
 mv *.log "$LDIR/"
 
-cd /tmp && rm -rf ./wiki
+cd /tmp && rm -rf --one-file-system ./wiki
 cd "$LDIR" && ~/chaotic-clean-logs

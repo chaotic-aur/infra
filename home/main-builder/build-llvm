@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+echo 'Removed, use llvm-tkg instead'
+exit 0
+
 LOGDIR='/srv/http/chaotic-aur/makepkglogs/_daily'
 cd /tmp
 
@@ -37,7 +40,7 @@ mv ./*.log "$LOGDIR/"
 
 echo '[build-llvm] Cleaning dirty'
 cd ..
-rm -rf "$BUILD_DIR"
+rm -rf --one-file-system "$BUILD_DIR"
 
 echo '[build-llvm] Remove successful packages from logs'
 cd "$LOGDIR"

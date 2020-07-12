@@ -1,0 +1,9 @@
+[Unit]
+Description=All the froggs have the right to be free
+
+[Timer]
+OnCalendar=*-*-* 22:45:00
+Persistent=false
+
+[Install]
+WantedBy=timers.target

@@ -17,14 +17,16 @@ fi
 # Code
 
 TODAY="$(date --date='-1 month' +'%d\/%b')"
-_LOG_CLEANER="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
+_LOG_NONLOCAL_IP_PKGNAME='!/^(::1|localhost|127\.0\.0\.1)/ && $6 == "\"GET" && $9 == "200" {print $1" "$7}'
+_LOG_CLEANER="/.* \\[${TODAY}\\//{y=1}y && $_LOG_NONLOCAL_IP_PKGNAME"
 _LOG_CLEANER_HEAD="/.* \\[${TODAY}\\//{y=1}y && !/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
+_ONLY_PKGS='.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))'
 
 cd /var/log/httpd
 
 BIGBANG="$(ls ./access* | sort -r | xargs awk "${_LOG_CLEANER_HEAD}" | grep -Po '(?<=\[)([^\]])*')"
 if [ -z "$BIGBANG" ]; then
-	_MAIN_LOG_CLEANER="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$1\" \"\$7}"
+	_MAIN_LOG_CLEANER="$_LOG_NONLOCAL_IP_PKGNAME"
 	_MAIN_LOG_CLEANER_HEAD="!/^(::1|localhost|127\\.0\\.0\\.1)/{print \$4; exit}"
 	BIGBANG="$(ls ./access* | sort -r | xargs awk "${_MAIN_LOG_CLEANER_HEAD}" | grep -Po '(?<=\[)([^\]])*')"
 else
@@ -35,9 +37,7 @@ fi
 [ -z "$NOT_MAIN" ] && MAIN_ACCESS=$(ls ./access* | sort -r | xargs awk "$_MAIN_LOG_CLEANER")
 [ -z "$NOT_MIRROR" ] && MIRROR_ACCESS=$(sudo awk "$_LOG_CLEANER" "$MIRROR_LOG")
 
-UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" |\
-	sed 's/vk-winelib/vk-mingw/g' |\
-	sort -u)
+UNIQ_ACCESS=$(printf "%s\n%s" "$MAIN_ACCESS" "$MIRROR_ACCESS" | sort -u)
 
 echo '<!DOCTYPE html><html><head><meta charset="UTF-8" /><title>Chaotic-AUR :: Ranks, Numbers and Packages</title><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"></head><body style="font-family: sans-serif;"><div class="container">'
 echo '<h1>Chaotic-AUR</h1><p>See <a href="index.html">homepage</a> for maintainer&#x27;s notes.</p><h2>Ranks, Numbers and Packages</h2>'
@@ -58,7 +58,7 @@ echo '</code></li>' '</ul>' '<hr/>'
 
 PKGS_IP_COUNT=$(
 	echo "$UNIQ_ACCESS" |\
-		grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
+		grep -Po "$_ONLY_PKGS" |\
 	sort -u |\
 	awk '{print $2}' |\
 	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)'
@@ -67,8 +67,8 @@ PKGS_IP_COUNT=$(
 echo '<h3>Top ' $NUM_DOWN ' most downloaded (per unique users):</h3>'
 echo '<div class="row"><div class="border bg-dark text-white col-lg-1">Users</div><div class="border bg-dark text-white col-lg">Package</div></div>'
 echo "$UNIQ_ACCESS" |\
-	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
-	sed 's/wine-tkg-.*-git/wine-tkg-*/g;s/linux-tkg-...-[^-]*/linux-tkg-*/g;s/linux..-tkg-.../linux-tkg-*/g' |\
+	grep -Po "$_ONLY_PKGS" |\
+	sed 's/wine-tkg-.*/wine-tkg-*/g;s/linux-tkg-.*/linux-tkg-*/g' |\
 	sort -u |\
 	awk '{print $2}' |\
 	grep -Po '(?<=\/chaotic-aur\/x86_64\/)(.*)' |\
@@ -80,7 +80,7 @@ echo '* For TkG packages check <a href="#tkg">here</a>.<br/><hr/>'
 echo '<h3>Top 10 users (per unique downloaded packages):</h3>'
 echo '<div class="row"><div class="border bg-dark text-white col-lg-1">Packages</div><div class="border bg-dark text-white col-lg-2">IP</div><div class="border bg-dark text-white col-lg">Country</div></div>'
 echo "$UNIQ_ACCESS" |\
-	grep -Po '.*(?<=\/chaotic-aur\/x86_64\/)(.*)(?=(?:-(?:[^-]*)){3}\.pkg\.tar(?:\.xz|\.zst))' |\
+	grep -Po "$_ONLY_PKGS" |\
 	sort -u |\
 	awk '!/:/{print $1}' |\
 	sort | uniq -c | sort -nr |\
@@ -90,10 +90,10 @@ echo "$UNIQ_ACCESS" |\
 	sed -r "$IP_CENSOR" |\
 	sed 's/GeoIP[^:]*: .., //g' |\
 	sed -r 's/^\ *([^\ ]*)\ ([^\ ]*)\ (.*)$/<div class="row"><div class="border bg-light col-lg-1">\1<\/div><div class="border bg-light col-lg-2"><code>\2<\/code><\/div><div class="border bg-light col-lg">\3<\/div><\/div>/g'
-echo '<br/>(IPv4 only)'
-echo '<code>Users total: '
+echo '(IPv4 only)<br/><br/>'
+echo 'Total users: <code> '
 echo "$UNIQ_ACCESS" |\
-	grep 'chaotic-aur\.db\.sig' |\
+	grep 'chaotic-aur\.db$' |\
 	awk '{print $1}' |\
 	sort -u | wc -l |\
 	sed 's/$/<br>/' 
@@ -115,7 +115,7 @@ echo '<h3>Packages:</h3>'
 echo '<ul>' "<li>Total: <code>${PKGS_TOTAL}"
 echo '</code></li><li>GIT/SVN/HG/BZR: <code>'
 grep -Pe '-(git|svn|hg|bzr)-' ../pkgs.txt | wc -l
-echo '</code></li></li>Failing (hourly): <code>'
+echo '</code></li><li>Failing (hourly): <code>'
 echo $(expr $(ls -1 ../makepkglogs/*.log | wc -l) - 2)
 echo '</code></li><li>Failing (daily): <code>'
 echo $(expr $(ls -1 ../makepkglogs/_daily/*.log | wc -l) - 1)
@@ -125,13 +125,11 @@ if [ "$(systemctl is-active build-sunset.service)" == 'active' ]; then
 else
 	echo $(ls -1 ../makepkglogs/_daily/tkg/*.log 2>&- | wc -l)
 fi
-echo '</code></li><li>systemd-nspawn fu**ing us: '
-grep -l 'scope already exists' ../makepkglogs/*.log | wc -l
 echo '</code></li><li>wrongly terminated containers: '
 grep -l 'Found an older chroot' ../makepkglogs/*.log | wc -l
 echo '</code></li></ul>'
 
-echo '<h4>Versions:</h4>'
+echo '<h4 id="packages">Versions:</h4>'
 echo '<div class="row"><div class="border bg-dark text-white col-lg-4">pkgname</div><div class="border bg-dark text-white col-lg">pkgver</div><div class="border bg-dark text-white col-lg-1">pkgrel</div></div>'
 cat ../pkgs.txt |\
 	sed -r 's/^(.*)-([^-]*)-([^-]*)\/$/<div class="row"><div class="border bg-light col-lg-4"><a href="https:\/\/archlinux.pkgs.org\/rolling\/chaotic-aur-x86_64\/\1-\2-\3-x86_64.pkg.tar.zst.html"><code>\1<\/code><\/a><\/div><div class="border bg-light col-lg"><code>\2<\/code><\/div><div class="border bg-light col-lg-1"><code>\3<\/code><\/div><\/div>/'

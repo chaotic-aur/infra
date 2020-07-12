@@ -4,13 +4,15 @@
 readonly TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg'
 BLDTART="TkG.common.$(date '+%Y%m%d%H%M%S')"
 export TKG_NONV=1
+#export TKG_NOMESA=1
+export TKG_NOLLVM=1
 
 
 # - Wine
 
 # (staging vkd3d faudio)
 _WINE_VARIATIONS=(
-	'lol'
+#	'lol'
 	'false false'
 	'false true'	# vkd3d
 	'true false'	# staging
@@ -116,7 +118,7 @@ mesa_setup() {
 	git checkout customization.cfg PKGBUILD
 
 	sed -i'' "
-	s/#MESA_WHICH_LLVM=/MESA_WHICH_LLVM=4/g
+	s/#?MESA_WHICH_LLVM=./MESA_WHICH_LLVM=4/g
 	s/_user_patches_no_confirm=\"[^\"]*\"/_user_patches_no_confirm=\"true\"/g
 	" customization.cfg
 
@@ -286,6 +288,26 @@ if [ -z "$TKG_NOAMD" ]; then
 
 	pushd amdvlk-tkg-opt
 	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/amdvlk-opt.log"
+	~/chaotic-add || echo 'OK'
+	popd
+fi
+
+# - vkd3d
+if [ -z "$TKG_NODX12" ]; then
+	git clone 'https://github.com/Frogging-Family/vkd3d-git.git' vkd3d-tkg-git
+
+	pushd vkd3d-tkg-git
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/vkd3d-git.log"
+	~/chaotic-add || echo 'OK'
+	popd
+fi
+
+# - faudio
+if [ -z "$TKG_NOFAUDIO" ]; then
+	git clone 'https://github.com/Frogging-Family/faudio-git.git' faudio-tkg-git
+
+	pushd faudio-tkg-git
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/faudio-git.log"
 	~/chaotic-add || echo 'OK'
 	popd
 fi

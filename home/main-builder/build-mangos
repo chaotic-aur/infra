@@ -9,5 +9,5 @@ cd ./mangos || exit
 mkdir -p "$LDIR"
 mv *.log "$LDIR/"
 
-cd /tmp && rm -rf ./mangos
+cd /tmp && rm -rf --one-file-system ./mangos
 cd "$LDIR" && ~/chaotic-clean-logs

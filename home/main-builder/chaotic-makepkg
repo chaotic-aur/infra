@@ -52,6 +52,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		
 		# Create infra
 		echo "$WTMK Bulding lowerdir..."
+		mkdir -p "$CHROOT"
 		echo $$ > "$CHROOT/$BASE.lock"
 		mkdir -p "$CHROOT/$TIMED_BASE"
 		pushd "$CHROOT"
