@@ -8,7 +8,7 @@ mkdir -p "$BUILDDIR"
 cd "$BUILDDIR" || exit
 
 # Download our beloved firefox
-repoctl down firefox-wayland-hg waterfox-current-git
+repoctl down firefox-wayland-hg waterfox-current-git firefox-kde-opensuse
 
 # Librewish likes this forks
 git clone https://github.com/torvic9/plasmafox.git
@@ -16,7 +16,7 @@ git clone https://github.com/torvic9/kplasmafoxhelper.git
 
 # YAY!
 echo '[build-firefox] Building! '
-~/chaotic-batchbuild kplasmafoxhelper -- plasmafox -- firefox-hg -- firefox-wayland-hg
+~/chaotic-batchbuild kplasmafoxhelper -- plasmafox -- firefox-wayland-hg -- firefox-kde-opensuse
 
 # Move logs around
 echo '[build-firefox] Submiting logs:'

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+echo 'Moved to infra2.0'
+exit 0
+
 
 # CONFIG
 readonly TKGLOGS='/srv/http/chaotic-aur/makepkglogs/_daily/tkg/kernels'
