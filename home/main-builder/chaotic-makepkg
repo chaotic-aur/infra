@@ -139,6 +139,7 @@ if [[ -z "$(echo "$@" | grep '\-p \./tmp')" ]]; then
 		sudo chown $BUILD_USER:$BUILD_USER "$TARGET_WIZARD"
 		sudo chmod 755 "$TARGET_WIZARD"
 		target_run set -o errexit
+		targer_run cd \$HOME/pkgwork
 
 		# Finish
 		popd

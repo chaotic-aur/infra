@@ -1,5 +1,6 @@
 aesop-git
 baidupcs-go-git
+blender-git
 brave
 chromium-ozone
 clang-analyzer-git
@@ -11,16 +12,21 @@ clang-minimal-git
 clang-svn
 clang-tools-extra-git
 clang-tools-extra-svn
+cling-git
 compiler-rt-git
 compiler-rt-minimal-git
+electron-ozone
 ffmpeg-amd-full-git
 ffmpeg-full
+firefox-beta
 firefox-hg
 firefox-wayland-hg
 gamescope-git
 gobuster-git
 godot-git
 gzdoom-git
+htop-temperature
+icecat
 jellyfin-git
 keybase-bash-completion-git
 kplasmafoxhelper
@@ -40,6 +46,7 @@ lib32-nvidia-utils-tkg
 lib32-opencl-nvidia-dev-tkg
 lib32-opencl-nvidia-tkg
 lib32-spirv-tools-tkg-git
+lib32-vulkan-icd-loader-git
 lib32-vulkan-intel-git
 lib32-vulkan-mesa-layers-git
 lib32-vulkan-radeon-git
@@ -142,7 +149,6 @@ llvm-svn
 mesa-aco-git
 mesa-git
 mesa-tkg-git
-mingw-w64-binutils
 mingw-w64-gcc-win32
 nvidia-dev-dkms-tkg
 nvidia-dev-egl-wayland-tkg
@@ -171,6 +177,7 @@ ungoogled-chromium-git
 vlc-git
 vulkan-headers-git
 vulkan-headers-tkg-git
+vulkan-icd-loader-git
 vulkan-intel-git
 vulkan-mesa-layers-git
 vulkan-radeon-git
@@ -197,3 +204,4 @@ wireguard-dkms-git
 wireguard-tools-git
 xamarin-android-git
 xamarin-android-proprietary-git
+zapcc-git

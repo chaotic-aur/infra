@@ -97,7 +97,7 @@ echo "$UNIQ_ACCESS" |\
 	awk '{print $1}' |\
 	sort -u | wc -l |\
 	sed 's/$/<br>/' 
-echo '</code><hr/>'
+echo '</code> (Sadly, this counter has been tampered by bots)<hr/>'
 
 echo '<h3>Last 15 updates:</h3>'
 echo '<ul>'

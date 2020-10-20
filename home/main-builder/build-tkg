@@ -14,9 +14,9 @@ export TKG_NOLLVM=1
 _WINE_VARIATIONS=(
 #	'lol'
 	'false false'
-	'false true'	# vkd3d
+	'false fork'	# vkd3d
 	'true false'	# staging
-	'true true'	# staging, vkd3d
+	'true fork'	# staging, vkd3d
 )
 
 # - NVIDIA
@@ -160,7 +160,7 @@ proton_setup() {
 git_cleanup() {
 	git reset --hard
 	git clean -dfx
-	git pull -ff
+	git pull --ff-only
 }
 
 #
@@ -311,6 +311,17 @@ if [ -z "$TKG_NOFAUDIO" ]; then
 	~/chaotic-add || echo 'OK'
 	popd
 fi
+
+# - neofrog-git
+if [ -z "$TKG_NONEO" ]; then
+	git clone 'https://github.com/Frogging-Family/neofrog-git.git' neofrog-git
+
+	pushd neofrog-git
+	~/chaotic-makepkg --noconfirm -C 2>&1 | tee "$TKGLOGS/neofrog-git.log"
+	~/chaotic-add || echo 'OK'
+	popd
+fi
+
 
 # - proton
 if [ -z "$TKG_NOPROTON" ]; then

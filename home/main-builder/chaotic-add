@@ -41,4 +41,5 @@ then
 		update_pkglist_dump
 fi
 
+#sudo chaotic db-bump || echo '[chaotic-add] Bump failed'
 rm "$LOCK_FILE"

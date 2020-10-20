@@ -1,0 +1,11 @@
+[Unit]
+Description=Hourly diffs of packages
+
+[Service]
+User=pedrohlc
+Group=wheel
+WorkingDirectory=/home/pedrohlc
+ExecStart=/home/pedrohlc/update-pkgs-gist.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -12,3 +12,4 @@ export TKG_NOAMD=1
 export TKG_NODX12=1
 export TKG_NOPROTON=1
 export TKG_NOFAUDIO=1
+export TKG_NONEO=1

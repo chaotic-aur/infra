@@ -1,0 +1,9 @@
+[Unit]
+Description=Packages list time-machine
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=false
+
+[Install]
+WantedBy=timers.target

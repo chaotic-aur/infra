@@ -6,7 +6,15 @@ DESTDIR="schoina"
 
 git clone https://github.com/SolarAquarion/PKGBUILD-CHAOTIC.git "$DESTDIR"
 cd "./$DESTDIR" || exit
-~/chaotic-batchbuild
+~/chaotic-batchbuild llvm-git
+sleep 1
+
+while true; do
+	~/chaotic-add && break
+	sleep 5
+done
+
+~/chaotic-batchbuild mesa-git
 
 mkdir -p "$LDIR"
 mv *.log "$LDIR/"
